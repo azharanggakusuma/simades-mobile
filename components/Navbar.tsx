@@ -12,7 +12,7 @@ export default function Navbar({ onMenuPress, onProfilePress }) {
         <Ionicons name="menu" size={26} color="#111827" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Dashboard</Text>
+      <Text style={styles.title}>SIMADES</Text>
 
       <View style={styles.rightIcons}>
         <TouchableOpacity onPress={onProfilePress} style={styles.iconButton}>
