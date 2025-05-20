@@ -18,7 +18,7 @@ import ProfileScreen from './screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-function AnimatedFormButton({ onPress }) {
+const AnimatedFormButton = ({ onPress }) => {
   const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -35,21 +35,21 @@ function AnimatedFormButton({ onPress }) {
       tension: 40,
       useNativeDriver: true,
     }).start();
-    onPress?.();
+    if (onPress) onPress();
   };
 
   return (
     <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <Animated.View style={[styles.fabContainer, { transform: [{ scale }] }]}>
+      <Animated.View style={[styles.fabWrapper, { transform: [{ scale }] }]}>
         <View style={styles.fabButton}>
           <Ionicons name="document-text-outline" size={26} color="#fff" />
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
-function MyTabs() {
+const MyTabs = () => {
   const insets = useSafeAreaInsets();
 
   return (
@@ -57,40 +57,35 @@ function MyTabs() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 4,
+        },
         tabBarStyle: {
           height: 70 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+          paddingBottom: insets.bottom || 10,
           paddingTop: 6,
           borderTopWidth: 0.5,
           borderTopColor: '#e5e7eb',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#fff',
           position: 'absolute',
         },
         tabBarIcon: ({ focused, color }) => {
-          let iconName: any;
+          const iconMap = {
+            Home: 'home',
+            Search: 'search',
+            Notification: 'notifications',
+            Profile: 'person',
+          };
 
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Search':
-              iconName = focused ? 'search' : 'search-outline';
-              break;
-            case 'Notification':
-              iconName = focused ? 'notifications' : 'notifications-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-            default:
-              return null;
-          }
+          const iconName = focused
+            ? iconMap[route.name]
+            : `${iconMap[route.name]}-outline`;
 
           return <Ionicons name={iconName} size={24} color={color} />;
         },
         tabBarActiveTintColor: '#3b82f6',
-tabBarInactiveTintColor: '#9ca3af', 
+        tabBarInactiveTintColor: '#9ca3af',
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -108,7 +103,7 @@ tabBarInactiveTintColor: '#9ca3af',
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
-}
+};
 
 export default function App() {
   return (
@@ -121,22 +116,22 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  fabContainer: {
+  fabWrapper: {
     top: -28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fabButton: {
-  width: 62,
-  height: 62,
-  borderRadius: 31,
-  backgroundColor: '#3b82f6',
-  alignItems: 'center',
-  justifyContent: 'center',
-  shadowColor: '#000',
-  shadowOpacity: 0.2,
-  shadowOffset: { width: 0, height: 4 },
-  shadowRadius: 6,
-  elevation: 8,
-},
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 8,
+  },
 });
