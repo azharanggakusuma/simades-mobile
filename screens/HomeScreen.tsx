@@ -22,10 +22,10 @@ export default function HomeScreen() {
         <Text style={styles.subheading}>Selamat Datang Kembali</Text>
 
         <View style={styles.grid}>
-          <MiniCard title="Formulir" value="34" icon="document-text-outline" color="#6366f1" />
-          <MiniCard title="Desa/Kelurahan" value="76" icon="business-outline" color="#10b981" />
-          <MiniCard title="Kecamatan" value="22" icon="location-outline" color="#f59e0b" />
-          <MiniCard title="Pengguna" value="12" icon="people-outline" color="#ef4444" />
+          <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
+          <MiniCard title="Desa/Kelurahan" value="424" icon="business-outline" color="#10b981" />
+          <MiniCard title="Kecamatan" value="40" icon="location-outline" color="#f59e0b" />
+          <MiniCard title="Pengguna" value="425" icon="people-outline" color="#ef4444" />
         </View>
 
         <StatsChart />
