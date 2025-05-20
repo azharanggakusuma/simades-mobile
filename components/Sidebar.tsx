@@ -16,6 +16,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function Sidebar({ onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('Beranda');
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -45,18 +46,24 @@ export default function Sidebar({ onClose }) {
         {/* Profile */}
         <View style={styles.profile}>
           <Image
-            source={{ uri: 'https://i.pravatar.cc/100' }}
+            source={{ uri: 'https://i.pravatar.cc/1' }}
             style={styles.avatar}
           />
           <View>
             <Text style={styles.name}>Halo, Rangga</Text>
-            <Text style={styles.email}>azharanggakusuma01@gmail.com</Text>
+            <Text style={styles.email}>rangga@gmail.com</Text>
           </View>
         </View>
 
         {/* Menu */}
         <View style={styles.menu}>
-          <SidebarItem icon="home-outline" label="Beranda" />
+          <SidebarItem
+            icon="home-outline"
+            label="Beranda"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+
           <TouchableOpacity style={styles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
             <Ionicons name="file-tray-full-outline" size={22} color="#374151" />
             <Text style={styles.menuText}>Form</Text>
@@ -67,29 +74,91 @@ export default function Sidebar({ onClose }) {
               style={{ marginLeft: 'auto' }}
             />
           </TouchableOpacity>
+
           {isFormOpen && (
             <View style={styles.submenu}>
-              <SidebarItem label="Form A" isSub />
-              <SidebarItem label="Form B" isSub />
-              <SidebarItem label="Form C" isSub />
+              <SidebarItem
+                label="Form A"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
+              <SidebarItem
+                label="Form B"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
+              <SidebarItem
+                label="Form C"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
             </View>
           )}
-          <SidebarItem icon="people-outline" label="Manage Users" />
-          <SidebarItem icon="grid-outline" label="Manage Menu" />
-          <SidebarItem icon="document-text-outline" label="Manage Form" />
-          <SidebarItem icon="settings-outline" label="Pengaturan" />
-          <SidebarItem icon="log-out-outline" label="Keluar" color="#ef4444" />
+
+          <SidebarItem
+            icon="people-outline"
+            label="Manage Users"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon="grid-outline"
+            label="Manage Menu"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon="document-text-outline"
+            label="Manage Form"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon="settings-outline"
+            label="Pengaturan"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon="log-out-outline"
+            label="Keluar"
+            color="#ef4444"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
         </View>
       </Animated.View>
     </View>
   );
 }
 
-function SidebarItem({ icon, label, color = '#374151', isSub = false }) {
+function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu, setActiveMenu }) {
+  const isActive = activeMenu === label;
   return (
-    <TouchableOpacity style={[styles.menuItem, isSub && styles.submenuItem]}>
-      {icon && <Ionicons name={icon} size={22} color={color} />}
-      <Text style={[styles.menuText, { color, marginLeft: icon ? 0 : 28 }]}>{label}</Text>
+    <TouchableOpacity
+      style={[
+        styles.menuItem,
+        isSub && styles.submenuItem,
+        isActive && styles.activeItem,
+      ]}
+      onPress={() => setActiveMenu(label)}
+    >
+      {icon && <Ionicons name={icon} size={22} color={isActive ? '#2563eb' : color} />}
+      <Text
+        style={[
+          styles.menuText,
+          {
+            color: isActive ? '#2563eb' : color,
+            marginLeft: icon ? 0 : 28,
+            fontWeight: isActive ? '700' : '500',
+          },
+        ]}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -164,5 +233,10 @@ const styles = StyleSheet.create({
   },
   submenuItem: {
     paddingLeft: 15,
+  },
+  activeItem: {
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingHorizontal: 10,
   },
 });
