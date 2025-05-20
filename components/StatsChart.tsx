@@ -1,21 +1,19 @@
-// components/VisitorChart.js
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function VisitorChart() {
   const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+    labels: ['25 Jan', '26 Jan', '27 Jan', '28 Jan', '29 Jan', '30 Jan', '31 Jan', '1 Feb', '2 Feb', '3 Feb', '4 Feb', '5 Feb'],
     datasets: [
       {
-        data: [640, 720, 680, 530, 450, 390, 410, 430, 520, 670, 730, 790],
-        color: () => '#3b82f6',
+        data: [180, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70],
+        color: () => '#3b82f6', // biru solid
         strokeWidth: 2,
       },
     ],
-    legend: ['Jumlah Pengunjung per Bulan'],
   };
 
   const chartConfig = {
@@ -25,28 +23,41 @@ export default function VisitorChart() {
     color: () => '#3b82f6',
     labelColor: () => '#6b7280',
     propsForDots: {
-      r: '5',
-      strokeWidth: '2',
+      r: '3',
+      strokeWidth: '1',
       stroke: '#3b82f6',
     },
     propsForBackgroundLines: {
       stroke: '#e5e7eb',
     },
+    fillShadowGradient: '#93c5fd',
+    fillShadowGradientOpacity: 0.3,
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Grafik Pengunjung</Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.label}>Pengunjung</Text>
+          <Text style={styles.total}>2.3k</Text>
+        </View>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>↓ 2%</Text>
+        </View>
+      </View>
+
       <LineChart
         data={data}
         width={screenWidth - 40}
-        height={240}
+        height={220}
         chartConfig={chartConfig}
+        withVerticalLabels={false}
+        withHorizontalLabels
+        withInnerLines
+        withOuterLines={false}
+        fromZero
         bezier
         style={styles.chart}
-        withVerticalLabels
-        withHorizontalLabels
-        fromZero
       />
     </View>
   );
@@ -54,24 +65,44 @@ export default function VisitorChart() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
-    marginBottom: 70,
     backgroundColor: '#fff',
+    marginTop: 24,
+    padding: 16,
     borderRadius: 14,
     shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
     elevation: 2,
-    paddingVertical: 20,
+    marginBottom: 80,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  label: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  total: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#111827',
-    textAlign: 'center',
+  },
+  badge: {
+    backgroundColor: '#fee2e2',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  badgeText: {
+    color: '#b91c1c',
+    fontSize: 12,
+    fontWeight: '600',
   },
   chart: {
-    borderRadius: 14,
+    marginLeft: -10,
+    marginRight: -10,
   },
 });
