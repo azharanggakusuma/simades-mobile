@@ -50,7 +50,7 @@ export default function Sidebar({ onClose }) {
             style={styles.avatar}
           />
           <View>
-            <Text style={styles.name}>Halo, Rangga</Text>
+            <Text style={styles.name}>Rangga</Text>
             <Text style={styles.email}>rangga@gmail.com</Text>
           </View>
         </View>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.78,
     backgroundColor: '#ffffff',
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 50,
     elevation: 6,
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 14,
+    top: 50,
     right: 14,
     zIndex: 10,
     padding: 6,
