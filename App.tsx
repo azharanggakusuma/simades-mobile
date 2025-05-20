@@ -1,5 +1,10 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useRef } from 'react';
+import {
+  View,
+  TouchableWithoutFeedback,
+  Animated,
+  StyleSheet,
+} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +18,37 @@ import ProfileScreen from './screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
+function AnimatedFormButton({ onPress }) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.9,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+    onPress?.();
+  };
+
+  return (
+    <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      <Animated.View style={[styles.fabContainer, { transform: [{ scale }] }]}>
+        <View style={styles.fabButton}>
+          <Ionicons name="document-text-outline" size={26} color="#fff" />
+        </View>
+      </Animated.View>
+    </TouchableWithoutFeedback>
+  );
+}
+
 function MyTabs() {
   const insets = useSafeAreaInsets();
 
@@ -23,32 +59,51 @@ function MyTabs() {
         tabBarShowLabel: true,
         tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
         tabBarStyle: {
-          height: 65 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          paddingTop: 4,
+          height: 70 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+          paddingTop: 6,
           borderTopWidth: 0.5,
-          borderTopColor: '#ccc',
-          backgroundColor: '#fff',
+          borderTopColor: '#e5e7eb',
+          backgroundColor: '#ffffff',
           position: 'absolute',
         },
         tabBarIcon: ({ focused, color }) => {
           let iconName: any;
 
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Search') iconName = focused ? 'search' : 'search-outline';
-          else if (route.name === 'Form') iconName = focused ? 'document-text' : 'document-text-outline';
-          else if (route.name === 'Notification') iconName = focused ? 'notifications' : 'notifications-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
+          switch (route.name) {
+            case 'Home':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Search':
+              iconName = focused ? 'search' : 'search-outline';
+              break;
+            case 'Notification':
+              iconName = focused ? 'notifications' : 'notifications-outline';
+              break;
+            case 'Profile':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            default:
+              return null;
+          }
 
           return <Ionicons name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#2563eb',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: '#1d4ed8',     // biru tua elegan
+        tabBarInactiveTintColor: '#9ca3af',   // abu soft
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="Form" component={FormScreen} />
+      <Tab.Screen
+        name="Form"
+        component={FormScreen}
+        options={{
+          tabBarLabel: '',
+          tabBarIcon: () => null,
+          tabBarButton: (props) => <AnimatedFormButton {...props} />,
+        }}
+      />
       <Tab.Screen name="Notification" component={NotificationScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -64,3 +119,24 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  fabContainer: {
+    top: -28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabButton: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: '#1d4ed8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 8,
+  },
+});
