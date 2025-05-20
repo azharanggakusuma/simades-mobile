@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
+  Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,34 +16,53 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function Sidebar({ onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: -SCREEN_WIDTH,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => onClose());
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: -SCREEN_WIDTH,
+        duration: 200,
+        easing: Easing.in(Easing.exp),
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onClose());
   };
 
   return (
-    <View style={styles.overlay}>
+    <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
       <Pressable style={styles.backdrop} onPress={handleClose} />
 
       <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
-        {/* PROFILE SECTION */}
+        {/* CLOSE BUTTON */}
+        <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
+          <Ionicons name="close" size={24} color="#374151" />
+        </TouchableOpacity>
+
+        {/* PROFILE */}
         <View style={styles.profile}>
-          <Image
-            source={{ uri: 'https://i.pravatar.cc/100' }}
-            style={styles.avatar}
-          />
+          <Image source={{ uri: 'https://i.pravatar.cc/100' }} style={styles.avatar} />
           <View>
             <Text style={styles.name}>Halo, Rangga</Text>
             <Text style={styles.email}>azharanggakusuma01@gmail.com</Text>
@@ -57,7 +77,7 @@ export default function Sidebar({ onClose }) {
           <SidebarItem icon="log-out-outline" label="Keluar" color="#ef4444" />
         </View>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -87,15 +107,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 20,
     paddingTop: 40,
-    elevation: 6,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    padding: 6,
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
+    marginTop: 20,
     gap: 12,
   },
   avatar: {
@@ -115,6 +143,7 @@ const styles = StyleSheet.create({
   },
   menu: {
     gap: 20,
+    marginTop: 10,
   },
   menuItem: {
     flexDirection: 'row',
