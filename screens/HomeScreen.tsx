@@ -19,7 +19,7 @@ export default function HomeScreen() {
 
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Dashboard</Text>
-        <Text style={styles.subheading}>Selamat Datang Kembali</Text>
+        <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
 
         <View style={styles.grid}>
           <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
@@ -54,9 +54,9 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   heading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1f2937',
     marginBottom: 4,
   },
   subheading: {

@@ -42,22 +42,25 @@ export default function VisitorChart() {
           <Text style={styles.total}>2.3k</Text>
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>↓ 2%</Text>
+          <Text style={styles.badgeText}>↓ 4%</Text>
         </View>
       </View>
 
       <LineChart
         data={data}
-        width={screenWidth - 40}
+        width={screenWidth - 32}
         height={220}
-        chartConfig={chartConfig}
-        withVerticalLabels={false}
+        chartConfig={{
+          ...chartConfig,
+          paddingLeft: 0,
+        }}
+        withVerticalLabels={true}
         withHorizontalLabels
         withInnerLines
         withOuterLines={false}
         fromZero
         bezier
-        style={styles.chart}
+        style={[styles.chart, { marginLeft: -25, marginTop: 8 }]}
       />
     </View>
   );
@@ -74,6 +77,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
     marginBottom: 80,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -102,7 +106,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chart: {
-    marginLeft: -10,
-    marginRight: -10,
+    borderRadius: 8,
   },
 });
