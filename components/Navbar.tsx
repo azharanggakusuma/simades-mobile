@@ -3,13 +3,17 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function Navbar({ onMenuPress, onProfilePress }) {
+export default function Navbar({ onMenuPress, onProfilePress, isSidebarOpen }) {
   const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
       <TouchableOpacity onPress={onMenuPress}>
-        <Ionicons name="menu" size={26} color="#111827" />
+        <Ionicons
+          name={isSidebarOpen ? 'close' : 'menu'}
+          size={26}
+          color="#111827"
+        />
       </TouchableOpacity>
 
       <Text style={styles.title}>SIMADES</Text>
@@ -22,6 +26,7 @@ export default function Navbar({ onMenuPress, onProfilePress }) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
