@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   subheading: {
     fontSize: 14,
     color: '#6b7280',
-    marginBottom: 20,
+    marginBottom: 25,
   },
   grid: {
     flexDirection: 'column',
