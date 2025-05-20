@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Text, View, ScrollView, StyleSheet } from 'react-native';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
+import StatsChart from '../components/StatsChart';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+    <View style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
       <Navbar
         onMenuPress={() => setSidebarVisible(true)}
         onProfilePress={() => console.log('Profile clicked')}
@@ -18,26 +19,30 @@ export default function HomeScreen() {
 
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Dashboard</Text>
-        <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
+        <Text style={styles.subheading}>Selamat Datang Kembali</Text>
 
-        <View style={styles.cardsContainer}>
-          <DashboardCard icon="document-text-outline" title="Formulir" value="34" color="#4f46e5" />
-          <DashboardCard icon="home-outline" title="Desa / Kelurahan" value="76" color="#10b981" />
-          <DashboardCard icon="location-outline" title="Kecamatan" value="22" color="#f59e0b" />
-          <DashboardCard icon="people-outline" title="Pengguna" value="12" color="#ef4444" />
+        <View style={styles.grid}>
+          <MiniCard title="Formulir" value="34" icon="document-text-outline" color="#6366f1" />
+          <MiniCard title="Desa/Kelurahan" value="76" icon="business-outline" color="#10b981" />
+          <MiniCard title="Kecamatan" value="22" icon="location-outline" color="#f59e0b" />
+          <MiniCard title="Pengguna" value="12" icon="people-outline" color="#ef4444" />
         </View>
+
+        <StatsChart />
       </ScrollView>
     </View>
   );
 }
 
-function DashboardCard({ icon, title, value, color }) {
+function MiniCard({ title, value, icon, color }) {
   return (
-    <View style={[styles.card, { borderLeftColor: color }]}>
-      <Ionicons name={icon} size={28} color={color} />
+    <View style={styles.card}>
+      <View style={[styles.iconWrapper, { backgroundColor: `${color}20` }]}>
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
       <View>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardValue}>{value}</Text>
+        <Text style={styles.label}>{title}</Text>
+        <Text style={styles.value}>{value}</Text>
       </View>
     </View>
   );
@@ -49,38 +54,42 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#111827',
+    marginBottom: 4,
   },
   subheading: {
     fontSize: 14,
     color: '#6b7280',
     marginBottom: 20,
   },
-  cardsContainer: {
+  grid: {
     flexDirection: 'column',
     gap: 14,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    padding: 16,
-    borderRadius: 10,
     backgroundColor: '#ffffff',
-    borderLeftWidth: 5,
+    padding: 16,
+    borderRadius: 14,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     elevation: 2,
+    gap: 16,
   },
-  cardTitle: {
-    fontSize: 14,
+  iconWrapper: {
+    padding: 10,
+    borderRadius: 10,
+  },
+  label: {
+    fontSize: 13,
     color: '#6b7280',
   },
-  cardValue: {
-    fontSize: 20,
+  value: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#111827',
   },
