@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function Sidebar({ onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [formExpanded, setFormExpanded] = useState(false);
 
   useEffect(() => {
     Animated.parallel([
@@ -72,7 +73,29 @@ export default function Sidebar({ onClose }) {
         {/* MENU */}
         <View style={styles.menu}>
           <SidebarItem icon="home-outline" label="Beranda" />
-          <SidebarItem icon="person-outline" label="Profil Saya" />
+
+          {/* FORM DROPDOWN */}
+          <TouchableOpacity style={styles.menuItem} onPress={() => setFormExpanded(!formExpanded)}>
+            <Ionicons name="document-text-outline" size={22} color="#374151" />
+            <Text style={styles.menuText}>Form</Text>
+            <Ionicons
+              name={formExpanded ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color="#6b7280"
+              style={{ marginLeft: 'auto' }}
+            />
+          </TouchableOpacity>
+          {formExpanded && (
+            <View style={styles.subMenu}>
+              <SidebarSubItem label="Form A" />
+              <SidebarSubItem label="Form B" />
+              <SidebarSubItem label="Form C" />
+            </View>
+          )}
+
+          <SidebarItem icon="people-outline" label="Manage Users" />
+          <SidebarItem icon="menu-outline" label="Manage Menu" />
+          <SidebarItem icon="layers-outline" label="Manage Form" />
           <SidebarItem icon="settings-outline" label="Pengaturan" />
           <SidebarItem icon="log-out-outline" label="Keluar" color="#ef4444" />
         </View>
@@ -86,6 +109,14 @@ function SidebarItem({ icon, label, color = '#374151' }) {
     <TouchableOpacity style={styles.menuItem}>
       <Ionicons name={icon} size={22} color={color} />
       <Text style={[styles.menuText, { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function SidebarSubItem({ label }) {
+  return (
+    <TouchableOpacity style={styles.subItem}>
+      <Text style={styles.subItemText}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -142,7 +173,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   menu: {
-    gap: 20,
+    gap: 16,
     marginTop: 10,
   },
   menuItem: {
@@ -153,5 +184,17 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  subMenu: {
+    marginLeft: 36,
+    marginTop: 6,
+    gap: 10,
+  },
+  subItem: {
+    paddingVertical: 4,
+  },
+  subItemText: {
+    fontSize: 15,
+    color: '#4b5563',
   },
 });
