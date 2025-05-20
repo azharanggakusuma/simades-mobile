@@ -6,7 +6,7 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function VisitorChart() {
   const data = {
-    labels: ['25 Jan', '26 Jan', '27 Jan', '28 Jan', '29 Jan', '30 Jan', '31 Jan', '1 Feb', '2 Feb', '3 Feb', '4 Feb', '5 Feb'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
     datasets: [
       {
         data: [180, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70],
