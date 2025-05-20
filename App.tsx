@@ -89,8 +89,8 @@ function MyTabs() {
 
           return <Ionicons name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#1d4ed8',     // biru tua elegan
-        tabBarInactiveTintColor: '#9ca3af',   // abu soft
+        tabBarActiveTintColor: '#3b82f6',
+tabBarInactiveTintColor: '#9ca3af', 
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -127,16 +127,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fabButton: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: '#1d4ed8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 8,
-  },
+  width: 62,
+  height: 62,
+  borderRadius: 31,
+  backgroundColor: '#3b82f6',
+  alignItems: 'center',
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOpacity: 0.2,
+  shadowOffset: { width: 0, height: 4 },
+  shadowRadius: 6,
+  elevation: 8,
+},
 });
