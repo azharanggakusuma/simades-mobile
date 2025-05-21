@@ -176,7 +176,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.25)',
   },
   sidebar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
     width: SCREEN_WIDTH * 0.78,
+    height: '100%',
     backgroundColor: '#ffffff',
     padding: 20,
     paddingTop: 50,
