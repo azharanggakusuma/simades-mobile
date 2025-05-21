@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 
-export default function CustomText({ children, style, ...props }) {
+export default function AppText({ children, style, ...props }) {
   return (
     <Text style={[styles.text, style]} {...props}>
       {children}
