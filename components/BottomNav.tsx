@@ -42,7 +42,7 @@ const AnimatedFormButton = ({ onPress }) => {
     <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <Animated.View style={[styles.fabWrapper, { transform: [{ scale }] }]}>
         <View style={styles.fabButton}>
-          <Ionicons name="document-text-outline" size={28} color="#fff" />
+          <Ionicons name="file-tray-full-outline" size={28} color="#fff" />
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
