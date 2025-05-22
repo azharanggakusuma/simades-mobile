@@ -61,15 +61,16 @@ const styles = StyleSheet.create<Style>({
     paddingBottom: 40,
   },
   heading: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 22,
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Poppins-Bold',
   },
   subheading: {
     fontSize: 14,
     color: '#6b7280',
     marginBottom: 25,
+    fontFamily: 'Poppins-Regular',
   },
   grid: {
     flexDirection: 'row',
