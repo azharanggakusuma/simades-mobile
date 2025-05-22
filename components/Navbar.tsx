@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Poppins-SemiBold',
     color: '#111827',
   },
   iconButton: {
