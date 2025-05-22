@@ -61,6 +61,7 @@ const BottomNav = () => {
           fontSize: 12,
           marginBottom: 2,
           fontWeight: '600',
+          fontFamily: 'Poppins-Regular',
         },
         tabBarStyle: {
           position: 'absolute',
