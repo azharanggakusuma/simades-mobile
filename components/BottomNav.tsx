@@ -4,6 +4,7 @@ import {
   TouchableWithoutFeedback,
   Animated,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,7 +42,7 @@ const AnimatedFormButton = ({ onPress }) => {
     <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <Animated.View style={[styles.fabWrapper, { transform: [{ scale }] }]}>
         <View style={styles.fabButton}>
-          <Ionicons name="document-text-outline" size={26} color="#fff" />
+          <Ionicons name="document-text-outline" size={28} color="#fff" />
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
@@ -58,16 +59,25 @@ const BottomNav = () => {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 12,
-          marginBottom: 4,
+          marginBottom: 2,
+          fontWeight: '600',
         },
         tabBarStyle: {
+          position: 'absolute',
+          bottom: 16,
+          left: 16,
+          right: 16,
           height: 70 + insets.bottom,
           paddingBottom: insets.bottom || 10,
-          paddingTop: 6,
-          borderTopWidth: 0.5,
-          borderTopColor: '#e5e7eb',
-          backgroundColor: '#fff',
-          position: 'absolute',
+          paddingTop: 8,
+          borderRadius: 20,
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          borderTopWidth: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          elevation: 10,
         },
         tabBarIcon: ({ focused, color }) => {
           const iconMap = {
@@ -106,22 +116,23 @@ const BottomNav = () => {
 
 const styles = StyleSheet.create({
   fabWrapper: {
-    top: -28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute',
+    top: -30,
+    alignSelf: 'center',
+    zIndex: 10,
   },
   fabButton: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: '#3b82f6',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 8,
+    elevation: 10,
   },
 });
 
