@@ -11,13 +11,10 @@ import {
 } from 'react-native';
 import StatsChart from '../components/StatsChart';
 import MiniCard from '../components/MiniCard';
-import NavbarWithSidebar from '../components/NavbarWithSidebar';
 
 export default function HomeScreen() {
   return (
     <View style={styles.screen}>
-       <NavbarWithSidebar />
-
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Dashboard</Text>
         <Text style={styles.subheading}>Selamat datang kembali 👋</Text>

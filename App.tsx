@@ -6,6 +6,7 @@ import { useFonts } from 'expo-font';
 import './global.css';
 
 import BottomNav from './components/BottomNav';
+import NavbarWithSidebar from './components/NavbarWithSidebar';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -26,6 +27,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
+        <NavbarWithSidebar />
         <BottomNav />
       </NavigationContainer>
     </SafeAreaProvider>
