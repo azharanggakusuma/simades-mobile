@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
-import { Text, View, ScrollView, StyleSheet } from 'react-native';
+import {
+  Text,
+  View,
+  ScrollView,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import StatsChart from '../components/StatsChart';
 import { Ionicons } from '@expo/vector-icons';
 
+interface MiniCardProps {
+  title: string;
+  value: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+}
+
 export default function HomeScreen() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
+    <View style={styles.screen}>
       <Navbar
         onMenuPress={() => setSidebarVisible(true)}
         onProfilePress={() => console.log('Profile clicked')}
@@ -22,10 +36,30 @@ export default function HomeScreen() {
         <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
 
         <View style={styles.grid}>
-          <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
-          <MiniCard title="Desa/Kelurahan" value="424" icon="business-outline" color="#10b981" />
-          <MiniCard title="Kecamatan" value="40" icon="location-outline" color="#f59e0b" />
-          <MiniCard title="Pengguna" value="425" icon="people-outline" color="#ef4444" />
+          <MiniCard
+            title="Formulir"
+            value="16"
+            icon="document-text-outline"
+            color="#6366f1"
+          />
+          <MiniCard
+            title="Desa/Kelurahan"
+            value="424"
+            icon="business-outline"
+            color="#10b981"
+          />
+          <MiniCard
+            title="Kecamatan"
+            value="40"
+            icon="location-outline"
+            color="#f59e0b"
+          />
+          <MiniCard
+            title="Pengguna"
+            value="425"
+            icon="people-outline"
+            color="#ef4444"
+          />
         </View>
 
         <StatsChart />
@@ -34,21 +68,44 @@ export default function HomeScreen() {
   );
 }
 
-function MiniCard({ title, value, icon, color }) {
+function MiniCard({ title, value, icon, color }: MiniCardProps) {
   return (
     <View style={styles.card}>
-      <View style={[styles.iconWrapper, { backgroundColor: `${color}20` }]}>
-        <Ionicons name={icon} size={20} color={color} />
+      <View style={[styles.iconBox, { backgroundColor: `${color}1A` }]}>
+        <Ionicons name={icon} size={22} color={color} />
       </View>
-      <View>
-        <Text style={styles.label}>{title}</Text>
-        <Text style={styles.value}>{value}</Text>
+      <View style={styles.textWrapper}>
+        <Text
+          style={styles.cardTitle}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {title}
+        </Text>
+        <Text style={styles.cardValue}>{value}</Text>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+interface Style {
+  screen: ViewStyle;
+  container: ViewStyle;
+  heading: TextStyle;
+  subheading: TextStyle;
+  grid: ViewStyle;
+  card: ViewStyle;
+  iconBox: ViewStyle;
+  textWrapper: ViewStyle;
+  cardTitle: TextStyle;
+  cardValue: TextStyle;
+}
+
+const styles = StyleSheet.create<Style>({
+  screen: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+  },
   container: {
     padding: 20,
     paddingBottom: 40,
@@ -80,15 +137,21 @@ const styles = StyleSheet.create({
     elevation: 2,
     gap: 16,
   },
-  iconWrapper: {
+  iconBox: {
     padding: 10,
     borderRadius: 10,
   },
-  label: {
+  textWrapper: {
+    flex: 1,
+    minWidth: 0,
+  },
+  cardTitle: {
     fontSize: 13,
     color: '#6b7280',
+    marginBottom: 2,
+    flexShrink: 1,
   },
-  value: {
+  cardValue: {
     fontSize: 18,
     fontWeight: '600',
     color: '#111827',
