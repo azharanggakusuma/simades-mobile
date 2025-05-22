@@ -88,10 +88,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Poppins-Regular',
   },
   total: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins-SemiBold',
     color: '#111827',
   },
   badge: {
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#b91c1c',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Poppins-SemiBold',
   },
   chart: {
     borderRadius: 8,
