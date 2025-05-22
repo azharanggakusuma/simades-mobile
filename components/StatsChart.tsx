@@ -4,13 +4,13 @@ import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function VisitorChart() {
+export default function StatsChart() {
   const data = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
     datasets: [
       {
         data: [180, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70],
-        color: () => '#3b82f6', // biru solid
+        color: () => '#3b82f6',
         strokeWidth: 2,
       },
     ],
