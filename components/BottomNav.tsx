@@ -101,7 +101,7 @@ const BottomNav = () => {
       <Tab.Screen name="Beranda" component={HomeScreen} />
       <Tab.Screen name="Cari" component={SearchScreen} />
       <Tab.Screen
-        name="Form"
+        name="Formulir"
         component={FormScreen}
         options={{
           tabBarLabel: '',
