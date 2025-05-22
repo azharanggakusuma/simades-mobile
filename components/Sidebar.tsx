@@ -45,10 +45,7 @@ export default function Sidebar({ onClose }) {
 
         {/* Profile */}
         <View style={styles.profile}>
-          <Image
-            source={{ uri: 'https://i.pravatar.cc/1' }}
-            style={styles.avatar}
-          />
+          <Image source={{ uri: 'https://i.pravatar.cc/1' }} style={styles.avatar} />
           <View>
             <Text style={styles.name}>Rangga</Text>
             <Text style={styles.email}>rangga@gmail.com</Text>
@@ -137,26 +134,22 @@ export default function Sidebar({ onClose }) {
 
 function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu, setActiveMenu }) {
   const isActive = activeMenu === label;
+
   return (
     <TouchableOpacity
-      style={[
-        styles.menuItem,
-        isSub && styles.submenuItem,
-        isActive && styles.activeItem,
-      ]}
-      onPress={() => setActiveMenu(label)}
-    >
+      style={[styles.menuItem, isSub && styles.submenuItem, isActive && styles.activeItem]}
+      onPress={() => setActiveMenu(label)}>
       {icon && <Ionicons name={icon} size={22} color={isActive ? '#2563eb' : color} />}
       <Text
         style={[
           styles.menuText,
           {
-            color: isActive ? '#2563eb' : color,
             marginLeft: icon ? 0 : 28,
-            fontWeight: isActive ? '700' : '500',
+            color: isActive ? '#2563eb' : color,
+            fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-medium',
+            fontWeight: 'normal',
           },
-        ]}
-      >
+        ]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -209,13 +202,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   name: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Poppins-SemiBold',
   },
   email: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Poppins-Regular',
   },
   menu: {
     gap: 14,
@@ -227,8 +222,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Poppins-medium',
   },
   submenu: {
     marginLeft: 4,
