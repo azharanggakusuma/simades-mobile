@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,26 +11,23 @@ export default function Navbar({ onMenuPress, onProfilePress, isSidebarOpen }) {
       <TouchableOpacity onPress={onMenuPress}>
         <Ionicons
           name={isSidebarOpen ? 'close' : 'menu'}
-          size={26}
-          color="#111827"
+          size={28}
+          color="#1f2937"
         />
       </TouchableOpacity>
 
       <Text style={styles.title}>SIMADES</Text>
 
-      <View style={styles.rightIcons}>
-        <TouchableOpacity onPress={onProfilePress} style={styles.iconButton}>
-          <Ionicons name="person-circle-outline" size={24} color="#374151" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={onProfilePress} style={styles.iconButton}>
+        <Ionicons name="person-circle-outline" size={28} color="#1f2937" />
+      </TouchableOpacity>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f9fafb',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -38,17 +35,24 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e7eb',
     borderBottomWidth: 1,
     justifyContent: 'space-between',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
   },
-  rightIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
   iconButton: {
-    padding: 4,
+    padding: 6,
   },
 });
