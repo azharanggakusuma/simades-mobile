@@ -63,7 +63,7 @@ export default function Sidebar({ onClose }) {
 
           <TouchableOpacity style={styles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
             <Ionicons name="file-tray-full-outline" size={22} color="#374151" />
-            <Text style={styles.menuText}>Form</Text>
+            <Text style={styles.menuText}>Formulir</Text>
             <Ionicons
               name={isFormOpen ? 'chevron-up' : 'chevron-down'}
               size={18}
@@ -75,19 +75,19 @@ export default function Sidebar({ onClose }) {
           {isFormOpen && (
             <View style={styles.submenu}>
               <SidebarItem
-                label="Form A"
+                label="Formulir A"
                 isSub
                 activeMenu={activeMenu}
                 setActiveMenu={setActiveMenu}
               />
               <SidebarItem
-                label="Form B"
+                label="Formulir B"
                 isSub
                 activeMenu={activeMenu}
                 setActiveMenu={setActiveMenu}
               />
               <SidebarItem
-                label="Form C"
+                label="Formulir C"
                 isSub
                 activeMenu={activeMenu}
                 setActiveMenu={setActiveMenu}
@@ -97,19 +97,19 @@ export default function Sidebar({ onClose }) {
 
           <SidebarItem
             icon="people-outline"
-            label="Manage Users"
+            label="Kelola Pengguna"
             activeMenu={activeMenu}
             setActiveMenu={setActiveMenu}
           />
           <SidebarItem
             icon="grid-outline"
-            label="Manage Menu"
+            label="Kelola Menu"
             activeMenu={activeMenu}
             setActiveMenu={setActiveMenu}
           />
           <SidebarItem
             icon="document-text-outline"
-            label="Manage Form"
+            label="Kelola Formulir"
             activeMenu={activeMenu}
             setActiveMenu={setActiveMenu}
           />

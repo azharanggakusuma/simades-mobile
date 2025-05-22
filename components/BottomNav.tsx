@@ -82,10 +82,10 @@ const BottomNav = () => {
         },
         tabBarIcon: ({ focused, color }) => {
           const iconMap = {
-            Home: 'home',
-            Search: 'search',
-            Notification: 'notifications',
-            Profile: 'person',
+            Beranda: 'home',
+            Cari: 'search',
+            Notifikasi: 'notifications',
+            Akun: 'person',
           };
 
           const iconName = focused
@@ -98,8 +98,8 @@ const BottomNav = () => {
         tabBarInactiveTintColor: '#9ca3af',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
+      <Tab.Screen name="Beranda" component={HomeScreen} />
+      <Tab.Screen name="Cari" component={SearchScreen} />
       <Tab.Screen
         name="Form"
         component={FormScreen}
@@ -109,8 +109,8 @@ const BottomNav = () => {
           tabBarButton: (props) => <AnimatedFormButton {...props} />,
         }}
       />
-      <Tab.Screen name="Notification" component={NotificationScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Notifikasi" component={NotificationScreen} />
+      <Tab.Screen name="Akun" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
