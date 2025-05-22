@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#b91c1c',
-    fontSize: 12,
+    fontSize: 10,
     fontFamily: 'Poppins-SemiBold',
   },
   chart: {
