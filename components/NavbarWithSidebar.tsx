@@ -1,0 +1,262 @@
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Dimensions,
+  Animated,
+  Pressable,
+  Image,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+export default function NavbarWithSidebar() {
+  const insets = useSafeAreaInsets();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleMenuPress = () => setIsSidebarOpen(!isSidebarOpen);
+  const handleProfilePress = () => {
+    // aksi saat profil ditekan
+    console.log('Profile pressed');
+  };
+
+  const handleCloseSidebar = () => setIsSidebarOpen(false);
+
+  return (
+    <>
+      <View style={[navStyles.container, { paddingTop: insets.top + 10 }]}>
+        <TouchableOpacity onPress={handleMenuPress}>
+          <Ionicons
+            name={isSidebarOpen ? 'close' : 'menu'}
+            size={28}
+            color="#1f2937"
+          />
+        </TouchableOpacity>
+
+        <Text style={navStyles.title}>SIMADES</Text>
+
+        <TouchableOpacity onPress={handleProfilePress} style={navStyles.iconButton}>
+          <Ionicons name="person-circle-outline" size={28} color="#1f2937" />
+        </TouchableOpacity>
+      </View>
+
+      {isSidebarOpen && <Sidebar onClose={handleCloseSidebar} />}
+    </>
+  );
+}
+
+function Sidebar({ onClose }) {
+  const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('Beranda');
+
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: -SCREEN_WIDTH,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => onClose());
+  };
+
+  return (
+    <View style={sideStyles.overlay}>
+      <Pressable style={sideStyles.backdrop} onPress={handleClose} />
+      <Animated.View style={[sideStyles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
+        <TouchableOpacity onPress={handleClose} style={sideStyles.closeButton}>
+          <Ionicons name="close" size={24} color="#111827" />
+        </TouchableOpacity>
+
+        <View style={sideStyles.profile}>
+          <Image source={{ uri: 'https://i.pravatar.cc/1' }} style={sideStyles.avatar} />
+          <View>
+            <Text style={sideStyles.name}>Rangga</Text>
+            <Text style={sideStyles.email}>rangga@gmail.com</Text>
+          </View>
+        </View>
+
+        <View style={sideStyles.menu}>
+          <SidebarItem icon="home-outline" label="Beranda" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+
+          <TouchableOpacity style={sideStyles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
+            <Ionicons name="file-tray-full-outline" size={22} color="#374151" />
+            <Text style={sideStyles.menuText}>Formulir</Text>
+            <Ionicons
+              name={isFormOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color="#6b7280"
+              style={{ marginLeft: 'auto' }}
+            />
+          </TouchableOpacity>
+
+          {isFormOpen && (
+            <View style={sideStyles.submenu}>
+              <SidebarItem label="Formulir A" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+              <SidebarItem label="Formulir B" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+              <SidebarItem label="Formulir C" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+            </View>
+          )}
+
+          <SidebarItem icon="people-outline" label="Kelola Pengguna" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon="grid-outline" label="Kelola Menu" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon="document-text-outline" label="Kelola Formulir" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon="settings-outline" label="Pengaturan" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon="log-out-outline" label="Keluar" color="#ef4444" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu, setActiveMenu }) {
+  const isActive = activeMenu === label;
+
+  return (
+    <TouchableOpacity
+      style={[sideStyles.menuItem, isSub && sideStyles.submenuItem, isActive && sideStyles.activeItem]}
+      onPress={() => setActiveMenu(label)}>
+      {icon && <Ionicons name={icon} size={22} color={isActive ? '#2563eb' : color} />}
+      <Text
+        style={[
+          sideStyles.menuText,
+          {
+            marginLeft: icon ? 0 : 28,
+            color: isActive ? '#2563eb' : color,
+            fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-medium',
+            fontWeight: 'normal',
+          },
+        ]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+const navStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f9fafb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomColor: '#e5e7eb',
+    borderBottomWidth: 1,
+    justifyContent: 'space-between',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Bold',
+    color: '#111827',
+  },
+  iconButton: {
+    padding: 6,
+  },
+});
+
+const sideStyles = StyleSheet.create({
+  overlay: {
+    flexDirection: 'row',
+    position: 'absolute',
+    zIndex: 999,
+    width: '100%',
+    height: '100%',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  sidebar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: SCREEN_WIDTH * 0.78,
+    height: '100%',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    paddingTop: 50,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 50,
+    right: 14,
+    zIndex: 10,
+    padding: 6,
+  },
+  profile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+    gap: 12,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#ccc',
+  },
+  name: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Poppins-SemiBold',
+  },
+  email: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontFamily: 'Poppins-Regular',
+  },
+  menu: {
+    gap: 14,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 6,
+  },
+  menuText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Poppins-medium',
+  },
+  submenu: {
+    marginLeft: 4,
+    marginTop: 4,
+    gap: 8,
+  },
+  submenuItem: {
+    paddingLeft: 15,
+  },
+  activeItem: {
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+  },
+});

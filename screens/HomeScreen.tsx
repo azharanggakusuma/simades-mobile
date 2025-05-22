@@ -9,22 +9,14 @@ import {
   TextStyle,
   Dimensions,
 } from 'react-native';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
 import StatsChart from '../components/StatsChart';
 import MiniCard from '../components/MiniCard';
+import NavbarWithSidebar from '../components/NavbarWithSidebar';
 
 export default function HomeScreen() {
-  const [sidebarVisible, setSidebarVisible] = useState(false);
-
   return (
     <View style={styles.screen}>
-      <Navbar
-        onMenuPress={() => setSidebarVisible(true)}
-        onProfilePress={() => console.log('Profile clicked')}
-      />
-
-      {sidebarVisible && <Sidebar onClose={() => setSidebarVisible(false)} />}
+       <NavbarWithSidebar />
 
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Dashboard</Text>
