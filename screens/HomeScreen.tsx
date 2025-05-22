@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  Dimensions,
 } from 'react-native';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -36,30 +37,10 @@ export default function HomeScreen() {
         <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
 
         <View style={styles.grid}>
-          <MiniCard
-            title="Formulir"
-            value="16"
-            icon="document-text-outline"
-            color="#6366f1"
-          />
-          <MiniCard
-            title="Desa/Kelurahan"
-            value="424"
-            icon="business-outline"
-            color="#10b981"
-          />
-          <MiniCard
-            title="Kecamatan"
-            value="40"
-            icon="location-outline"
-            color="#f59e0b"
-          />
-          <MiniCard
-            title="Pengguna"
-            value="425"
-            icon="people-outline"
-            color="#ef4444"
-          />
+          <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
+          <MiniCard title="Desa/Kelurahan" value="424" icon="business-outline" color="#10b981" />
+          <MiniCard title="Kecamatan" value="40" icon="location-outline" color="#f59e0b" />
+          <MiniCard title="Pengguna" value="425" icon="people-outline" color="#ef4444" />
         </View>
 
         <StatsChart />
@@ -75,11 +56,7 @@ function MiniCard({ title, value, icon, color }: MiniCardProps) {
         <Ionicons name={icon} size={22} color={color} />
       </View>
       <View style={styles.textWrapper}>
-        <Text
-          style={styles.cardTitle}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
+        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
           {title}
         </Text>
         <Text style={styles.cardValue}>{value}</Text>
@@ -100,6 +77,8 @@ interface Style {
   cardTitle: TextStyle;
   cardValue: TextStyle;
 }
+
+const CARD_WIDTH = (Dimensions.get('window').width - 60) / 2;
 
 const styles = StyleSheet.create<Style>({
   screen: {
@@ -122,20 +101,23 @@ const styles = StyleSheet.create<Style>({
     marginBottom: 25,
   },
   grid: {
-    flexDirection: 'column',
-    gap: 14,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
   },
   card: {
+    width: CARD_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
-    padding: 16,
+    padding: 14,
     borderRadius: 14,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 10,
     elevation: 2,
-    gap: 16,
+    columnGap: 12,
   },
   iconBox: {
     padding: 10,

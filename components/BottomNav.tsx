@@ -64,7 +64,7 @@ const BottomNav = () => {
         },
         tabBarStyle: {
           position: 'absolute',
-          bottom: 16,
+          bottom: 8,
           left: 16,
           right: 16,
           height: 70 + insets.bottom,
@@ -117,7 +117,7 @@ const BottomNav = () => {
 const styles = StyleSheet.create({
   fabWrapper: {
     position: 'absolute',
-    top: -30,
+    top: -35,
     alignSelf: 'center',
     zIndex: 10,
   },
