@@ -1,4 +1,3 @@
-// components/MiniCard.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ViewStyle, TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,10 +64,11 @@ const styles = StyleSheet.create<Style>({
     color: '#6b7280',
     marginBottom: 2,
     flexShrink: 1,
+    fontFamily: 'Poppins-Regular', 
   },
   cardValue: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
     color: '#111827',
+    fontFamily: 'Poppins-SemiBold',
   },
 });

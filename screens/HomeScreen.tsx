@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
         <View style={styles.grid}>
           <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
-          <MiniCard title="Desa/Kelurahan" value="424" icon="business-outline" color="#10b981" />
+          <MiniCard title="Desa" value="424" icon="business-outline" color="#10b981" />
           <MiniCard title="Kecamatan" value="40" icon="location-outline" color="#f59e0b" />
           <MiniCard title="Pengguna" value="425" icon="people-outline" color="#ef4444" />
         </View>
