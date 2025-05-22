@@ -6,7 +6,7 @@ export default function NotificationScreen() {
   return (
     <ScreenContainer>
       <View className="flex-1 items-center justify-center">
-        <Text className="text-lg font-semibold text-blue-600">Notification</Text>
+        <Text className="text-lg font-semibold text-gray-900">Notification</Text>
       </View>
     </ScreenContainer>
   );
