@@ -5,11 +5,23 @@ import { LineChart } from 'react-native-chart-kit';
 const screenWidth = Dimensions.get('window').width;
 
 export default function StatsChart() {
+  const values = [100, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70];
+  const total = values.reduce((a, b) => a + b, 0);
+  const latest = values.at(-1);
+  const previous = values.at(-2);
+  const percentageChange = previous ? (((latest - previous) / previous) * 100).toFixed(1) : '0';
+  const isNegative = latest < previous;
+
+  const formatNumber = (num) => {
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toString();
+  };
+
   const data = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
     datasets: [
       {
-        data: [180, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70],
+        data: values,
         color: () => '#3b82f6',
         strokeWidth: 2,
       },
@@ -39,10 +51,22 @@ export default function StatsChart() {
       <View style={styles.header}>
         <View>
           <Text style={styles.label}>Pengunjung</Text>
-          <Text style={styles.total}>2.3k</Text>
+          <Text style={styles.total}>{formatNumber(total)}</Text>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>↓ 4%</Text>
+        <View
+          style={[
+            styles.badge,
+            { backgroundColor: isNegative ? '#fee2e2' : '#d1fae5' },
+          ]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              { color: isNegative ? '#b91c1c' : '#047857' },
+            ]}
+          >
+            {isNegative ? '↓' : '↑'} {Math.abs(percentageChange)}%
+          </Text>
         </View>
       </View>
 
@@ -96,13 +120,11 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   badge: {
-    backgroundColor: '#fee2e2',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
   },
   badgeText: {
-    color: '#b91c1c',
     fontSize: 10,
     fontFamily: 'Poppins-SemiBold',
   },
