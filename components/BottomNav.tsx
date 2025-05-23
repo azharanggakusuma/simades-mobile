@@ -86,7 +86,7 @@ const BottomNav = () => {
           bottom: 8,
           left: 16,
           right: 16,
-          height: 70 + insets.bottom,
+          height: 60 + insets.bottom,
           paddingBottom: insets.bottom || 10,
           paddingTop: 8,
           borderRadius: 20,
