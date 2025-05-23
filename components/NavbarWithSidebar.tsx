@@ -24,6 +24,8 @@ import {
   ClipboardList,
   Settings,
   LogOut,
+  Moon,
+  Sun,
 } from 'lucide-react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -33,8 +35,8 @@ export default function NavbarWithSidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleMenuPress = () => setIsSidebarOpen(!isSidebarOpen);
-  const handleProfilePress = () => console.log('Profile pressed');
   const handleCloseSidebar = () => setIsSidebarOpen(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   return (
     <>
@@ -45,8 +47,8 @@ export default function NavbarWithSidebar() {
 
         <Text style={navStyles.title}>SIMADES</Text>
 
-        <TouchableOpacity onPress={handleProfilePress} style={navStyles.iconButton}>
-          <UserCircle size={28} color="#1f2937" />
+        <TouchableOpacity onPress={() => setDarkMode(!darkMode)} style={navStyles.iconButton}>
+          {darkMode ? <Sun size={24} color="#1f2937" /> : <Moon size={24} color="#1f2937" />}
         </TouchableOpacity>
       </View>
 
@@ -93,7 +95,12 @@ function Sidebar({ onClose }) {
         </View>
 
         <View style={sideStyles.menu}>
-          <SidebarItem icon={<Home size={22} />} label="Beranda" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem
+            icon={<Home size={22} />}
+            label="Beranda"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
 
           <TouchableOpacity style={sideStyles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
             <FileText size={22} color="#374151" />
@@ -107,17 +114,58 @@ function Sidebar({ onClose }) {
 
           {isFormOpen && (
             <View style={sideStyles.submenu}>
-              <SidebarItem label="Formulir A" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-              <SidebarItem label="Formulir B" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-              <SidebarItem label="Formulir C" isSub activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+              <SidebarItem
+                label="Formulir A"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
+              <SidebarItem
+                label="Formulir B"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
+              <SidebarItem
+                label="Formulir C"
+                isSub
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+              />
             </View>
           )}
 
-          <SidebarItem icon={<Users size={22} />} label="Kelola Pengguna" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon={<LayoutGrid size={22} />} label="Kelola Menu" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon={<ClipboardList size={22} />} label="Kelola Formulir" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon={<Settings size={22} />} label="Pengaturan" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon={<LogOut size={22} />} label="Keluar" color="#ef4444" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem
+            icon={<Users size={22} />}
+            label="Kelola Pengguna"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon={<LayoutGrid size={22} />}
+            label="Kelola Menu"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon={<ClipboardList size={22} />}
+            label="Kelola Formulir"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon={<Settings size={22} />}
+            label="Pengaturan"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
+          <SidebarItem
+            icon={<LogOut size={22} />}
+            label="Keluar"
+            color="#ef4444"
+            activeMenu={activeMenu}
+            setActiveMenu={setActiveMenu}
+          />
         </View>
       </Animated.View>
     </View>
@@ -129,7 +177,11 @@ function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu
 
   return (
     <TouchableOpacity
-      style={[sideStyles.menuItem, isSub && sideStyles.submenuItem, isActive && sideStyles.activeItem]}
+      style={[
+        sideStyles.menuItem,
+        isSub && sideStyles.submenuItem,
+        isActive && sideStyles.activeItem,
+      ]}
       onPress={() => setActiveMenu(label)}>
       {icon && React.cloneElement(icon, { color: isActive ? '#2563eb' : color })}
       <Text
