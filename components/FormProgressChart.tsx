@@ -1,4 +1,3 @@
-// components/StatsChart.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
@@ -31,8 +30,8 @@ export default function FormProgressChart() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.label}>Progress Pengisian Formulir</Text>
-          <Text style={styles.total}>{filled}% Terisi</Text>
+          <Text style={styles.label}>Progress Pengisian</Text>
+          <Text style={styles.total}>{filled}%</Text>
         </View>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{unfilled}% Belum</Text>
