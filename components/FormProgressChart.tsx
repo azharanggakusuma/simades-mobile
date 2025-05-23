@@ -5,21 +5,24 @@ import { PieChart } from 'react-native-chart-kit';
 const screenWidth = Dimensions.get('window').width;
 
 export default function FormProgressChart() {
-  const totalForm = 100;
-  const filled = 72;
-  const unfilled = totalForm - filled;
+  const totalDesa = 424;
+  const sudahMengisi = 320;
+  const belumMengisi = totalDesa - sudahMengisi;
+
+  const percentFilled = Math.round((sudahMengisi / totalDesa) * 100);
+  const percentUnfilled = 100 - percentFilled;
 
   const data = [
     {
       name: 'Sudah Mengisi',
-      population: filled,
+      population: sudahMengisi,
       color: '#10b981',
       legendFontColor: '#111827',
       legendFontSize: 12,
     },
     {
       name: 'Belum Mengisi',
-      population: unfilled,
+      population: belumMengisi,
       color: '#f59e0b',
       legendFontColor: '#111827',
       legendFontSize: 12,
@@ -31,10 +34,10 @@ export default function FormProgressChart() {
       <View style={styles.header}>
         <View>
           <Text style={styles.label}>Progress Pengisian</Text>
-          <Text style={styles.total}>{filled}%</Text>
+          <Text style={styles.total}>{percentFilled}%</Text>
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{unfilled}% Belum</Text>
+          <Text style={styles.badgeText}>{percentUnfilled}% Belum</Text>
         </View>
       </View>
 
