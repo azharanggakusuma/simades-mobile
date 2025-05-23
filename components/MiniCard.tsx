@@ -1,19 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ViewStyle, TextStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 
 interface MiniCardProps {
   title: string;
   value: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: LucideIcon;
   color: string;
 }
 
-const MiniCard = ({ title, value, icon, color }: MiniCardProps) => {
+const MiniCard = ({ title, value, icon: Icon, color }: MiniCardProps) => {
   return (
     <View style={styles.card}>
       <View style={[styles.iconBox, { backgroundColor: `${color}1A` }]}>
-        <Ionicons name={icon} size={22} color={color} />
+        <Icon color={color} size={22} />
       </View>
       <View style={styles.textWrapper}>
         <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">

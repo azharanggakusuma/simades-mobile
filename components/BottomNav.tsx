@@ -4,11 +4,11 @@ import {
   TouchableWithoutFeedback,
   Animated,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Home, Search, User, Clock, ClipboardList } from 'lucide-react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
@@ -42,7 +42,7 @@ const AnimatedFormButton = ({ onPress }) => {
     <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <Animated.View style={[styles.fabWrapper, { transform: [{ scale }] }]}>
         <View style={styles.fabButton}>
-          <Ionicons name="file-tray-full-outline" size={28} color="#fff" />
+          <ClipboardList size={26} color="#fff" />
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
@@ -51,6 +51,13 @@ const AnimatedFormButton = ({ onPress }) => {
 
 const BottomNav = () => {
   const insets = useSafeAreaInsets();
+
+  const iconMap = {
+    Beranda: Home,
+    Cari: Search,
+    Notifikasi: Clock,
+    Akun: User,
+  };
 
   return (
     <Tab.Navigator
@@ -81,18 +88,15 @@ const BottomNav = () => {
           elevation: 10,
         },
         tabBarIcon: ({ focused, color }) => {
-          const iconMap = {
-            Beranda: 'home',
-            Cari: 'search',
-            Notifikasi: 'notifications',
-            Akun: 'person',
-          };
-
-          const iconName = focused
-            ? iconMap[route.name]
-            : `${iconMap[route.name]}-outline`;
-
-          return <Ionicons name={iconName} size={24} color={color} />;
+          const IconComponent = iconMap[route.name];
+          if (!IconComponent) return null;
+          return (
+            <IconComponent
+              size={24}
+              color={focused ? '#3b82f6' : '#9ca3af'}
+              strokeWidth={focused ? 2.5 : 2}
+            />
+          );
         },
         tabBarActiveTintColor: '#3b82f6',
         tabBarInactiveTintColor: '#9ca3af',

@@ -10,8 +10,21 @@ import {
   Pressable,
   Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  Menu,
+  X,
+  UserCircle,
+  Home,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  LayoutGrid,
+  ClipboardList,
+  Settings,
+  LogOut,
+} from 'lucide-react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -20,28 +33,20 @@ export default function NavbarWithSidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleMenuPress = () => setIsSidebarOpen(!isSidebarOpen);
-  const handleProfilePress = () => {
-    // aksi saat profil ditekan
-    console.log('Profile pressed');
-  };
-
+  const handleProfilePress = () => console.log('Profile pressed');
   const handleCloseSidebar = () => setIsSidebarOpen(false);
 
   return (
     <>
       <View style={[navStyles.container, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={handleMenuPress}>
-          <Ionicons
-            name={isSidebarOpen ? 'close' : 'menu'}
-            size={28}
-            color="#1f2937"
-          />
+          {isSidebarOpen ? <X size={28} color="#1f2937" /> : <Menu size={28} color="#1f2937" />}
         </TouchableOpacity>
 
         <Text style={navStyles.title}>SIMADES</Text>
 
         <TouchableOpacity onPress={handleProfilePress} style={navStyles.iconButton}>
-          <Ionicons name="person-circle-outline" size={28} color="#1f2937" />
+          <UserCircle size={28} color="#1f2937" />
         </TouchableOpacity>
       </View>
 
@@ -76,7 +81,7 @@ function Sidebar({ onClose }) {
       <Pressable style={sideStyles.backdrop} onPress={handleClose} />
       <Animated.View style={[sideStyles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
         <TouchableOpacity onPress={handleClose} style={sideStyles.closeButton}>
-          <Ionicons name="close" size={24} color="#111827" />
+          <X size={24} color="#111827" />
         </TouchableOpacity>
 
         <View style={sideStyles.profile}>
@@ -88,17 +93,16 @@ function Sidebar({ onClose }) {
         </View>
 
         <View style={sideStyles.menu}>
-          <SidebarItem icon="home-outline" label="Beranda" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<Home size={22} />} label="Beranda" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
 
           <TouchableOpacity style={sideStyles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
-            <Ionicons name="file-tray-full-outline" size={22} color="#374151" />
+            <FileText size={22} color="#374151" />
             <Text style={sideStyles.menuText}>Formulir</Text>
-            <Ionicons
-              name={isFormOpen ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color="#6b7280"
-              style={{ marginLeft: 'auto' }}
-            />
+            {isFormOpen ? (
+              <ChevronUp size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
+            ) : (
+              <ChevronDown size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
+            )}
           </TouchableOpacity>
 
           {isFormOpen && (
@@ -109,11 +113,11 @@ function Sidebar({ onClose }) {
             </View>
           )}
 
-          <SidebarItem icon="people-outline" label="Kelola Pengguna" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon="grid-outline" label="Kelola Menu" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon="document-text-outline" label="Kelola Formulir" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon="settings-outline" label="Pengaturan" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-          <SidebarItem icon="log-out-outline" label="Keluar" color="#ef4444" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<Users size={22} />} label="Kelola Pengguna" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<LayoutGrid size={22} />} label="Kelola Menu" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<ClipboardList size={22} />} label="Kelola Formulir" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<Settings size={22} />} label="Pengaturan" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <SidebarItem icon={<LogOut size={22} />} label="Keluar" color="#ef4444" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
         </View>
       </Animated.View>
     </View>
@@ -127,7 +131,7 @@ function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu
     <TouchableOpacity
       style={[sideStyles.menuItem, isSub && sideStyles.submenuItem, isActive && sideStyles.activeItem]}
       onPress={() => setActiveMenu(label)}>
-      {icon && <Ionicons name={icon} size={22} color={isActive ? '#2563eb' : color} />}
+      {icon && React.cloneElement(icon, { color: isActive ? '#2563eb' : color })}
       <Text
         style={[
           sideStyles.menuText,

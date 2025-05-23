@@ -1,16 +1,9 @@
 // screens/HomeScreen.tsx
 import React, { useState } from 'react';
-import {
-  Text,
-  View,
-  ScrollView,
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
-  Dimensions,
-} from 'react-native';
+import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle, Dimensions } from 'react-native';
 import StatsChart from '../components/StatsChart';
 import MiniCard from '../components/MiniCard';
+import { FileText, Building, MapPin, Users } from 'lucide-react-native';
 
 export default function HomeScreen() {
   return (
@@ -20,10 +13,10 @@ export default function HomeScreen() {
         <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
 
         <View style={styles.grid}>
-          <MiniCard title="Formulir" value="16" icon="document-text-outline" color="#6366f1" />
-          <MiniCard title="Desa" value="424" icon="business-outline" color="#10b981" />
-          <MiniCard title="Kecamatan" value="40" icon="location-outline" color="#f59e0b" />
-          <MiniCard title="Pengguna" value="425" icon="people-outline" color="#ef4444" />
+          <MiniCard title="Formulir" value="16" icon={FileText} color="#6366f1" />
+          <MiniCard title="Desa" value="424" icon={Building} color="#10b981" />
+          <MiniCard title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
+          <MiniCard title="Pengguna" value="425" icon={Users} color="#ef4444" />
         </View>
 
         <StatsChart />
