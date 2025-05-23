@@ -3,6 +3,7 @@ import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle, Dimensions } 
 import StatsChart from '../components/StatsChart';
 import MiniCard from '../components/MiniCard';
 import { FileText, Building, MapPin, Users } from 'lucide-react-native';
+import FormProgressChart from '../components/FormProgressChart';
 
 export default function HomeScreen() {
   return (
@@ -19,6 +20,7 @@ export default function HomeScreen() {
         </View>
 
         <StatsChart />
+        <FormProgressChart />
       </ScrollView>
     </View>
   );
