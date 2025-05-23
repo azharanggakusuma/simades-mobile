@@ -33,10 +33,10 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function NavbarWithSidebar() {
   const insets = useSafeAreaInsets();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const handleMenuPress = () => setIsSidebarOpen(!isSidebarOpen);
   const handleCloseSidebar = () => setIsSidebarOpen(false);
-  const [darkMode, setDarkMode] = useState(false);
 
   return (
     <>
@@ -59,8 +59,8 @@ export default function NavbarWithSidebar() {
 
 function Sidebar({ onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('Beranda');
+  const [openSubmenus, setOpenSubmenus] = useState([]);
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -77,6 +77,32 @@ function Sidebar({ onClose }) {
       useNativeDriver: true,
     }).start(() => onClose());
   };
+
+  const toggleSubmenu = (label) => {
+    setOpenSubmenus((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label]
+    );
+  };
+
+  const menuItems = [
+    { label: 'Beranda', icon: <Home size={22} /> },
+    {
+      label: 'Formulir',
+      icon: <FileText size={22} />,
+      submenu: [
+        { label: 'Formulir A' },
+        { label: 'Formulir B' },
+        { label: 'Formulir C' },
+      ],
+    },
+    { label: 'Kelola Pengguna', icon: <Users size={22} /> },
+    { label: 'Kelola Menu', icon: <LayoutGrid size={22} /> },
+    { label: 'Kelola Formulir', icon: <ClipboardList size={22} /> },
+    { label: 'Pengaturan', icon: <Settings size={22} /> },
+    { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' },
+  ];
 
   return (
     <View style={sideStyles.overlay}>
@@ -95,77 +121,52 @@ function Sidebar({ onClose }) {
         </View>
 
         <View style={sideStyles.menu}>
-          <SidebarItem
-            icon={<Home size={22} />}
-            label="Beranda"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
+          {menuItems.map((item) => {
+            const isOpen = openSubmenus.includes(item.label);
 
-          <TouchableOpacity style={sideStyles.menuItem} onPress={() => setIsFormOpen(!isFormOpen)}>
-            <FileText size={22} color="#374151" />
-            <Text style={sideStyles.menuText}>Formulir</Text>
-            {isFormOpen ? (
-              <ChevronUp size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
-            ) : (
-              <ChevronDown size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
-            )}
-          </TouchableOpacity>
+            return (
+              <View key={item.label}>
+                <TouchableOpacity
+                  style={sideStyles.menuItem}
+                  onPress={() =>
+                    item.submenu ? toggleSubmenu(item.label) : setActiveMenu(item.label)
+                  }>
+                  {item.icon}
+                  <Text
+                    style={[
+                      sideStyles.menuText,
+                      {
+                        color: activeMenu === item.label ? '#2563eb' : item.color || '#374151',
+                        fontFamily:
+                          activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
+                      },
+                    ]}>
+                    {item.label}
+                  </Text>
+                  {item.submenu &&
+                    (isOpen ? (
+                      <ChevronUp size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
+                    ) : (
+                      <ChevronDown size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
+                    ))}
+                </TouchableOpacity>
 
-          {isFormOpen && (
-            <View style={sideStyles.submenu}>
-              <SidebarItem
-                label="Formulir A"
-                isSub
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
-              />
-              <SidebarItem
-                label="Formulir B"
-                isSub
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
-              />
-              <SidebarItem
-                label="Formulir C"
-                isSub
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
-              />
-            </View>
-          )}
-
-          <SidebarItem
-            icon={<Users size={22} />}
-            label="Kelola Pengguna"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
-          <SidebarItem
-            icon={<LayoutGrid size={22} />}
-            label="Kelola Menu"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
-          <SidebarItem
-            icon={<ClipboardList size={22} />}
-            label="Kelola Formulir"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
-          <SidebarItem
-            icon={<Settings size={22} />}
-            label="Pengaturan"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
-          <SidebarItem
-            icon={<LogOut size={22} />}
-            label="Keluar"
-            color="#ef4444"
-            activeMenu={activeMenu}
-            setActiveMenu={setActiveMenu}
-          />
+                {item.submenu && isOpen && (
+                  <View style={sideStyles.submenu}>
+                    {item.submenu.map((sub) => (
+                      <SidebarItem
+                        key={sub.label}
+                        label={sub.label}
+                        isSub
+                        activeMenu={activeMenu}
+                        setActiveMenu={setActiveMenu}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </View>
       </Animated.View>
     </View>
@@ -190,7 +191,7 @@ function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu
           {
             marginLeft: icon ? 0 : 28,
             color: isActive ? '#2563eb' : color,
-            fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-medium',
+            fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-Regular',
             fontWeight: 'normal',
           },
         ]}>
@@ -279,14 +280,13 @@ const sideStyles = StyleSheet.create({
   },
   name: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
     fontFamily: 'Poppins-SemiBold',
+    color: '#111827',
   },
   email: {
     fontSize: 12,
-    color: '#6b7280',
     fontFamily: 'Poppins-Regular',
+    color: '#6b7280',
   },
   menu: {
     gap: 14,
@@ -299,8 +299,8 @@ const sideStyles = StyleSheet.create({
   },
   menuText: {
     fontSize: 14,
+    fontFamily: 'Poppins-Regular',
     fontWeight: '500',
-    fontFamily: 'Poppins-medium',
   },
   submenu: {
     marginLeft: 4,
