@@ -1,4 +1,3 @@
-// screens/HomeScreen.tsx
 import React, { useState } from 'react';
 import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle, Dimensions } from 'react-native';
 import StatsChart from '../components/StatsChart';
