@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    marginBottom: 120,
     overflow: 'hidden',
   },
   header: {
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     marginTop: 2,
   },
-
   badge: {
     backgroundColor: '#fef3c7',
     paddingVertical: 4,

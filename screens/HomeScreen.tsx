@@ -18,9 +18,9 @@ export default function HomeScreen() {
           <MiniCard title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
           <MiniCard title="Pengguna" value="425" icon={Users} color="#ef4444" />
         </View>
-
-        <StatsChart />
+        
         <FormProgressChart />
+        <StatsChart />
       </ScrollView>
     </View>
   );
