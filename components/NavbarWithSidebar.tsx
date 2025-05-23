@@ -30,7 +30,7 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function NavbarWithSidebar() {
+export default function NavbarWithSidebar({ navigation }) {
   const insets = useSafeAreaInsets();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -52,12 +52,12 @@ export default function NavbarWithSidebar() {
         </TouchableOpacity>
       </View>
 
-      {isSidebarOpen && <Sidebar onClose={handleCloseSidebar} />}
+      {isSidebarOpen && <Sidebar onClose={handleCloseSidebar} navigation={navigation} />}
     </>
   );
 }
 
-function Sidebar({ onClose }) {
+function Sidebar({ onClose, navigation }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const [activeMenu, setActiveMenu] = useState('Beranda');
   const [openSubmenus, setOpenSubmenus] = useState([]);
@@ -80,21 +80,19 @@ function Sidebar({ onClose }) {
 
   const toggleSubmenu = (label) => {
     setOpenSubmenus((prev) =>
-      prev.includes(label)
-        ? prev.filter((item) => item !== label)
-        : [...prev, label]
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
     );
   };
 
   const menuItems = [
-    { label: 'Beranda', icon: <Home size={22} /> },
+    { label: 'Beranda', icon: <Home size={22} />, screen: 'Main' },
     {
       label: 'Formulir',
       icon: <FileText size={22} />,
       submenu: [
-        { label: 'Formulir A' },
-        { label: 'Formulir B' },
-        { label: 'Formulir C' },
+        { label: 'Formulir A', screen: 'FormulirA' },
+        { label: 'Formulir B', screen: 'FormulirB' },
+        { label: 'Formulir C', screen: 'FormulirC' },
       ],
     },
     { label: 'Kelola Pengguna', icon: <Users size={22} /> },
@@ -137,8 +135,7 @@ function Sidebar({ onClose }) {
                       sideStyles.menuText,
                       {
                         color: activeMenu === item.label ? '#2563eb' : item.color || '#374151',
-                        fontFamily:
-                          activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
+                        fontFamily: activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
                       },
                     ]}>
                     {item.label}
@@ -157,9 +154,11 @@ function Sidebar({ onClose }) {
                       <SidebarItem
                         key={sub.label}
                         label={sub.label}
+                        screen={sub.screen}
                         isSub
                         activeMenu={activeMenu}
                         setActiveMenu={setActiveMenu}
+                        navigation={navigation}
                       />
                     ))}
                   </View>
@@ -173,8 +172,22 @@ function Sidebar({ onClose }) {
   );
 }
 
-function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu, setActiveMenu }) {
+function SidebarItem({
+  icon,
+  label,
+  screen,
+  color = '#374151',
+  isSub = false,
+  activeMenu,
+  setActiveMenu,
+  navigation,
+}) {
   const isActive = activeMenu === label;
+
+  const handlePress = () => {
+    setActiveMenu(label);
+    if (screen) navigation.navigate(screen);
+  };
 
   return (
     <TouchableOpacity
@@ -183,7 +196,7 @@ function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu
         isSub && sideStyles.submenuItem,
         isActive && sideStyles.activeItem,
       ]}
-      onPress={() => setActiveMenu(label)}>
+      onPress={handlePress}>
       {icon && React.cloneElement(icon, { color: isActive ? '#2563eb' : color })}
       <Text
         style={[
@@ -192,7 +205,6 @@ function SidebarItem({ icon, label, color = '#374151', isSub = false, activeMenu
             marginLeft: icon ? 0 : 28,
             color: isActive ? '#2563eb' : color,
             fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-Regular',
-            fontWeight: 'normal',
           },
         ]}>
         {label}
