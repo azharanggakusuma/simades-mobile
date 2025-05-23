@@ -35,7 +35,11 @@ export default function FormProgressChart() {
         <View>
           <Text style={styles.label}>Progress Pengisian</Text>
           <Text style={styles.total}>{percentFilled}%</Text>
+          <Text style={styles.subText}>
+            {sudahMengisi} dari {totalDesa} desa
+          </Text>
         </View>
+
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{percentUnfilled}% Belum</Text>
         </View>
@@ -104,6 +108,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     color: '#111827',
   },
+  subText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontFamily: 'Poppins-Regular',
+    marginTop: 2,
+  },
+
   badge: {
     backgroundColor: '#fef3c7',
     paddingVertical: 4,
