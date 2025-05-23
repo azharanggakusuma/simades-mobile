@@ -5,7 +5,7 @@ import { PieChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function StatsChart() {
+export default function FormProgressChart() {
   const totalForm = 100;
   const filled = 72;
   const unfilled = totalForm - filled;
@@ -35,24 +35,40 @@ export default function StatsChart() {
           <Text style={styles.total}>{filled}% Terisi</Text>
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{unfilled}% belum</Text>
+          <Text style={styles.badgeText}>{unfilled}% Belum</Text>
         </View>
       </View>
 
-      <PieChart
-        data={data}
-        width={screenWidth - 32}
-        height={220}
-        chartConfig={{
-          color: () => '#000',
-        }}
-        accessor="population"
-        backgroundColor="transparent"
-        paddingLeft="0"
-        center={[0, 0]}
-        absolute
-        style={styles.chart}
-      />
+      {/* Pie Chart */}
+      <View style={styles.chartWrapper}>
+        <PieChart
+          data={data}
+          width={screenWidth - 32}
+          height={220}
+          chartConfig={{
+            color: () => '#000',
+          }}
+          accessor="population"
+          backgroundColor="transparent"
+          paddingLeft="0"
+          center={[0, 0]}
+          hasLegend={false}
+          absolute
+          style={styles.chart}
+        />
+      </View>
+
+      {/* Custom Legend */}
+      <View style={styles.legend}>
+        <View style={styles.legendItem}>
+          <View style={[styles.dot, { backgroundColor: '#10b981' }]} />
+          <Text style={styles.legendText}>Sudah Mengisi</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.dot, { backgroundColor: '#f59e0b' }]} />
+          <Text style={styles.legendText}>Belum Mengisi</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -67,7 +83,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    marginBottom: 80,
+    marginBottom: 100,
     overflow: 'hidden',
   },
   header: {
@@ -97,7 +113,31 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'Poppins-SemiBold',
   },
+  chartWrapper: {
+    paddingLeft: 65,
+  },
   chart: {
     borderRadius: 8,
+    marginBottom: 12,
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginTop: 8,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 13,
+    color: '#111827',
+    fontFamily: 'Poppins-Regular',
   },
 });

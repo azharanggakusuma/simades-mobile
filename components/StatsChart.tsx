@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    marginBottom: 80,
     overflow: 'hidden',
   },
   header: {
