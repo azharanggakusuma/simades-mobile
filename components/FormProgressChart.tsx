@@ -60,7 +60,7 @@ export default function FormProgressChart() {
         />
       </View>
 
-      {/* Custom Legend */}
+      {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.dot, { backgroundColor: '#10b981' }]} />
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    marginBottom: 100,
+    marginBottom: 120,
     overflow: 'hidden',
   },
   header: {
@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginTop: 8,
+    marginBottom: 8,
   },
   legendItem: {
     flexDirection: 'row',
