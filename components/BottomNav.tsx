@@ -1,15 +1,23 @@
 import React, { useRef } from 'react';
 import {
   View,
-  TouchableWithoutFeedback,
   Animated,
   StyleSheet,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Home, Search, User, Clock, ClipboardList } from 'lucide-react-native';
+// Icons
+import {
+  Home,
+  Search,
+  User,
+  Clock,
+  ClipboardList,
+} from 'lucide-react-native';
 
+// Screens
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import FormScreen from '../screens/FormScreen';
@@ -18,6 +26,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
+// Floating Action Button (FAB)
 const AnimatedFormButton = ({ onPress }) => {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -34,8 +43,9 @@ const AnimatedFormButton = ({ onPress }) => {
       friction: 3,
       tension: 40,
       useNativeDriver: true,
-    }).start();
-    if (onPress) onPress();
+    }).start(() => {
+      if (onPress) onPress();
+    });
   };
 
   return (
@@ -52,6 +62,7 @@ const AnimatedFormButton = ({ onPress }) => {
 const BottomNav = () => {
   const insets = useSafeAreaInsets();
 
+  // Icon mapping for each tab
   const iconMap = {
     Beranda: Home,
     Cari: Search,
@@ -87,11 +98,11 @@ const BottomNav = () => {
           shadowRadius: 10,
           elevation: 10,
         },
-        tabBarIcon: ({ focused, color }) => {
-          const IconComponent = iconMap[route.name];
-          if (!IconComponent) return null;
+        tabBarIcon: ({ focused }) => {
+          const Icon = iconMap[route.name];
+          if (!Icon) return null;
           return (
-            <IconComponent
+            <Icon
               size={24}
               color={focused ? '#3b82f6' : '#9ca3af'}
               strokeWidth={focused ? 2.5 : 2}
