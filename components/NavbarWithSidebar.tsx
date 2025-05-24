@@ -8,24 +8,11 @@ import {
   Dimensions,
   Animated,
   Pressable,
-  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Menu,
-  X,
-  UserCircle,
-  Home,
-  FileText,
-  ChevronDown,
-  ChevronUp,
-  Users,
-  LayoutGrid,
-  ClipboardList,
-  Settings,
-  LogOut,
-  Moon,
-  Sun,
+  Menu, X, UserCircle, Home, FileText, ChevronDown, ChevronUp,
+  Users, LayoutGrid, ClipboardList, Settings, LogOut, Moon, Sun,
 } from 'lucide-react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -42,13 +29,21 @@ export default function NavbarWithSidebar({ navigation }) {
     <>
       <View style={[navStyles.container, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={handleMenuPress}>
-          {isSidebarOpen ? <X size={28} color="#1f2937" /> : <Menu size={28} color="#1f2937" />}
+          {isSidebarOpen ? (
+            <X size={28} color="#1f2937" />
+          ) : (
+            <Menu size={28} color="#1f2937" />
+          )}
         </TouchableOpacity>
 
         <Text style={navStyles.title}>SIMADES</Text>
 
         <TouchableOpacity onPress={() => setDarkMode(!darkMode)} style={navStyles.iconButton}>
-          {darkMode ? <Sun size={24} color="#1f2937" /> : <Moon size={24} color="#1f2937" />}
+          {darkMode ? (
+            <Sun size={24} color="#1f2937" />
+          ) : (
+            <Moon size={24} color="#1f2937" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -80,7 +75,9 @@ function Sidebar({ onClose, navigation }) {
 
   const toggleSubmenu = (label) => {
     setOpenSubmenus((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label]
     );
   };
 
@@ -105,6 +102,7 @@ function Sidebar({ onClose, navigation }) {
   return (
     <View style={sideStyles.overlay}>
       <Pressable style={sideStyles.backdrop} onPress={handleClose} />
+
       <Animated.View style={[sideStyles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
         <TouchableOpacity onPress={handleClose} style={sideStyles.closeButton}>
           <X size={24} color="#111827" />
@@ -140,12 +138,13 @@ function Sidebar({ onClose, navigation }) {
                     ]}>
                     {item.label}
                   </Text>
-                  {item.submenu &&
-                    (isOpen ? (
+                  {item.submenu && (
+                    isOpen ? (
                       <ChevronUp size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
                     ) : (
                       <ChevronDown size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
-                    ))}
+                    )
+                  )}
                 </TouchableOpacity>
 
                 {item.submenu && isOpen && (
@@ -213,6 +212,7 @@ function SidebarItem({
   );
 }
 
+// STYLES
 const navStyles = StyleSheet.create({
   container: {
     backgroundColor: '#f9fafb',
