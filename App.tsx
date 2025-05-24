@@ -11,7 +11,7 @@ import BottomNav from './components/BottomNav';
 import NavbarWithSidebar from './components/NavbarWithSidebar';
 
 // Screens 
-import HomeScreen from './screens/HomeScreen'; // Digunakan oleh BottomNav
+import HomeScreen from './screens/HomeScreen';
 import FormulirA from './screens/FormulirA';
 import FormulirB from './screens/FormulirB';
 import FormulirC from './screens/FormulirC';
@@ -19,11 +19,6 @@ import KelolaPengguna from './screens/KelolaPengguna';
 import KelolaMenu from './screens/KelolaMenu';
 import KelolaFormulir from './screens/KelolaFormulir';
 import Pengaturan from './screens/Pengaturan';
-// Screen lain yang mungkin digunakan oleh BottomNav juga perlu dipertimbangkan jika akan dinavigasi dari luar
-// import SearchScreen from './screens/SearchScreen';
-// import FormScreen from './screens/FormScreen';
-// import NotificationScreen from './screens/NotificationScreen';
-// import ProfileScreen from './screens/ProfileScreen';
 
 const RootStack = createNativeStackNavigator();
 
