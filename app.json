@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "simades-mobile",
-    "slug": "simades-mobile",
+    "name": "SIMADES MOBILE",
+    "slug": "SIMADES MOBILE",
     "version": "1.0.0",
     "web": {
       "favicon": "./assets/favicon.ico"
@@ -29,7 +29,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     }
