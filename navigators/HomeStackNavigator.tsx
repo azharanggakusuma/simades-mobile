@@ -1,5 +1,8 @@
+// navigators/HomeStackNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// Import semua screen yang akan di-handle oleh stack ini
 import HomeScreen from '../screens/HomeScreen';
 import FormulirA from '../screens/FormulirA';
 import FormulirB from '../screens/FormulirB';
@@ -11,10 +14,11 @@ import Pengaturan from '../screens/Pengaturan';
 
 const Stack = createNativeStackNavigator();
 
-export default function StackNavigator() {
+export default function HomeStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="HomeActual" component={HomeScreen} />
+      {/* Beri nama screen yang konsisten dengan yang akan dipanggil dari Sidebar */}
       <Stack.Screen name="FormulirA" component={FormulirA} />
       <Stack.Screen name="FormulirB" component={FormulirB} />
       <Stack.Screen name="FormulirC" component={FormulirC} />
