@@ -1,4 +1,3 @@
-// components/BottomNav.tsx
 import React, { useRef } from 'react';
 import {
   View,
@@ -10,8 +9,6 @@ import {
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-// useNavigation masih berguna untuk FAB jika logicnya kompleks, tapi bisa juga didapat dari options
-// import { useNavigation } from '@react-navigation/native';
 
 // Icons
 import {
@@ -74,15 +71,12 @@ const BottomNav = () => {
     Akun: User,
   };
 
-  // Menggunakan style asli Anda untuk bottom, height, dan paddingBottom tabBarStyle
-  // Jika masih tertutup, pertimbangkan solusi 'bottom: insets.bottom + bottomMargin' lagi.
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarLabelStyle: { // Style asli Anda
+        tabBarLabelStyle: { 
           fontSize: 12,
           marginBottom: 2,
           fontWeight: '600',
@@ -158,7 +152,6 @@ const BottomNav = () => {
   );
 };
 
-// Stylesheet asli Anda untuk FAB
 const styles = StyleSheet.create({
   fabWrapper: {
     position: 'absolute',
