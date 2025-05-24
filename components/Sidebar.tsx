@@ -9,8 +9,17 @@ import {
   Dimensions,
 } from 'react-native';
 import {
-  X, UserCircle, Home, FileText, ChevronDown, ChevronUp,
-  Users, LayoutGrid, ClipboardList, Settings, LogOut,
+  X,
+  UserCircle,
+  Home,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  LayoutGrid,
+  ClipboardList,
+  Settings,
+  LogOut,
 } from 'lucide-react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -55,21 +64,29 @@ export default function Sidebar({ navigation, onClose }) {
   };
 
   const menuItems = [
-    { label: 'Beranda', icon: <Home size={22} />, screen: 'HomeScreen' },
+    // Untuk item "Beranda", navigasi ke screen "MainTabs" dan spesifikasikan tab "Beranda"
+    {
+      label: 'Beranda',
+      icon: <Home size={22} />,
+      screen: 'MainTabs',
+      params: { screen: 'Beranda' },
+    },
     {
       label: 'Formulir',
       icon: <FileText size={22} />,
       submenu: [
+        // Ini akan navigasi ke screen penuh FormulirA, B, C di RootStack
         { label: 'Formulir A', screen: 'FormulirA' },
         { label: 'Formulir B', screen: 'FormulirB' },
         { label: 'Formulir C', screen: 'FormulirC' },
       ],
     },
+    // Item berikut akan navigasi ke screen penuh masing-masing di RootStack
     { label: 'Kelola Pengguna', icon: <Users size={22} />, screen: 'KelolaPengguna' },
     { label: 'Kelola Menu', icon: <LayoutGrid size={22} />, screen: 'KelolaMenu' },
     { label: 'Kelola Formulir', icon: <ClipboardList size={22} />, screen: 'KelolaFormulir' },
     { label: 'Pengaturan', icon: <Settings size={22} />, screen: 'Pengaturan' },
-    { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' },
+    { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' }, // Tambahkan logika logout di sini
   ];
 
   return (
@@ -102,8 +119,7 @@ export default function Sidebar({ navigation, onClose }) {
                         color: activeMenu === item.label ? '#2563eb' : item.color || '#374151',
                         fontFamily: activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
                       },
-                    ]}
-                  >
+                    ]}>
                     {item.label}
                   </Text>
                   {item.submenu &&
@@ -128,8 +144,7 @@ export default function Sidebar({ navigation, onClose }) {
                           setActiveMenu(sub.label);
                           navigation.navigate(sub.screen);
                           handleClose();
-                        }}
-                      >
+                        }}>
                         <Text
                           style={{
                             marginLeft: 28,
@@ -137,8 +152,7 @@ export default function Sidebar({ navigation, onClose }) {
                             fontFamily:
                               activeMenu === sub.label ? 'Poppins-Bold' : 'Poppins-Regular',
                             color: activeMenu === sub.label ? '#2563eb' : '#374151',
-                          }}
-                        >
+                          }}>
                           {sub.label}
                         </Text>
                       </TouchableOpacity>
