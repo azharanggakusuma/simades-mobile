@@ -17,7 +17,7 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function NavbarWithSidebar() {
+export default function NavbarWithSidebar({ navigation }) {
   const insets = useSafeAreaInsets();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -48,13 +48,13 @@ export default function NavbarWithSidebar() {
       </View>
 
       {isSidebarOpen && (
-        <Sidebar onClose={handleCloseSidebar} />
+        <Sidebar navigation={navigation} onClose={handleCloseSidebar} />
       )}
     </>
   );
 }
 
-function Sidebar({ onClose }) {
+function Sidebar({ navigation, onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const [activeMenu, setActiveMenu] = useState('Beranda');
   const [openSubmenus, setOpenSubmenus] = useState([]);
@@ -82,31 +82,33 @@ function Sidebar({ onClose }) {
   };
 
   const handleItemPress = (item) => {
-    if (item.submenu) {
+    if (item.screen) {
+      setActiveMenu(item.label);
+      navigation.navigate(item.screen);
+      handleClose();
+    } else if (item.submenu) {
       toggleSubmenu(item.label);
     } else if (item.label === 'Keluar') {
+      // Logout logic
       console.log('Logout clicked');
-    } else {
-      setActiveMenu(item.label);
-      handleClose();
     }
   };
 
   const menuItems = [
-    { label: 'Beranda', icon: <Home size={22} /> },
+    { label: 'Beranda', icon: <Home size={22} />, screen: 'HomeScreen' },
     {
       label: 'Formulir',
       icon: <FileText size={22} />,
       submenu: [
-        { label: 'Formulir A' },
-        { label: 'Formulir B' },
-        { label: 'Formulir C' },
+        { label: 'Formulir A', screen: 'FormulirA' },
+        { label: 'Formulir B', screen: 'FormulirB' },
+        { label: 'Formulir C', screen: 'FormulirC' },
       ],
     },
-    { label: 'Kelola Pengguna', icon: <Users size={22} /> },
-    { label: 'Kelola Menu', icon: <LayoutGrid size={22} /> },
-    { label: 'Kelola Formulir', icon: <ClipboardList size={22} /> },
-    { label: 'Pengaturan', icon: <Settings size={22} /> },
+    { label: 'Kelola Pengguna', icon: <Users size={22} />, screen: 'KelolaPengguna' },
+    { label: 'Kelola Menu', icon: <LayoutGrid size={22} />, screen: 'KelolaMenu' },
+    { label: 'Kelola Formulir', icon: <ClipboardList size={22} />, screen: 'KelolaFormulir' },
+    { label: 'Pengaturan', icon: <Settings size={22} />, screen: 'Pengaturan' },
     { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' },
   ];
 
@@ -169,6 +171,7 @@ function Sidebar({ onClose }) {
                         ]}
                         onPress={() => {
                           setActiveMenu(sub.label);
+                          navigation.navigate(sub.screen);
                           handleClose();
                         }}
                       >
