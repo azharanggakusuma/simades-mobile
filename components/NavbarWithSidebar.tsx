@@ -17,7 +17,7 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function NavbarWithSidebar({ navigation }) {
+export default function NavbarWithSidebar() {
   const insets = useSafeAreaInsets();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -47,12 +47,14 @@ export default function NavbarWithSidebar({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {isSidebarOpen && <Sidebar onClose={handleCloseSidebar} navigation={navigation} />}
+      {isSidebarOpen && (
+        <Sidebar onClose={handleCloseSidebar} />
+      )}
     </>
   );
 }
 
-function Sidebar({ onClose, navigation }) {
+function Sidebar({ onClose }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const [activeMenu, setActiveMenu] = useState('Beranda');
   const [openSubmenus, setOpenSubmenus] = useState([]);
@@ -75,27 +77,36 @@ function Sidebar({ onClose, navigation }) {
 
   const toggleSubmenu = (label) => {
     setOpenSubmenus((prev) =>
-      prev.includes(label)
-        ? prev.filter((item) => item !== label)
-        : [...prev, label]
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
     );
   };
 
+  const handleItemPress = (item) => {
+    if (item.submenu) {
+      toggleSubmenu(item.label);
+    } else if (item.label === 'Keluar') {
+      console.log('Logout clicked');
+    } else {
+      setActiveMenu(item.label);
+      handleClose();
+    }
+  };
+
   const menuItems = [
-    { label: 'Beranda', icon: <Home size={22} />, screen: 'HomeScreen' },
+    { label: 'Beranda', icon: <Home size={22} /> },
     {
       label: 'Formulir',
       icon: <FileText size={22} />,
       submenu: [
-        { label: 'Formulir A', screen: 'FormulirA' },
-        { label: 'Formulir B', screen: 'FormulirB' },
-        { label: 'Formulir C', screen: 'FormulirC' },
+        { label: 'Formulir A' },
+        { label: 'Formulir B' },
+        { label: 'Formulir C' },
       ],
     },
-    { label: 'Kelola Pengguna', icon: <Users size={22} />, screen: 'KelolaPengguna' },
-    { label: 'Kelola Menu', icon: <LayoutGrid size={22} />, screen: 'KelolaMenu' },
-    { label: 'Kelola Formulir', icon: <ClipboardList size={22} />, screen: 'KelolaFormulir' },
-    { label: 'Pengaturan', icon: <Settings size={22} />, screen: 'Pengaturan' },
+    { label: 'Kelola Pengguna', icon: <Users size={22} /> },
+    { label: 'Kelola Menu', icon: <LayoutGrid size={22} /> },
+    { label: 'Kelola Formulir', icon: <ClipboardList size={22} /> },
+    { label: 'Pengaturan', icon: <Settings size={22} /> },
     { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' },
   ];
 
@@ -119,14 +130,12 @@ function Sidebar({ onClose, navigation }) {
         <View style={sideStyles.menu}>
           {menuItems.map((item) => {
             const isOpen = openSubmenus.includes(item.label);
-
             return (
               <View key={item.label}>
                 <TouchableOpacity
                   style={sideStyles.menuItem}
-                  onPress={() =>
-                    item.submenu ? toggleSubmenu(item.label) : setActiveMenu(item.label)
-                  }>
+                  onPress={() => handleItemPress(item)}
+                >
                   {item.icon}
                   <Text
                     style={[
@@ -135,7 +144,8 @@ function Sidebar({ onClose, navigation }) {
                         color: activeMenu === item.label ? '#2563eb' : item.color || '#374151',
                         fontFamily: activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
                       },
-                    ]}>
+                    ]}
+                  >
                     {item.label}
                   </Text>
                   {item.submenu && (
@@ -150,15 +160,30 @@ function Sidebar({ onClose, navigation }) {
                 {item.submenu && isOpen && (
                   <View style={sideStyles.submenu}>
                     {item.submenu.map((sub) => (
-                      <SidebarItem
+                      <TouchableOpacity
                         key={sub.label}
-                        label={sub.label}
-                        screen={sub.screen}
-                        isSub
-                        activeMenu={activeMenu}
-                        setActiveMenu={setActiveMenu}
-                        navigation={navigation}
-                      />
+                        style={[
+                          sideStyles.menuItem,
+                          sideStyles.submenuItem,
+                          activeMenu === sub.label && sideStyles.activeItem,
+                        ]}
+                        onPress={() => {
+                          setActiveMenu(sub.label);
+                          handleClose();
+                        }}
+                      >
+                        <Text
+                          style={{
+                            marginLeft: 28,
+                            fontSize: 14,
+                            fontFamily:
+                              activeMenu === sub.label ? 'Poppins-Bold' : 'Poppins-Regular',
+                            color: activeMenu === sub.label ? '#2563eb' : '#374151',
+                          }}
+                        >
+                          {sub.label}
+                        </Text>
+                      </TouchableOpacity>
                     ))}
                   </View>
                 )}
@@ -171,48 +196,7 @@ function Sidebar({ onClose, navigation }) {
   );
 }
 
-function SidebarItem({
-  icon,
-  label,
-  screen,
-  color = '#374151',
-  isSub = false,
-  activeMenu,
-  setActiveMenu,
-  navigation,
-}) {
-  const isActive = activeMenu === label;
-
-  const handlePress = () => {
-    setActiveMenu(label);
-    if (screen) navigation.navigate(screen);
-  };
-
-  return (
-    <TouchableOpacity
-      style={[
-        sideStyles.menuItem,
-        isSub && sideStyles.submenuItem,
-        isActive && sideStyles.activeItem,
-      ]}
-      onPress={handlePress}>
-      {icon && React.cloneElement(icon, { color: isActive ? '#2563eb' : color })}
-      <Text
-        style={[
-          sideStyles.menuText,
-          {
-            marginLeft: icon ? 0 : 28,
-            color: isActive ? '#2563eb' : color,
-            fontFamily: isActive ? 'Poppins-Bold' : 'Poppins-Regular',
-          },
-        ]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-// STYLES
+// === STYLES ===
 const navStyles = StyleSheet.create({
   container: {
     backgroundColor: '#f9fafb',
@@ -314,7 +298,6 @@ const sideStyles = StyleSheet.create({
   },
   menuText: {
     fontSize: 14,
-    fontFamily: 'Poppins-Regular',
     fontWeight: '500',
   },
   submenu: {
@@ -326,8 +309,7 @@ const sideStyles = StyleSheet.create({
     paddingLeft: 15,
   },
   activeItem: {
-    backgroundColor: '#e0f2fe',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    backgroundColor: '#f0f9ff',
+    borderRadius: 6,
   },
 });
