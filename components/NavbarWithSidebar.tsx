@@ -1,4 +1,3 @@
-// components/NavbarWithSidebar.tsx
 import React, { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Navbar from './Navbar';

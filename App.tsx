@@ -1,18 +1,14 @@
-// App.tsx
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-// import './global.css'; // Hanya jika Anda menargetkan web juga dan menggunakan ini
+import './global.css';
 
 // Komponen
 import BottomNav from './components/BottomNav';
 import NavbarWithSidebar from './components/NavbarWithSidebar';
-
-// Screen komponen (jika ada screen di RootStack selain MainTabs, misal Login)
-// Untuk kasus ini, sebagian besar screen ada di dalam HomeStackNavigator
 
 const RootStack = createNativeStackNavigator();
 
@@ -44,7 +40,6 @@ export default function App() {
 
   if (fontError) {
     console.error("Font loading error: ", fontError);
-    // Anda bisa menampilkan pesan error di sini
     return (
         <View style={styles.loadingContainer}>
             <Text>Gagal memuat font.</Text>
@@ -58,7 +53,6 @@ export default function App() {
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
           <RootStack.Screen name="MainTabs" component={MainTabsLayout} />
-          {/* Jika ada screen lain di root (misal Login), tambahkan di sini */}
         </RootStack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
@@ -68,7 +62,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Platform.OS === 'web' ? '#FFF' : undefined, // Latar belakang default untuk web
+    backgroundColor: Platform.OS === 'web' ? '#FFF' : undefined,
   },
   loadingContainer: {
     flex: 1,

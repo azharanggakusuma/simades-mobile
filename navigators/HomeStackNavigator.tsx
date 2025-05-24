@@ -1,8 +1,7 @@
-// navigators/HomeStackNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Import semua screen yang akan di-handle oleh stack ini
+// Import yang akan di-handle oleh stack ini
 import HomeScreen from '../screens/HomeScreen';
 import FormulirA from '../screens/FormulirA';
 import FormulirB from '../screens/FormulirB';

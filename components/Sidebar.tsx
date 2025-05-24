@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
@@ -11,7 +10,7 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
-import { useNavigationState } from '@react-navigation/native'; // <-- Import hook
+import { useNavigationState } from '@react-navigation/native';
 import {
   X,
   UserCircle,
@@ -35,7 +34,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
   // const [activeMenu, setActiveMenu] = useState('Beranda');
   const [openSubmenus, setOpenSubmenus] = useState({});
 
-  // Warna-warna (seperti sebelumnya)
+  // Warna-warna
   const bgColor = darkMode ? '#1f2937' : '#ffffff';
   const textColor = darkMode ? '#e5e7eb' : '#374151';
   const activeColor = darkMode ? '#60a5fa' : '#2563eb';
@@ -59,28 +58,28 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
       if (currentRoute.name === 'MainTabs' && currentRoute.state) {
         // Jika kita berada di dalam MainTabs (yang komponennya adalah MainTabsLayout -> BottomNav)
         const tabNavState = currentRoute.state; // State dari BottomNav
-        const activeTabRoute = tabNavState.routes[tabNavState.index]; // Route tab yang aktif
+        const activeTabRoute = tabNavState.routes[tabNavState.index]; 
 
         if (activeTabRoute.name === 'Beranda' && activeTabRoute.state) {
           // Jika tab aktif adalah 'Beranda' (yang komponennya adalah HomeStackNavigator)
           const homeStackState = activeTabRoute.state; // State dari HomeStackNavigator
           const activeScreenInHomeStack = homeStackState.routes[homeStackState.index];
-          return `Beranda/${activeScreenInHomeStack.name}`; // Misal: "Beranda/HomeActual" atau "Beranda/KelolaPengguna"
+          return `Beranda/${activeScreenInHomeStack.name}`; 
         }
         // Jika tab aktif lain (Cari, Notifikasi, Akun) dan mereka bukan stack,
         // atau jika ingin menandai tab itu sendiri sebagai aktif.
-        return activeTabRoute.name; // Misal: "Cari"
+        return activeTabRoute.name; 
       }
       // Jika kita berada di screen lain di RootStack (misal, jika ada layar Login)
       return currentRoute.name;
     } catch (error) {
       console.error("Error getting active screen key:", error, navState);
-      return null; // Fallback jika ada error parsing state
+      return null; 
     }
   };
 
   const activeScreenKeyValue = getActiveScreenKey();
-  // console.log("Active Screen Key:", activeScreenKeyValue); // Untuk debugging
+  // console.log("Active Screen Key:", activeScreenKeyValue);
 
   useEffect(() => {
     Animated.timing(widthAnim, {
@@ -118,16 +117,15 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
       console.log('[Sidebar] Logout clicked');
       handleClose();
     } else {
-      if (item.screen) { // Jika hanya ada screen tanpa params khusus
+      if (item.screen) {
         handleClose();
       }
     }
   };
 
   const menuItems = [
-    // Tambahkan properti 'id' yang akan dicocokkan dengan activeScreenKeyValue
     { id: 'Beranda/HomeActual', label: 'Beranda', icon: Home, screen: 'MainTabs', params: { screen: 'Beranda', params: { screen: 'HomeActual' } } },
-    { label: 'Formulir', icon: FileText, submenu: [ // 'id' untuk parent submenu tidak diperlukan, akan dicek dari children
+    { label: 'Formulir', icon: FileText, submenu: [
         { id: 'Beranda/FormulirA', label: 'Formulir A', screen: 'FormulirA', targetTab: 'Beranda', navigateToNested: true },
         { id: 'Beranda/FormulirB', label: 'Formulir B', screen: 'FormulirB', targetTab: 'Beranda', navigateToNested: true },
         { id: 'Beranda/FormulirC', label: 'Formulir C', screen: 'FormulirC', targetTab: 'Beranda', navigateToNested: true },
@@ -136,7 +134,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
     { id: 'Beranda/KelolaMenu', label: 'Kelola Menu', icon: LayoutGrid, screen: 'KelolaMenu', targetTab: 'Beranda', navigateToNested: true },
     { id: 'Beranda/KelolaFormulir', label: 'Kelola Formulir', icon: ClipboardList, screen: 'KelolaFormulir', targetTab: 'Beranda', navigateToNested: true },
     { id: 'Beranda/Pengaturan', label: 'Pengaturan', icon: Settings, screen: 'Pengaturan', targetTab: 'Beranda', navigateToNested: true },
-    { id: 'Logout', label: 'Keluar', icon: LogOut, color: '#ef4444' }, // 'id' bisa apa saja, tidak akan cocok dengan screenKey
+    { id: 'Logout', label: 'Keluar', icon: LogOut, color: '#ef4444' },
   ];
 
   const renderMenuItem = (item, isSubItem = false) => {
@@ -151,7 +149,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
     }
 
     const itemTextColor = itemIsActive ? activeColor : (item.color || textColor);
-    const itemIconColor = itemIsActive ? activeColor : (item.color || (item.color ? item.color : iconDefaultColor)); // Prioritaskan item.color jika ada
+    const itemIconColor = itemIsActive ? activeColor : (item.color || (item.color ? item.color : iconDefaultColor));
     const itemBgColor = itemIsActive && !item.submenu ? activeItemBackground : 'transparent';
 
     return (
@@ -168,7 +166,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
         <Text style={[
             styles.menuText,
             { color: itemTextColor, fontFamily: itemIsActive ? 'Poppins-SemiBold' : 'Poppins-Regular' },
-            isSubItem && !IconComponent && { marginLeft: (22 + 14) } // Indentasi jika subitem tidak punya ikon
+            isSubItem && !IconComponent && { marginLeft: (22 + 14) }
         ]}>
           {item.label}
         </Text>
@@ -223,7 +221,6 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
   );
 }
 
-// Styles (tetap sama seperti sebelumnya, dengan penyesuaian kecil jika perlu)
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -239,7 +236,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     height: '100%',
-    paddingHorizontal: 15, // Mengurangi padding horizontal agar lebih pas
+    paddingHorizontal: 15,
     paddingVertical: 20,
     paddingTop: Platform.OS === 'android' ? 25 : 50,
     elevation: 8,
@@ -250,15 +247,15 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? 20 : 45, // Naikkan sedikit
-    right: 10, // Dekatkan sedikit
+    top: Platform.OS === 'android' ? 45 : 45, 
+    right: 10,
     padding: 5,
     zIndex: 10,
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20, // Kurangi sedikit margin
+    marginBottom: 20, 
     marginTop: Platform.OS === 'android' ? 35 : 15,
     paddingLeft: 5,
     gap: 12,
@@ -272,31 +269,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
   },
   menu: {
-    gap: 3, // Kurangi gap antar menu utama
+    gap: 3,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 8, // Kurangi padding horizontal item
-    borderRadius: 6, // Ubah border radius
-    gap: 12, // Kurangi gap ikon dan teks
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    gap: 12,
   },
   menuText: {
     fontSize: 14,
-    fontFamily: 'Poppins-Regular', // Default font, akan di-override jika aktif
+    fontFamily: 'Poppins-Regular', 
     flexShrink: 1,
   },
   submenuContainer: {
-    marginLeft: 10, // Kurangi indentasi submenu
-    paddingLeft: 8, // Kurangi padding kiri submenu
+    marginLeft: 10, 
+    paddingLeft: 8, 
     borderLeftWidth: 2,
-    marginTop: 3, // Kurangi margin
+    marginTop: 3, 
     marginBottom: 3,
-    borderRadius: 4, // Ubah border radius
+    borderRadius: 4,
   },
   submenuItem: {
-    paddingVertical: 8, // Kurangi padding vertikal submenu
-    // gap tidak perlu diatur ulang jika sudah dari menuItem
+    paddingVertical: 8, 
   },
 });

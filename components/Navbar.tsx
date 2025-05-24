@@ -1,4 +1,3 @@
-// components/Navbar.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Menu, X, Moon, Sun } from 'lucide-react-native';
@@ -44,16 +43,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderBottomWidth: 1,
     justifyContent: 'space-between',
-    // Properti shadow tidak berfungsi baik jika backgroundColor dinamis, jadi bisa dihilangkan atau dikelola dengan View terpisah jika perlu
   },
   iconButtonContainer: {
-    padding: 6, // Area sentuh yang lebih baik
+    padding: 6, 
   },
   title: {
     fontSize: 18,
     fontFamily: 'Poppins-Bold',
     textAlign: 'center',
-    flex: 1, // Agar title bisa di tengah jika space-between digunakan
-    marginHorizontal: 10, // Jarak dari ikon
+    flex: 1, 
+    marginHorizontal: 10, 
   },
 });
