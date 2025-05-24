@@ -1,3 +1,4 @@
+// components/Sidebar.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
@@ -7,6 +8,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Platform,
+  ScrollView
 } from 'react-native';
 import {
   X,
@@ -24,18 +27,26 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function Sidebar({ navigation, onClose }) {
+export default function Sidebar({ navigation, onClose, darkMode }) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   const [activeMenu, setActiveMenu] = useState('Beranda');
-  const [openSubmenus, setOpenSubmenus] = useState([]);
+  const [openSubmenus, setOpenSubmenus] = useState({}); // Gunakan objek untuk submenu
+
+  const bgColor = darkMode ? '#1f2937' : '#ffffff';
+  const textColor = darkMode ? '#e5e7eb' : '#374151';
+  const activeColor = darkMode ? '#60a5fa' : '#2563eb'; // Biru lebih terang untuk dark mode
+  const profileNameColor = darkMode ? '#f9fafb' : '#111827';
+  const profileEmailColor = darkMode ? '#9ca3af' : '#6b7280';
+  const iconDefaultColor = darkMode ? '#9ca3af' : '#6b7280';
+  const submenuBgColor = darkMode ? '#273343' : '#f9fafb'; // Sedikit beda untuk submenu
 
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: 0,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: true, // Lebih baik untuk performa di native
     }).start();
-  }, []);
+  }, [slideAnim]);
 
   const handleClose = () => {
     Animated.timing(slideAnim, {
@@ -46,123 +57,130 @@ export default function Sidebar({ navigation, onClose }) {
   };
 
   const toggleSubmenu = (label) => {
-    setOpenSubmenus((prev) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
-    );
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
   };
 
   const handleItemPress = (item) => {
-    if (item.screen) {
-      setActiveMenu(item.label);
-      navigation.navigate(item.screen);
+    console.log('[Sidebar] Item pressed:', JSON.stringify(item, null, 2));
+    setActiveMenu(item.label);
+
+    if (item.navigateToNested && item.targetTab && item.screen) {
+      console.log('[Sidebar] Attempting NESTED navigation to MainTabs ->', item.targetTab, '->', item.screen);
+      navigation.navigate('MainTabs', {
+        screen: item.targetTab,
+        params: {
+          screen: item.screen,
+        },
+      });
+      handleClose();
+    } else if (item.screen && item.params && typeof item.navigateToNested === 'undefined') {
+      console.log('[Sidebar] Attempting TAB/PARAMS navigation to:', item.screen, 'with params:', JSON.stringify(item.params));
+      navigation.navigate(item.screen, item.params);
       handleClose();
     } else if (item.submenu) {
+      console.log('[Sidebar] Toggling submenu for:', item.label);
       toggleSubmenu(item.label);
     } else if (item.label === 'Keluar') {
-      console.log('Logout clicked');
+      console.log('[Sidebar] Logout clicked');
+      // Implementasi logout
+      handleClose();
+    } else {
+      console.warn('[Sidebar] No specific navigation action taken for item:', JSON.stringify(item, null, 2));
+      // Jika ada item screen tanpa params dan bukan nested, mungkin perlu ditangani di sini
+      if (item.screen) {
+          console.log('[Sidebar] Attempting DIRECT navigation (review if intended):', item.screen);
+          // navigation.navigate(item.screen); // Hati-hati dengan ini, bisa menyebabkan error "not handled"
+          handleClose();
+      }
     }
   };
 
   const menuItems = [
-    // Untuk item "Beranda", navigasi ke screen "MainTabs" dan spesifikasikan tab "Beranda"
     {
       label: 'Beranda',
-      icon: <Home size={22} />,
+      icon: Home,
       screen: 'MainTabs',
-      params: { screen: 'Beranda' },
+      params: { screen: 'Beranda', params: { screen: 'HomeActual' } },
     },
     {
       label: 'Formulir',
-      icon: <FileText size={22} />,
+      icon: FileText,
       submenu: [
-        // Ini akan navigasi ke screen penuh FormulirA, B, C di RootStack
-        { label: 'Formulir A', screen: 'FormulirA' },
-        { label: 'Formulir B', screen: 'FormulirB' },
-        { label: 'Formulir C', screen: 'FormulirC' },
+        { label: 'Formulir A', screen: 'FormulirA', targetTab: 'Beranda', navigateToNested: true },
+        { label: 'Formulir B', screen: 'FormulirB', targetTab: 'Beranda', navigateToNested: true },
+        { label: 'Formulir C', screen: 'FormulirC', targetTab: 'Beranda', navigateToNested: true },
       ],
     },
-    // Item berikut akan navigasi ke screen penuh masing-masing di RootStack
-    { label: 'Kelola Pengguna', icon: <Users size={22} />, screen: 'KelolaPengguna' },
-    { label: 'Kelola Menu', icon: <LayoutGrid size={22} />, screen: 'KelolaMenu' },
-    { label: 'Kelola Formulir', icon: <ClipboardList size={22} />, screen: 'KelolaFormulir' },
-    { label: 'Pengaturan', icon: <Settings size={22} />, screen: 'Pengaturan' },
-    { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' }, // Tambahkan logika logout di sini
+    { label: 'Kelola Pengguna', icon: Users, screen: 'KelolaPengguna', targetTab: 'Beranda', navigateToNested: true },
+    { label: 'Kelola Menu', icon: LayoutGrid, screen: 'KelolaMenu', targetTab: 'Beranda', navigateToNested: true },
+    { label: 'Kelola Formulir', icon: ClipboardList, screen: 'KelolaFormulir', targetTab: 'Beranda', navigateToNested: true },
+    { label: 'Pengaturan', icon: Settings, screen: 'Pengaturan', targetTab: 'Beranda', navigateToNested: true },
+    { label: 'Keluar', icon: LogOut, color: '#ef4444' },
   ];
+
+  const renderMenuItem = (item, isSubItem = false) => {
+    const IconComponent = item.icon;
+    const isActive = activeMenu === item.label;
+    const itemTextColor = isActive ? activeColor : (item.color || textColor);
+    const itemIconColor = isActive ? activeColor : (item.color || iconDefaultColor);
+
+    return (
+      <TouchableOpacity
+        key={item.label}
+        style={[
+          styles.menuItem,
+          isSubItem ? styles.submenuItem : {},
+          isActive && !item.submenu && (isSubItem ? styles.activeSubItem : styles.activeItem),
+          { backgroundColor: isActive && !item.submenu ? (darkMode ? '#2c3e50' : '#eef2ff') : 'transparent' }
+        ]}
+        onPress={() => handleItemPress(item)}
+      >
+        {IconComponent && <IconComponent size={22} color={itemIconColor} />}
+        <Text style={[styles.menuText, { color: itemTextColor, fontFamily: isActive ? 'Poppins-SemiBold' : 'Poppins-Regular' }, isSubItem && { marginLeft: IconComponent ? 0 : 22 + 14}]}>
+          {item.label}
+        </Text>
+        {item.submenu && !isSubItem && (
+          openSubmenus[item.label] ?
+          <ChevronUp size={18} color={iconDefaultColor} style={{ marginLeft: 'auto' }} /> :
+          <ChevronDown size={18} color={iconDefaultColor} style={{ marginLeft: 'auto' }} />
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={handleClose} />
-      <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
+      <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }], backgroundColor: bgColor }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <X size={24} color="#111827" />
+          <X size={24} color={profileNameColor} />
         </TouchableOpacity>
 
         <View style={styles.profile}>
-          <UserCircle size={34} color="#4B5563" style={styles.avatar} />
+          <UserCircle size={34} color={iconDefaultColor} />
           <View>
-            <Text style={styles.name}>Rangga</Text>
-            <Text style={styles.email}>rangga@gmail.com</Text>
+            <Text style={[styles.name, {color: profileNameColor}]}>Rangga</Text>
+            <Text style={[styles.email, {color: profileEmailColor}]}>rangga@gmail.com</Text>
           </View>
         </View>
 
-        <View style={styles.menu}>
-          {menuItems.map((item) => {
-            const isOpen = openSubmenus.includes(item.label);
-            return (
-              <View key={item.label}>
-                <TouchableOpacity style={styles.menuItem} onPress={() => handleItemPress(item)}>
-                  {item.icon}
-                  <Text
-                    style={[
-                      styles.menuText,
-                      {
-                        color: activeMenu === item.label ? '#2563eb' : item.color || '#374151',
-                        fontFamily: activeMenu === item.label ? 'Poppins-Bold' : 'Poppins-Regular',
-                      },
-                    ]}>
-                    {item.label}
-                  </Text>
-                  {item.submenu &&
-                    (isOpen ? (
-                      <ChevronUp size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
-                    ) : (
-                      <ChevronDown size={18} color="#6b7280" style={{ marginLeft: 'auto' }} />
-                    ))}
-                </TouchableOpacity>
-
-                {item.submenu && isOpen && (
-                  <View style={styles.submenu}>
-                    {item.submenu.map((sub) => (
-                      <TouchableOpacity
-                        key={sub.label}
-                        style={[
-                          styles.menuItem,
-                          styles.submenuItem,
-                          activeMenu === sub.label && styles.activeItem,
-                        ]}
-                        onPress={() => {
-                          setActiveMenu(sub.label);
-                          navigation.navigate(sub.screen);
-                          handleClose();
-                        }}>
-                        <Text
-                          style={{
-                            marginLeft: 28,
-                            fontSize: 14,
-                            fontFamily:
-                              activeMenu === sub.label ? 'Poppins-Bold' : 'Poppins-Regular',
-                            color: activeMenu === sub.label ? '#2563eb' : '#374151',
-                          }}>
-                          {sub.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.menu}>
+            {menuItems.map((item) => (
+                <View key={item.label}>
+                {renderMenuItem(item)}
+                {item.submenu && openSubmenus[item.label] && (
+                    <Animated.View style={[styles.submenuContainer, {backgroundColor: submenuBgColor}]}>
+                    {item.submenu.map((sub) => renderMenuItem(sub, true))}
+                    </Animated.View>
                 )}
-              </View>
-            );
-          })}
-        </View>
+                </View>
+            ))}
+            </View>
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -170,85 +188,80 @@ export default function Sidebar({ navigation, onClose }) {
 
 const styles = StyleSheet.create({
   overlay: {
+    ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
-    position: 'absolute',
     zIndex: 999,
-    width: '100%',
-    height: '100%',
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: 'rgba(0,0,0,0.3)', // Lebih gelap sedikit
   },
   sidebar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
     width: SCREEN_WIDTH * 0.78,
     height: '100%',
-    backgroundColor: '#ffffff',
     padding: 20,
-    paddingTop: 50,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    paddingTop: Platform.OS === 'android' ? 25 : 50, // Disesuaikan
+    elevation: 8, // Untuk Android
+    shadowColor: '#000', // Untuk iOS
+    shadowOffset: { width: -2, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   closeButton: {
     position: 'absolute',
-    top: 50,
-    right: 14,
+    top: Platform.OS === 'android' ? 25 : 50, // Disesuaikan
+    right: 15,
+    padding: 5,
     zIndex: 10,
-    padding: 6,
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 25,
+    marginTop: Platform.OS === 'android' ? 30 : 10, // Jarak dari atas setelah tombol close
+    paddingLeft: 5, // Sedikit padding
     gap: 12,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,
-  },
   name: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Poppins-SemiBold',
-    color: '#111827',
   },
   email: {
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
-    color: '#6b7280',
   },
   menu: {
-    gap: 14,
+    gap: 5, // Jarak antar item utama
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 8,
     gap: 14,
-    paddingVertical: 6,
+  },
+  activeItem: {
+    // backgroundColor: '#eef2ff', // Dikelola inline untuk dark mode
+  },
+  activeSubItem: {
+    // backgroundColor: '#f0f9ff', // Dikelola inline untuk dark mode
   },
   menuText: {
     fontSize: 14,
-    fontWeight: '500',
+    flexShrink: 1, // Agar teks tidak terpotong jika panjang
   },
-  submenu: {
-    marginLeft: 4,
-    marginTop: 4,
-    gap: 8,
+  submenuContainer: {
+    marginLeft: 15, // Indentasi submenu
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: '#d1d5db', // Garis pemisah submenu (sesuaikan untuk dark mode)
+    marginTop: 5,
+    marginBottom: 5,
+    borderRadius: 6,
   },
   submenuItem: {
-    paddingLeft: 15,
-  },
-  activeItem: {
-    backgroundColor: '#f0f9ff',
-    borderRadius: 6,
+    paddingVertical: 8,
+    // gap lebih kecil untuk submenu
   },
 });

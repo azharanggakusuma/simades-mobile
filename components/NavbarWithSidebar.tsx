@@ -1,3 +1,4 @@
+// components/NavbarWithSidebar.tsx
 import React, { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Navbar from './Navbar';
@@ -22,7 +23,7 @@ export default function NavbarWithSidebar({ navigation }) {
         onMenuPress={handleMenuPress}
       />
       {isSidebarOpen && (
-        <Sidebar navigation={navigation} onClose={handleCloseSidebar} />
+        <Sidebar navigation={navigation} onClose={handleCloseSidebar} darkMode={darkMode} />
       )}
     </>
   );

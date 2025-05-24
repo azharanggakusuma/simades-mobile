@@ -1,12 +1,17 @@
+// components/BottomNav.tsx
 import React, { useRef } from 'react';
 import {
   View,
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
+  Platform,
+  Text
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// useNavigation masih berguna untuk FAB jika logicnya kompleks, tapi bisa juga didapat dari options
+// import { useNavigation } from '@react-navigation/native';
 
 // Icons
 import {
@@ -18,15 +23,15 @@ import {
 } from 'lucide-react-native';
 
 // Screens
-import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
-import FormScreen from '../screens/FormScreen';
+import FormScreen from '../screens/FormScreen'; // Untuk FAB
 import NotificationScreen from '../screens/NotificationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
+import HomeStackNavigator from '../navigators/HomeStackNavigator';
+
 const Tab = createBottomTabNavigator();
 
-// Floating Action Button (FAB)
 const AnimatedFormButton = ({ onPress }) => {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -62,7 +67,6 @@ const AnimatedFormButton = ({ onPress }) => {
 const BottomNav = () => {
   const insets = useSafeAreaInsets();
 
-  // Icon mapping for each tab
   const iconMap = {
     Beranda: Home,
     Cari: Search,
@@ -70,18 +74,21 @@ const BottomNav = () => {
     Akun: User,
   };
 
+  // Menggunakan style asli Anda untuk bottom, height, dan paddingBottom tabBarStyle
+  // Jika masih tertutup, pertimbangkan solusi 'bottom: insets.bottom + bottomMargin' lagi.
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarLabelStyle: {
+        tabBarLabelStyle: { // Style asli Anda
           fontSize: 12,
           marginBottom: 2,
           fontWeight: '600',
           fontFamily: 'Poppins-Regular',
         },
-        tabBarStyle: {
+        tabBarStyle: { // Style asli Anda
           position: 'absolute',
           bottom: 8,
           left: 16,
@@ -99,10 +106,10 @@ const BottomNav = () => {
           elevation: 10,
         },
         tabBarIcon: ({ focused }) => {
-          const Icon = iconMap[route.name];
-          if (!Icon) return null;
+          const IconComponent = iconMap[route.name];
+          if (!IconComponent) return null;
           return (
-            <Icon
+            <IconComponent
               size={24}
               color={focused ? '#3b82f6' : '#9ca3af'}
               strokeWidth={focused ? 2.5 : 2}
@@ -113,16 +120,37 @@ const BottomNav = () => {
         tabBarInactiveTintColor: '#9ca3af',
       })}
     >
-      <Tab.Screen name="Beranda" component={HomeScreen} />
+      <Tab.Screen
+        name="Beranda"
+        component={HomeStackNavigator}
+        listeners={({ navigation, route }) => ({
+          // Event ini akan dijalankan setiap kali tab "Beranda" ditekan
+          tabPress: (e) => {
+            // Mencegah aksi default navigasi tab standar
+            e.preventDefault();
+
+            // Secara eksplisit navigasi ke rute 'Beranda' (tab itu sendiri),
+            // dan di dalamnya, navigasi ke screen 'HomeActual' (layar awal di HomeStackNavigator)
+            navigation.navigate('Beranda', { screen: 'HomeActual' });
+          },
+        })}
+      />
       <Tab.Screen name="Cari" component={SearchScreen} />
       <Tab.Screen
-        name="Formulir"
+        name="AddForm"
         component={FormScreen}
-        options={{
+        options={({ navigation }) => ({
           tabBarLabel: '',
           tabBarIcon: () => null,
-          tabBarButton: (props) => <AnimatedFormButton {...props} />,
-        }}
+          tabBarButton: (props) => (
+            <AnimatedFormButton
+              {...props}
+              onPress={() => {
+                navigation.navigate('Beranda', { screen: 'FormulirA' });
+              }}
+            />
+          ),
+        })}
       />
       <Tab.Screen name="Notifikasi" component={NotificationScreen} />
       <Tab.Screen name="Akun" component={ProfileScreen} />
@@ -130,6 +158,7 @@ const BottomNav = () => {
   );
 };
 
+// Stylesheet asli Anda untuk FAB
 const styles = StyleSheet.create({
   fabWrapper: {
     position: 'absolute',

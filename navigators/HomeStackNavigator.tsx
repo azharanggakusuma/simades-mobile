@@ -18,7 +18,6 @@ export default function HomeStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeActual" component={HomeScreen} />
-      {/* Beri nama screen yang konsisten dengan yang akan dipanggil dari Sidebar */}
       <Stack.Screen name="FormulirA" component={FormulirA} />
       <Stack.Screen name="FormulirB" component={FormulirB} />
       <Stack.Screen name="FormulirC" component={FormulirC} />
