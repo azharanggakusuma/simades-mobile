@@ -85,7 +85,7 @@ function Sidebar({ onClose, navigation }) {
   };
 
   const menuItems = [
-    { label: 'Beranda', icon: <Home size={22} />, screen: 'Main' },
+    { label: 'Beranda', icon: <Home size={22} />, screen: 'HomeScreen' },
     {
       label: 'Formulir',
       icon: <FileText size={22} />,
@@ -95,10 +95,10 @@ function Sidebar({ onClose, navigation }) {
         { label: 'Formulir C', screen: 'FormulirC' },
       ],
     },
-    { label: 'Kelola Pengguna', icon: <Users size={22} /> },
-    { label: 'Kelola Menu', icon: <LayoutGrid size={22} /> },
-    { label: 'Kelola Formulir', icon: <ClipboardList size={22} /> },
-    { label: 'Pengaturan', icon: <Settings size={22} /> },
+    { label: 'Kelola Pengguna', icon: <Users size={22} />, screen: 'KelolaPengguna' },
+    { label: 'Kelola Menu', icon: <LayoutGrid size={22} />, screen: 'KelolaMenu' },
+    { label: 'Kelola Formulir', icon: <ClipboardList size={22} />, screen: 'KelolaFormulir' },
+    { label: 'Pengaturan', icon: <Settings size={22} />, screen: 'Pengaturan' },
     { label: 'Keluar', icon: <LogOut size={22} />, color: '#ef4444' },
   ];
 
@@ -111,7 +111,7 @@ function Sidebar({ onClose, navigation }) {
         </TouchableOpacity>
 
         <View style={sideStyles.profile}>
-          <Image source={{ uri: 'https://i.pravatar.cc/1' }} style={sideStyles.avatar} />
+          <UserCircle size={34} color="#4B5563" style={sideStyles.avatar} />
           <View>
             <Text style={sideStyles.name}>Rangga</Text>
             <Text style={sideStyles.email}>rangga@gmail.com</Text>
@@ -285,10 +285,13 @@ const sideStyles = StyleSheet.create({
     gap: 12,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#ccc',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
   },
   name: {
     fontSize: 14,
