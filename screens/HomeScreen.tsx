@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
-import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle, Dimensions } from 'react-native';
+import React from 'react';
+import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { useTheme } from '@react-navigation/native'; // Impor useTheme
 import StatsChart from '../components/StatsChart';
 import MiniCard from '../components/MiniCard';
 import { FileText, Building, MapPin, Users } from 'lucide-react-native';
 import FormProgressChart from '../components/FormProgressChart';
 
 export default function HomeScreen() {
+  const theme = useTheme(); // Gunakan hook useTheme
+  const { colors } = theme; // Destructure colors dari theme
+
+  // Definisikan warna sekunder berdasarkan mode tema
+  const secondaryTextColor = theme.dark ? '#9ca3af' : '#6b7280'; // gray-400 untuk dark, gray-500 untuk light
+
   return (
-    <View style={styles.screen}>
+    // Gunakan colors.background untuk latar belakang layar
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>Dashboard</Text>
-        <Text style={styles.subheading}>Selamat datang kembali 👋</Text>
+        {/* Gunakan colors.text untuk teks utama */}
+        <Text style={[styles.heading, { color: colors.text }]}>Dashboard</Text>
+        {/* Gunakan secondaryTextColor untuk sub-judul */}
+        <Text style={[styles.subheading, { color: secondaryTextColor }]}>
+          Selamat datang kembali 👋
+        </Text>
 
         <View style={styles.grid}>
-          <MiniCard title="Formulir" value="16" icon={FileText} color="#6366f1" />
-          <MiniCard title="Desa" value="424" icon={Building} color="#10b981" />
-          <MiniCard title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
-          <MiniCard title="Pengguna" value="425" icon={Users} color="#ef4444" />
+          {/* Teruskan prop 'theme' ke MiniCard */}
+          <MiniCard theme={theme} title="Formulir" value="16" icon={FileText} color="#6366f1" />
+          <MiniCard theme={theme} title="Desa" value="424" icon={Building} color="#10b981" />
+          <MiniCard theme={theme} title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
+          <MiniCard theme={theme} title="Pengguna" value="425" icon={Users} color="#ef4444" />
         </View>
-        
-        <FormProgressChart />
-        <StatsChart />
+
+        {/* Teruskan prop 'theme' ke FormProgressChart dan StatsChart */}
+        <FormProgressChart theme={theme} />
+        <StatsChart theme={theme} />
       </ScrollView>
     </View>
   );
@@ -34,24 +48,25 @@ interface Style {
   grid: ViewStyle;
 }
 
+// StyleSheet tetap sama, warna akan di-override atau ditambahkan secara inline dari theme
 const styles = StyleSheet.create<Style>({
   screen: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    // backgroundColor akan diatur oleh theme
   },
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 40, // Sesuaikan jika BottomNav overlay konten
   },
   heading: {
     fontSize: 22,
-    color: '#1f2937',
+    // color akan diatur oleh theme
     marginBottom: 4,
     fontFamily: 'Poppins-Bold',
   },
   subheading: {
     fontSize: 14,
-    color: '#6b7280',
+    // color akan diatur oleh theme
     marginBottom: 25,
     fontFamily: 'Poppins-Regular',
   },

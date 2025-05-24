@@ -5,9 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ScreenContainer({ children }: { children: React.ReactNode }) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.content}>
-        {children}
-      </View>
+      <View style={styles.content}>{children}</View>
     </SafeAreaView>
   );
 }
