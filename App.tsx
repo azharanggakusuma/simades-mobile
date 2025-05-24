@@ -8,7 +8,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import './global.css'; // Import global CSS (jika digunakan, misal dengan NativeWind)
+import './global.css';
 
 // Komponen aplikasi
 import BottomNav from './components/BottomNav';
