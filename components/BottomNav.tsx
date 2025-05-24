@@ -1,4 +1,3 @@
-// components/BottomNav.tsx
 import React, { useRef } from 'react';
 import { View, Animated, StyleSheet, TouchableWithoutFeedback, Platform, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -10,7 +9,7 @@ import SearchScreen from '../screens/SearchScreen';
 import FormScreen from '../screens/FormScreen'; // Digunakan oleh FAB
 import NotificationScreen from '../screens/NotificationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import HomeStackNavigator from '../navigators/HomeStackNavigator'; // Navigator untuk tab Beranda
+import HomeStackNavigator from '../navigation/HomeStackNavigator'; // Navigator untuk tab Beranda
 
 const Tab = createBottomTabNavigator();
 const darkModeYellowAccent = '#FACC15'; // Warna aksen kuning untuk dark mode
@@ -126,16 +125,20 @@ const BottomNav = ({ darkMode }) => {
       <Tab.Screen name="Cari" component={SearchScreen} />
       {/* Tab untuk FAB, menggunakan komponen kustom AnimatedFormButton */}
       <Tab.Screen
-        name="AddForm" // Nama rute untuk FAB, bisa apa saja yang unik
-        component={FormScreen} // Komponen placeholder, navigasi sebenarnya di onPress FAB
-        options={({ navigation }) => ({
-          tabBarLabel: '', // Tidak ada label
-          tabBarIcon: () => null, // Tidak ada ikon standar
-          tabBarButton: (props) => (
+        name="Form" // Ini adalah nama rute tab yang akan dituju
+        component={FormScreen} // FormScreen akan dirender sebagai konten dari tab ini
+        options={({ navigation, route }) => ({
+          tabBarLabel: '', // Tidak ada label teks di bawah FAB
+          tabBarIcon: () => null, // Tidak ada ikon standar, karena kita pakai FAB kustom
+          tabBarButton: (
+            props // props ini dari React Navigation, berisi accessibilityState, onPress default, dll.
+          ) => (
             <AnimatedFormButton
-              {...props}
-              darkMode={darkMode} // Teruskan status dark mode ke FAB
-              onPress={() => navigation.navigate('Beranda', { screen: 'FormScreen' })} // Aksi FAB: navigasi ke FormScreen di dalam HomeStack
+              {...props} // Penting untuk meneruskan props ini agar FAB berperilaku sebagai tombol tab
+              darkMode={darkMode}
+              // Aksi FAB: Navigasi ke tab "Form" itu sendiri
+              // props.onPress() juga bisa digunakan di sini, atau navigation.navigate(route.name)
+              onPress={() => navigation.navigate(route.name)}
             />
           ),
         })}
