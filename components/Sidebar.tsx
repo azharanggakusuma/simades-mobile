@@ -26,33 +26,39 @@ import {
 } from 'lucide-react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const SIDEBAR_TARGET_WIDTH = SCREEN_WIDTH * 0.78; // Lebar target sidebar
 
 export default function Sidebar({ navigation, onClose, darkMode }) {
-  const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
+  // Mengganti slideAnim dengan widthAnim
+  const widthAnim = useRef(new Animated.Value(0)).current; // Mulai dengan lebar 0
   const [activeMenu, setActiveMenu] = useState('Beranda');
-  const [openSubmenus, setOpenSubmenus] = useState({}); // Gunakan objek untuk submenu
+  const [openSubmenus, setOpenSubmenus] = useState({});
 
   const bgColor = darkMode ? '#1f2937' : '#ffffff';
   const textColor = darkMode ? '#e5e7eb' : '#374151';
-  const activeColor = darkMode ? '#60a5fa' : '#2563eb'; // Biru lebih terang untuk dark mode
+  const activeColor = darkMode ? '#60a5fa' : '#2563eb';
   const profileNameColor = darkMode ? '#f9fafb' : '#111827';
   const profileEmailColor = darkMode ? '#9ca3af' : '#6b7280';
   const iconDefaultColor = darkMode ? '#9ca3af' : '#6b7280';
-  const submenuBgColor = darkMode ? '#273343' : '#f9fafb'; // Sedikit beda untuk submenu
+  const submenuBgColor = darkMode ? '#273343' : '#f9fafb';
+  const borderSubmenuColor = darkMode ? '#4b5563' : '#d1d5db';
+
 
   useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: 0,
+    // Animasikan lebar saat sidebar muncul
+    Animated.timing(widthAnim, {
+      toValue: SIDEBAR_TARGET_WIDTH, // Animasikan ke lebar target
       duration: 300,
-      useNativeDriver: true, // Lebih baik untuk performa di native
+      useNativeDriver: false, // Animasi 'width' tidak didukung native driver
     }).start();
-  }, [slideAnim]);
+  }, [widthAnim]);
 
   const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: -SCREEN_WIDTH,
+    // Animasikan lebar saat sidebar ditutup
+    Animated.timing(widthAnim, {
+      toValue: 0, // Animasikan kembali ke lebar 0
       duration: 200,
-      useNativeDriver: true,
+      useNativeDriver: false, // Animasi 'width' tidak didukung native driver
     }).start(() => onClose());
   };
 
@@ -85,35 +91,23 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
       toggleSubmenu(item.label);
     } else if (item.label === 'Keluar') {
       console.log('[Sidebar] Logout clicked');
-      // Implementasi logout
       handleClose();
     } else {
       console.warn('[Sidebar] No specific navigation action taken for item:', JSON.stringify(item, null, 2));
-      // Jika ada item screen tanpa params dan bukan nested, mungkin perlu ditangani di sini
       if (item.screen) {
           console.log('[Sidebar] Attempting DIRECT navigation (review if intended):', item.screen);
-          // navigation.navigate(item.screen); // Hati-hati dengan ini, bisa menyebabkan error "not handled"
           handleClose();
       }
     }
   };
 
   const menuItems = [
-    {
-      label: 'Beranda',
-      icon: Home,
-      screen: 'MainTabs',
-      params: { screen: 'Beranda', params: { screen: 'HomeActual' } },
-    },
-    {
-      label: 'Formulir',
-      icon: FileText,
-      submenu: [
+    { label: 'Beranda', icon: Home, screen: 'MainTabs', params: { screen: 'Beranda', params: { screen: 'HomeActual' } } },
+    { label: 'Formulir', icon: FileText, submenu: [
         { label: 'Formulir A', screen: 'FormulirA', targetTab: 'Beranda', navigateToNested: true },
         { label: 'Formulir B', screen: 'FormulirB', targetTab: 'Beranda', navigateToNested: true },
         { label: 'Formulir C', screen: 'FormulirC', targetTab: 'Beranda', navigateToNested: true },
-      ],
-    },
+    ]},
     { label: 'Kelola Pengguna', icon: Users, screen: 'KelolaPengguna', targetTab: 'Beranda', navigateToNested: true },
     { label: 'Kelola Menu', icon: LayoutGrid, screen: 'KelolaMenu', targetTab: 'Beranda', navigateToNested: true },
     { label: 'Kelola Formulir', icon: ClipboardList, screen: 'KelolaFormulir', targetTab: 'Beranda', navigateToNested: true },
@@ -126,6 +120,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
     const isActive = activeMenu === item.label;
     const itemTextColor = isActive ? activeColor : (item.color || textColor);
     const itemIconColor = isActive ? activeColor : (item.color || iconDefaultColor);
+    const itemBgColor = isActive && !item.submenu ? (darkMode ? '#2c3e50' : '#eef2ff') : 'transparent';
 
     return (
       <TouchableOpacity
@@ -133,13 +128,12 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
         style={[
           styles.menuItem,
           isSubItem ? styles.submenuItem : {},
-          isActive && !item.submenu && (isSubItem ? styles.activeSubItem : styles.activeItem),
-          { backgroundColor: isActive && !item.submenu ? (darkMode ? '#2c3e50' : '#eef2ff') : 'transparent' }
+          { backgroundColor: itemBgColor }
         ]}
         onPress={() => handleItemPress(item)}
       >
         {IconComponent && <IconComponent size={22} color={itemIconColor} />}
-        <Text style={[styles.menuText, { color: itemTextColor, fontFamily: isActive ? 'Poppins-SemiBold' : 'Poppins-Regular' }, isSubItem && { marginLeft: IconComponent ? 0 : 22 + 14}]}>
+        <Text style={[styles.menuText, { color: itemTextColor, fontFamily: isActive ? 'Poppins-SemiBold' : 'Poppins-Regular' }, isSubItem && { marginLeft: IconComponent ? 0 : (22 + 14) /* Jika tidak ada ikon, beri margin pengganti */ }]}>
           {item.label}
         </Text>
         {item.submenu && !isSubItem && (
@@ -154,7 +148,20 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
   return (
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={handleClose} />
-      <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }], backgroundColor: bgColor }]}>
+      {/* Menggunakan widthAnim untuk style width dan tambahkan overflow: 'hidden' */}
+      <Animated.View style={[
+        styles.sidebar, // Style dasar sidebar (tanpa width eksplisit)
+        {
+          width: widthAnim, // Lebar dianimasikan
+          overflow: 'hidden', // Konten terpotong jika melebihi lebar
+          backgroundColor: bgColor
+        }
+      ]}>
+        {/* Untuk memastikan konten tidak langsung muncul sebelum animasi lebar selesai,
+            kita bisa tambahkan View dengan opacity yang dianimasikan, atau
+            tunda render konten jika widthAnim masih sangat kecil.
+            Namun, overflow: 'hidden' biasanya sudah cukup untuk visual.
+        */}
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <X size={24} color={profileNameColor} />
         </TouchableOpacity>
@@ -173,7 +180,7 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
                 <View key={item.label}>
                 {renderMenuItem(item)}
                 {item.submenu && openSubmenus[item.label] && (
-                    <Animated.View style={[styles.submenuContainer, {backgroundColor: submenuBgColor}]}>
+                    <Animated.View style={[styles.submenuContainer, {backgroundColor: submenuBgColor, borderLeftColor: borderSubmenuColor}]}>
                     {item.submenu.map((sub) => renderMenuItem(sub, true))}
                     </Animated.View>
                 )}
@@ -189,37 +196,40 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
+    flexDirection: 'row', // Penting agar backdrop dan sidebar berdampingan
     zIndex: 999,
   },
   backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)', // Lebih gelap sedikit
+    flex: 1, // Mengisi sisa ruang jika sidebar tidak full width
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  sidebar: {
-    width: SCREEN_WIDTH * 0.78,
+  sidebar: { // Hapus properti 'width' dari sini
+    position: 'absolute', // Atau bisa juga tidak absolut jika overlay flexDirection: 'row'
+    left: 0, // Pastikan menempel di kiri
+    top: 0,
     height: '100%',
+    // backgroundColor: diatur inline oleh darkMode
     padding: 20,
-    paddingTop: Platform.OS === 'android' ? 25 : 50, // Disesuaikan
-    elevation: 8, // Untuk Android
-    shadowColor: '#000', // Untuk iOS
-    shadowOffset: { width: -2, height: 0 },
-    shadowOpacity: 0.2,
+    paddingTop: Platform.OS === 'android' ? 25 : 50,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 }, // Shadow ke arah kanan
+    shadowOpacity: 0.15,
     shadowRadius: 5,
   },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? 25 : 50, // Disesuaikan
+    top: Platform.OS === 'android' ? 25 : 50,
     right: 15,
     padding: 5,
-    zIndex: 10,
+    zIndex: 10, // Di atas konten lain di sidebar
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 25,
-    marginTop: Platform.OS === 'android' ? 30 : 10, // Jarak dari atas setelah tombol close
-    paddingLeft: 5, // Sedikit padding
+    marginTop: Platform.OS === 'android' ? 30 : 10,
+    paddingLeft: 5,
     gap: 12,
   },
   name: {
@@ -231,7 +241,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
   },
   menu: {
-    gap: 5, // Jarak antar item utama
+    gap: 5,
   },
   menuItem: {
     flexDirection: 'row',
@@ -241,27 +251,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 14,
   },
-  activeItem: {
-    // backgroundColor: '#eef2ff', // Dikelola inline untuk dark mode
-  },
-  activeSubItem: {
-    // backgroundColor: '#f0f9ff', // Dikelola inline untuk dark mode
-  },
+  // backgroundColor untuk activeItem/activeSubItem diatur inline
   menuText: {
     fontSize: 14,
-    flexShrink: 1, // Agar teks tidak terpotong jika panjang
+    flexShrink: 1,
   },
   submenuContainer: {
-    marginLeft: 15, // Indentasi submenu
+    marginLeft: 15,
     paddingLeft: 10,
     borderLeftWidth: 2,
-    borderLeftColor: '#d1d5db', // Garis pemisah submenu (sesuaikan untuk dark mode)
+    // borderLeftColor: diatur inline oleh darkMode
     marginTop: 5,
     marginBottom: 5,
     borderRadius: 6,
   },
   submenuItem: {
     paddingVertical: 8,
-    // gap lebih kecil untuk submenu
   },
 });
