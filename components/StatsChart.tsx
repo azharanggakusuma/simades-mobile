@@ -71,9 +71,11 @@ export default function StatsChart({ theme }: StatsChartProps) {
       strokeWidth: '1',
       stroke: lineChartColor, // Warna outline dot
     },
-    propsForBackgroundLines: {
-      stroke: colors.border, // Warna garis background dari theme
-    },
+    // Hapus propsForBackgroundLines atau atur stroke menjadi transparan jika masih ingin menggunakannya untuk tujuan lain
+    // propsForBackgroundLines: {
+    //   stroke: 'transparent', // Atau colors.border jika ingin garis border tetap ada tapi inner lines hilang
+    //   strokeDasharray: '', // Menghilangkan dash jika ada
+    // },
     fillShadowGradient: lineChartColor, // Warna area di bawah garis (gunakan warna garis)
     fillShadowGradientOpacity: isDarkMode ? 0.2 : 0.3, // Opacity bisa disesuaikan
   };
@@ -103,11 +105,13 @@ export default function StatsChart({ theme }: StatsChartProps) {
         data={data}
         width={screenWidth - 32} // (padding container * 2)
         height={220}
-        chartConfig={chartConfig} // chartConfig sudah dinamis
-        withVerticalLabels={true}
-        withHorizontalLabels
-        withInnerLines // Garis bantu dalam chart
-        withOuterLines={false} // Garis luar chart
+        chartConfig={chartConfig}
+        withVerticalLabels={true} // Tetap tampilkan label vertikal (bulan)
+        withHorizontalLabels={true} // Tetap tampilkan label horizontal (nilai)
+        withInnerLines={false} // Hilangkan garis bantu dalam chart (jaring horizontal dan vertikal)
+        withOuterLines={false} // Hilangkan garis luar chart
+        withVerticalLines={false} // Secara eksplisit hilangkan garis vertikal grid
+        withHorizontalLines={false} // Secara eksplisit hilangkan garis horizontal grid
         fromZero // Mulai sumbu Y dari nol
         bezier // Kurva halus
         style={[styles.chart, { marginLeft: -25, marginTop: 8 }]} // Mungkin perlu penyesuaian margin
