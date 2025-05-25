@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '@react-navigation/native'; // Impor useTheme
-import StatsChart from '../components/StatsChart';
-import MiniCard from '../components/MiniCard';
+import StatsChart from '../components/VisitorsChart';
+import MiniCard from '../components/StatsCard';
 import { FileText, Building, MapPin, Users } from 'lucide-react-native';
 import FormProgressChart from '../components/FormProgressChart';
 

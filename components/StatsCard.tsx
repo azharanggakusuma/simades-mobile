@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, ViewStyle, TextStyle } from 'react-
 import type { LucideIcon } from 'lucide-react-native';
 import type { Theme } from '@react-navigation/native'; // Impor tipe Theme
 
-interface MiniCardProps {
+interface StatsCardProps {
   title: string;
   value: string;
   icon: LucideIcon;
@@ -11,7 +11,7 @@ interface MiniCardProps {
   theme: Theme; // Tambahkan prop theme
 }
 
-const MiniCard = ({ title, value, icon: Icon, color, theme }: MiniCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, color, theme }: StatsCardProps) => {
   const { colors, dark: isDarkMode } = theme; // Dapatkan colors dan status dark mode dari theme
 
   // Warna teks sekunder berdasarkan mode
@@ -47,7 +47,7 @@ const MiniCard = ({ title, value, icon: Icon, color, theme }: MiniCardProps) => 
   );
 };
 
-export default MiniCard;
+export default StatsCard;
 
 interface Style {
   card: ViewStyle;

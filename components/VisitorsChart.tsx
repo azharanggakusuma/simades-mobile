@@ -25,7 +25,7 @@ interface StatsChartProps {
   theme: Theme; // Tambahkan prop theme
 }
 
-export default function StatsChart({ theme }: StatsChartProps) {
+export default function VisitorsChart({ theme }: StatsChartProps) {
   const { colors, dark: isDarkMode } = theme;
 
   const values = [100, 52, 60, 40, 90, 50, 40, 52, 90, 80, 60, 70];
