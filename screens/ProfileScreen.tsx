@@ -29,7 +29,7 @@ interface ProfileScreenProps {
 }
 
 // Data pengguna dummy
-const DUMMY_USER = {
+const user = {
   name: 'Azharangga Kusuma',
   role: 'Administrator', // Atau 'Petugas', dll.
 };
@@ -205,11 +205,11 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
           <View style={styles.avatarContainer}>
             <UserRound size={50} color={colors.primary} />
           </View>
-          <Text style={styles.userName}>{DUMMY_USER.name}</Text>
+          <Text style={styles.userName}>{user.name}</Text>
           {/* Menampilkan peran pengguna */}
           <View style={styles.userRoleContainer}>
-            <Award size={16} color={colors.primary} strokeWidth={2.5} /> {/* Contoh ikon untuk peran */}
-            <Text style={styles.userRoleTextWithIcon}>{DUMMY_USER.role}</Text>
+            <Award size={16} color={colors.primary} strokeWidth={2.5} />
+            <Text style={styles.userRoleTextWithIcon}>{user.role}</Text>
           </View>
         </View>
 
