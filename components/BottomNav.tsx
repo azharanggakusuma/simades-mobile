@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { View, Animated, StyleSheet, TouchableWithoutFeedback, Platform, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Search, User, Clock, ClipboardList } from 'lucide-react-native';
+import { Home, Search, User, Bell, ClipboardList } from 'lucide-react-native';
 
 // Import screen dan navigator
 import SearchScreen from '../screens/SearchScreen';
@@ -58,7 +58,7 @@ const AnimatedFormButton = ({ onPress, darkMode }) => {
 const BottomNav = ({ darkMode }) => {
   const insets = useSafeAreaInsets(); // Untuk padding berdasarkan safe area
   // Mapping nama rute tab ke komponen ikonnya
-  const iconMap = { Beranda: Home, Cari: Search, Notifikasi: Clock, Akun: User };
+  const iconMap = { Beranda: Home, Cari: Search, Notifikasi: Bell, Akun: User };
 
   // Definisi warna dinamis berdasarkan darkMode
   const tabBarBackgroundColor = darkMode ? 'rgba(31, 41, 55, 0.97)' : 'rgba(255,255,255,0.97)'; // Warna dasar #1f2937 (Tailwind gray-800) untuk dark
