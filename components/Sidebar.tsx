@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? 20 : 45,
+    top: Platform.OS === 'android' ? 42 : 45,
     right: 10,
     padding: 5,
     zIndex: 10,
