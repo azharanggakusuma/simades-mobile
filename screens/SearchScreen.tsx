@@ -94,7 +94,7 @@ const SearchScreen = ({ navigation }: any) => {
   const [hasSearched, setHasSearched] = useState(false);
 
   const grayColor = '#9A9A9A';
-  const accentLight = '#000000';
+  const accentLight = '#111827';
   const accentDark = '#FACC15';
   const currentAccentColor = isDarkMode ? accentDark : accentLight;
 
