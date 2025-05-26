@@ -26,7 +26,11 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 
-const darkModeYellowAccent = '#FACC15';
+const darkModeYellowAccent = '#FACC15'; 
+
+// Warna yang akan sering digunakan
+const grayColor = '#9A9A9A'; // Abu-abu untuk placeholder, ikon search, teks sekunder
+const searchResultNotFoundErrorColor = '#EF4444'; // Merah untuk pesan "tidak ditemukan"
 
 interface SearchableItem {
   id: string;
@@ -43,7 +47,7 @@ const DUMMY_DATA_SOURCE: SearchableItem[] = [
   { id: 'desa-2', type: 'desa', nama: 'Desa Maju Jaya', deskripsiUtama: 'Kecamatan Weru', deskripsiSekunder: 'Kabupaten Cirebon' },
   { id: 'kecamatan-1', type: 'kecamatan', nama: 'Kecamatan Plumbon', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '15 Desa/Kelurahan' },
   { id: 'form-1', type: 'formulir', nama: 'Formulir Pengajuan KTP', deskripsiUtama: 'Layanan Kependudukan', deskripsiSekunder: 'Kode: F-KTP.01' },
-  // ... (sisa data)
+  // ... (isi dengan sisa DUMMY_DATA_SOURCE Anda)
 ];
 
 const getItemIcon = (type: SearchableItem['type'], color: string, size: number = 22) => {
@@ -56,17 +60,13 @@ const getItemIcon = (type: SearchableItem['type'], color: string, size: number =
   }
 };
 
-// Konstanta grayColor seperti di HistoryScreen
-const grayColor = '#9A9A9A'; // Digunakan untuk placeholder dan ikon di search bar
-
-const SearchScreenSimilarHistory = ({ navigation }: any) => {
+const SearchScreen = ({ navigation }: any) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchableItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Warna aksen untuk ikon item hasil pencarian (konsisten dengan implementasi Anda sebelumnya)
   const accentLight = colors.primary; 
   const accentDark = darkModeYellowAccent; 
   const currentAccentColor = isDarkMode ? accentDark : accentLight;
@@ -115,7 +115,6 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
   const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background },
     container: { flex: 1 },
-    // --- Header untuk Judul Layar --- (Mirip HistoryScreen)
     screenHeaderContainer: { 
         paddingHorizontal: 24, 
         paddingTop: Platform.OS === 'ios' ? 20 : 28,
@@ -128,35 +127,31 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
         color: colors.text,
         textAlign: 'left',
     },
-    // --- Style untuk Search Input --- (Mirip HistoryScreen)
-    searchInputWrapper: { // Pembungkus untuk memberi margin pada searchInputContainer
-        paddingHorizontal: 20, // Margin horizontal untuk search bar
-        paddingBottom: 16, // Jarak ke konten di bawahnya
-        paddingTop: 8, // Jarak dari judul layar
-        backgroundColor: colors.background, // Pastikan sama dengan background layar
+    searchInputWrapper: {
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        paddingTop: 8,
+        backgroundColor: colors.background,
     },
     searchInputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.card, // Background input
-      borderRadius: 8, // Samakan dengan HistoryScreen
-      paddingHorizontal: 12, // Samakan dengan HistoryScreen
-      height: 44, // Tinggi efektif, bisa disesuaikan dengan padding TextInput
-      borderWidth: 1, // Samakan dengan HistoryScreen
-      borderColor: colors.border, // Samakan dengan HistoryScreen
-      // Shadow dihilangkan agar mirip HistoryScreen yang fokus pada border
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    searchIcon: { marginRight: 8 }, // Margin ikon search
+    searchIcon: { marginRight: 8 },
     textInput: {
       flex: 1,
-      fontSize: 15, // Samakan dengan HistoryScreen
+      fontSize: 15,
       fontFamily: 'Poppins-Regular',
       color: colors.text,
-      paddingVertical: Platform.OS === 'ios' ? 10 : 8, // Sesuaikan agar tinggi efektif ~44
+      paddingVertical: Platform.OS === 'ios' ? 10 : 8,
     },
     clearButton: { padding: 4 },
-    // --- Akhir Style Search Input ---
-
     listContainer: { flex: 1 },
     listContentContainer: {
       paddingTop: 8,
@@ -202,20 +197,21 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
     itemNama: {
       fontSize: 16,
       fontFamily: 'Poppins-SemiBold',
-      color: colors.text,
+      color: colors.text, // Teks utama, bukan merah
       marginBottom: 3,
     },
     itemDeskripsiUtama: {
       fontSize: 13,
       fontFamily: 'Poppins-Regular',
-      color: colors.text, 
-      opacity: 0.8, 
+      color: grayColor, // Menggunakan grayColor
+      opacity: 0.9, // Opacity bisa disesuaikan jika grayColor terlalu gelap/terang
       marginBottom: 2,
     },
     itemDeskripsiSekunder: {
       fontSize: 12,
       fontFamily: 'Poppins-Regular',
-      color: colors.notification, 
+      color: grayColor, // Menggunakan grayColor
+      opacity: 0.7,
     },
     itemChevron: { marginLeft: 10 },
     emptyStateContainer: {
@@ -225,24 +221,30 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
       padding: 24,
     },
     emptyStateIcon: { marginBottom: 24 },
-    emptyStateTitle: {
+    emptyStateTitle: { // Style default untuk judul empty state
       fontSize: 20,
       fontFamily: 'Poppins-Bold',
-      color: colors.text,
+      color: colors.text, // Warna teks standar
       marginBottom: 10,
       textAlign: 'center',
+    },
+    notFoundTitle: { // Style khusus untuk judul "Tidak Ditemukan"
+        fontSize: 20,
+        fontFamily: 'Poppins-Bold',
+        color: searchResultNotFoundErrorColor, // Warna merah khusus
+        marginBottom: 10,
+        textAlign: 'center',
     },
     emptyStateMessage: {
       fontSize: 15,
       fontFamily: 'Poppins-Regular',
-      color: colors.notification,
+      color: grayColor, // Menggunakan grayColor untuk pesan empty state
       textAlign: 'center',
       lineHeight: 22,
     },
   });
 
   const renderResultItem = ({ item }: { item: SearchableItem }) => (
-    // ... (renderResultItem tetap sama)
     <TouchableOpacity style={styles.resultItem} onPress={() => handleResultPress(item)} activeOpacity={0.75}>
       <View style={styles.itemIconContainer}>
         {getItemIcon(item.type, currentAccentColor)}
@@ -257,7 +259,6 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
   );
 
   const renderContent = () => {
-    // ... (renderContent tetap sama)
     if (isLoading && searchQuery.trim() !== '') {
       return (
         <View style={styles.loadingContainer}>
@@ -266,24 +267,28 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
         </View>
       );
     }
+    // Initial state (belum ada pencarian)
     if (!hasSearched && searchQuery.trim() === '') {
       return (
         <View style={styles.emptyStateContainer}>
           <Search size={72} color={colors.border} style={styles.emptyStateIcon} />
-          <Text style={styles.emptyStateTitle}>Pencarian Data</Text>
+          <Text style={styles.emptyStateTitle}>Pencarian Data</Text> 
           <Text style={styles.emptyStateMessage}>Temukan formulir, data desa, kecamatan, atau informasi pengguna.</Text>
         </View>
       );
     }
+    // State ketika pencarian dilakukan dan tidak ada hasil
     if (hasSearched && searchResults.length === 0 && searchQuery.trim() !== '') {
       return (
         <View style={styles.emptyStateContainer}>
           <Frown size={72} color={colors.border} style={styles.emptyStateIcon} />
-          <Text style={styles.emptyStateTitle}>Oops! Hasil Tidak Ditemukan</Text>
+          {/* Menggunakan style notFoundTitle yang berwarna merah */}
+          <Text style={styles.notFoundTitle}>Oops! Hasil Tidak Ditemukan</Text> 
           <Text style={styles.emptyStateMessage}>Kami tidak dapat menemukan data untuk "{searchQuery}". Coba kata kunci lain.</Text>
         </View>
       );
     }
+    // State ketika ada hasil pencarian
     if (searchResults.length > 0) {
       return (
         <FlatList
@@ -302,25 +307,22 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* 1. Header Judul Layar */}
         <View style={styles.screenHeaderContainer}>
-          <Text style={styles.screenHeaderTitle}>Pencarian Data</Text> 
-          {/* Ganti dengan judul yang sesuai */}
+          <Text style={styles.screenHeaderTitle}>Pencarian Global</Text> 
         </View>
 
-        {/* 2. Search Input Bar */}
         <View style={styles.searchInputWrapper}>
             <View style={styles.searchInputContainer}>
                 <Search size={20} color={grayColor} style={styles.searchIcon} />
                 <TextInput
                 style={styles.textInput}
-                placeholder="Cari data..." // Placeholder lebih umum
+                placeholder="Ketik untuk mencari..."
                 placeholderTextColor={grayColor}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoFocus={Platform.OS !== 'web'}
                 returnKeyType="search"
-                onBlur={() => { /* Keyboard.dismiss(); Opsional */ }}
+                onBlur={() => {}}
                 />
                 {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
@@ -330,7 +332,6 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
             </View>
         </View>
         
-        {/* 3. Konten List */}
         <View style={styles.listContainer}>
             {renderContent()}
         </View>
@@ -340,4 +341,4 @@ const SearchScreenSimilarHistory = ({ navigation }: any) => {
   );
 };
 
-export default SearchScreenSimilarHistory;
+export default SearchScreen;
