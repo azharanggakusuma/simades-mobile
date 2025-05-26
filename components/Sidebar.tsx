@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -38,7 +38,7 @@ const sidebarUser = {
   detailInfo: 'Administrator',
 };
 
-// Definisi item-item menu sidebar
+// Definisi item-item menu sidebar (sumber)
 const menuItemsSource = [
     { id: 'Beranda/HomeActual', label: 'Beranda', icon: Home, screen: 'MainTabs', params: { screen: 'Beranda', params: { screen: 'HomeActual' } }},
     { label: 'Formulir', icon: FileText,
@@ -53,11 +53,91 @@ const menuItemsSource = [
     { id: 'Beranda/Pengaturan', label: 'Pengaturan', icon: Settings, screen: 'Pengaturan', targetTab: 'Beranda', navigateToNested: true },
 ];
 
+// --- Interface untuk MenuItemComponent ---
+interface MenuItemComponentProps {
+  item: any;
+  isSubItem?: boolean;
+  isActive: boolean;
+  isOpen?: boolean;
+  onItemPress: (item: any) => void;
+  textColor: string;
+  activeColor: string;
+  iconDefaultColor: string;
+  isLastItem?: boolean; // Untuk submenu, jika ini adalah item terakhir
+  separatorColor?: string; // Untuk separator di atas logout
+}
+
+// --- Komponen MenuItem yang di-memoize ---
+const MenuItemComponent: React.FC<MenuItemComponentProps> = React.memo(({
+  item,
+  isSubItem = false,
+  isActive,
+  isOpen,
+  onItemPress,
+  textColor,
+  activeColor,
+  iconDefaultColor,
+  separatorColor,
+}) => {
+  const IconComponent = item.icon;
+  const currentItemTextColor = item.color ? item.color : (isActive ? activeColor : textColor);
+  const currentItemIconColor = item.color ? item.color : (isActive ? activeColor : iconDefaultColor);
+  const currentFontFamily = isActive || item.id === 'Logout' ? 'Poppins-SemiBold' : 'Poppins-Regular';
+
+  return (
+    <View>
+      {item.id === 'Logout' && separatorColor && <View style={[styles.separatorAboveLogout, {backgroundColor: separatorColor}]} />}
+      <TouchableOpacity
+        style={[
+          styles.menuItem,
+          isSubItem && styles.submenuItem,
+        ]}
+        onPress={() => onItemPress(item)}
+        activeOpacity={0.65}
+      >
+        {isActive && !item.submenu && item.id !== 'Logout' && (
+          <View style={[styles.activeItemIndicator, { backgroundColor: activeColor }]} />
+        )}
+        <View style={styles.menuItemContent}>
+          {IconComponent && (
+          <View style={styles.iconWrapper}>
+            <IconComponent
+                size={isSubItem ? 18 : 20}
+                color={currentItemIconColor}
+                strokeWidth={isActive || item.id === 'Logout' ? 2.2 : 1.8}
+            />
+          </View>
+          )}
+          <Text
+            style={[
+                styles.menuText,
+                { color: currentItemTextColor, fontFamily: currentFontFamily },
+                isSubItem && styles.submenuItemText,
+                !IconComponent && isSubItem && { // Jika submenu item tidak ada ikon
+                  marginLeft: (styles.iconWrapper?.width || 20) + (styles.iconWrapper?.marginRight || 14) // Sesuaikan dengan style iconWrapper
+                },
+            ]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {item.label}
+          </Text>
+        </View>
+        {item.submenu && !isSubItem && (
+          isOpen ?
+          <ChevronUp size={18} color={iconDefaultColor} style={styles.chevronIcon} /> :
+          <ChevronDown size={18} color={iconDefaultColor} style={styles.chevronIcon} />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+
 export default function Sidebar({ navigation, onClose, darkMode }) {
   const widthAnim = useRef(new Animated.Value(0)).current;
   const [openSubmenus, setOpenSubmenus] = useState({});
 
-  // --- Definisi Warna Dinamis Berdasarkan darkMode ---
   const bgColor = darkMode ? '#1A202C' : '#FFFFFF';
   const textColor = darkMode ? '#CBD5E1' : '#4B5563';
   const activeColor = darkMode ? darkModeYellowAccent : '#2563EB';
@@ -68,17 +148,18 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
   const separatorColor = darkMode ? '#374151' : '#E5E7EB';
   const logoutItemSpecificColor = darkMode ? '#FFA7A7' : '#E53E3E';
 
-  const menuItems = [
-      ...menuItemsSource,
-      { id: 'Logout', label: 'Keluar', icon: LogOut, color: logoutItemSpecificColor }
-  ];
+  const menuItems = useMemo(() => [
+    ...menuItemsSource,
+    { id: 'Logout', label: 'Keluar', icon: LogOut, color: logoutItemSpecificColor }
+  ], [logoutItemSpecificColor]);
 
   const navState = useNavigationState((state) => state);
 
-  const getActiveScreenKey = () => {
+  const activeScreenKeyValue = useMemo(() => {
     if (!navState) return null;
     try {
       let currentRoute = navState.routes[navState.index];
+      // ... (sisa logika getActiveScreenKey Anda, tidak perlu diubah)
       if (currentRoute.name === 'MainTabs' && currentRoute.state) {
         const tabNavState = currentRoute.state;
         const activeTabRoute = tabNavState.routes[tabNavState.index];
@@ -87,15 +168,17 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
           const activeScreenInHomeStack = homeStackState.routes[homeStackState.index];
           return `Beranda/${activeScreenInHomeStack.name}`;
         }
-        return activeTabRoute.name;
+        return activeTabRoute.name; // Ini mungkin salah, jika MainTabs punya tab lain selain Beranda yang bukan stack
+                                     // Sebaiknya id item menu disesuaikan dengan route name yang sebenarnya
+                                     // atau item.id nya adalah route name langsung dari screen
       }
       return currentRoute.name;
     } catch (error) {
       console.error('Error Sidebar getActiveScreenKey:', error);
       return null;
     }
-  };
-  const activeScreenKeyValue = getActiveScreenKey();
+  }, [navState]);
+
 
   useEffect(() => {
     Animated.timing(widthAnim, {
@@ -103,21 +186,21 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [widthAnim]);
+  }, [widthAnim]); // widthAnim adalah Animated.Value, referensinya stabil, jadi ini hanya jalan sekali
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     Animated.timing(widthAnim, {
       toValue: 0,
       duration: 200,
       useNativeDriver: false,
-    }).start(onClose);
-  };
+    }).start(onClose); // onClose adalah prop, jika bisa berubah, tambahkan ke dependency array
+  }, [widthAnim, onClose]);
 
-  const toggleSubmenu = (label) => {
+  const toggleSubmenu = useCallback((label) => {
     setOpenSubmenus((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
+  }, []); // Tidak ada dependensi eksternal, aman
 
-  const handleItemPress = (item) => {
+  const handleItemPress = useCallback((item) => {
     if (item.id === 'Logout') {
         Alert.alert(
             'Keluar Akun',
@@ -141,77 +224,12 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
     } else if (item.navigateToNested && item.targetTab && item.screen) {
       navigation.navigate('MainTabs', { screen: item.targetTab, params: { screen: item.screen, params: item.params } });
       handleClose();
-    } else if (item.screen && item.params && !item.navigateToNested) {
-      navigation.navigate(item.screen, item.params);
-      handleClose();
-    } else if (item.screen) {
+    } else if (item.screen) { // Disederhanakan, params bisa undefined
       navigation.navigate(item.screen, item.params);
       handleClose();
     }
-  };
+  }, [navigation, handleClose, toggleSubmenu]);
 
-  const renderMenuItem = (item, isSubItem = false, isLastItem = false) => {
-    const IconComponent = item.icon;
-    let itemIsActive = item.id
-      ? activeScreenKeyValue === item.id
-      : item.submenu
-      ? item.submenu.some((sub) => sub.id && activeScreenKeyValue === sub.id)
-      : false;
-
-    const currentItemTextColor = item.color ? item.color : (itemIsActive ? activeColor : textColor);
-    const currentItemIconColor = item.color ? item.color : (itemIsActive ? activeColor : iconDefaultColor);
-    const currentFontFamily = itemIsActive || item.id === 'Logout' ? 'Poppins-SemiBold' : 'Poppins-Regular';
-
-    return (
-      <View>
-        {item.id === 'Logout' && <View style={[styles.separatorAboveLogout, {backgroundColor: separatorColor}]} />}
-        <TouchableOpacity
-          key={(item.id || item.label) + (isSubItem ? '_sub' : '')}
-          style={[
-            styles.menuItem,
-            isSubItem && styles.submenuItem,
-          ]}
-          onPress={() => handleItemPress(item)}
-          activeOpacity={0.65}
-        >
-          {itemIsActive && !item.submenu && item.id !== 'Logout' && (
-            <View style={[styles.activeItemIndicator, { backgroundColor: activeColor }]} />
-          )}
-          <View style={styles.menuItemContent}>
-            {IconComponent && (
-            <View style={styles.iconWrapper}>
-                <IconComponent
-                    size={isSubItem ? 18 : 20}
-                    color={currentItemIconColor}
-                    strokeWidth={itemIsActive || item.id === 'Logout' ? 2.2 : 1.8}
-                />
-            </View>
-            )}
-            <Text
-                style={[
-                    styles.menuText,
-                    { color: currentItemTextColor, fontFamily: currentFontFamily },
-                    isSubItem && styles.submenuItemText,
-                    !IconComponent && isSubItem && {
-                        marginLeft: (styles.iconWrapper?.width || 20) + (styles.iconWrapper?.marginRight || 16)
-                    },
-                ]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-            >
-                {item.label}
-            </Text>
-          </View>
-          {item.submenu && !isSubItem && (
-            openSubmenus[item.label] ?
-            <ChevronUp size={18} color={iconDefaultColor} style={styles.chevronIcon} /> :
-            <ChevronDown size={18} color={iconDefaultColor} style={styles.chevronIcon} />
-          )}
-        </TouchableOpacity>
-        {/* Garis pemisah antar menu utama telah dihilangkan dari sini */}
-      </View>
-    );
-  };
 
   return (
     <View style={styles.overlay}>
@@ -244,22 +262,52 @@ export default function Sidebar({ navigation, onClose, darkMode }) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.menuScrollContainer}
         >
-          {menuItems.map((item, index) => (
-            <View key={item.id ? item.id : item.label}>
-              {renderMenuItem(item, false, index === menuItems.length - 1)}
-              {item.submenu && openSubmenus[item.label] && (
-                <View
-                  style={[
-                    styles.submenuContainer,
-                    { borderLeftColor: submenuBorderColor },
-                  ]}>
-                  {item.submenu.map((sub, subIndex) =>
-                      renderMenuItem(sub, true, subIndex === item.submenu.length -1)
-                  )}
-                </View>
-              )}
-            </View>
-          ))}
+          {menuItems.map((item) => {
+            // Kalkulasi isActive di sini sebelum meneruskan ke MenuItemComponent
+            const isActive = item.id
+              ? activeScreenKeyValue === item.id
+              : item.submenu
+              ? item.submenu.some((sub) => sub.id && activeScreenKeyValue === sub.id)
+              : false;
+
+            return (
+              <View key={item.id || item.label}>
+                <MenuItemComponent
+                  item={item}
+                  isActive={isActive}
+                  isOpen={item.submenu ? openSubmenus[item.label] : undefined}
+                  onItemPress={handleItemPress}
+                  textColor={textColor}
+                  activeColor={activeColor}
+                  iconDefaultColor={iconDefaultColor}
+                  separatorColor={item.id === 'Logout' ? separatorColor : undefined}
+                />
+                {item.submenu && openSubmenus[item.label] && (
+                  <View
+                    style={[
+                      styles.submenuContainer,
+                      { borderLeftColor: submenuBorderColor },
+                    ]}>
+                    {item.submenu.map((subItem) => {
+                      const isSubActive = subItem.id && activeScreenKeyValue === subItem.id;
+                      return (
+                        <MenuItemComponent
+                          key={subItem.id || subItem.label}
+                          item={subItem}
+                          isSubItem={true}
+                          isActive={isSubActive}
+                          onItemPress={handleItemPress}
+                          textColor={textColor}
+                          activeColor={activeColor}
+                          iconDefaultColor={iconDefaultColor}
+                        />
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </ScrollView>
       </Animated.View>
     </View>
@@ -322,21 +370,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     marginLeft: 5,
   },
-  // separator: { // <-- Gaya ini tidak digunakan
-  //   height: StyleSheet.hairlineWidth,
-  //   opacity: 0.8,
-  // },
-  mainSeparator: { // Separator di bawah profil
+  mainSeparator: {
     marginHorizontal: 20,
     marginBottom: 10,
     height: StyleSheet.hairlineWidth,
-    // backgroundColor akan diterapkan dari inline style
   },
-  separatorAboveLogout: { // Style khusus untuk separator di atas logout
+  separatorAboveLogout: {
     height: StyleSheet.hairlineWidth,
-    marginHorizontal: 0,
+    marginHorizontal: 0, // Untuk komponen MenuItem, ini mungkin perlu disesuaikan agar full-width relatif terhadap item
     marginTop: 10,
-    marginBottom: 0,
+    marginBottom: 0, // Dihilangkan karena MenuItem punya paddingVertical
   },
   menuScrollContainer: {
     paddingHorizontal: 15,
@@ -345,14 +388,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 10,
+    paddingHorizontal: 10, // Padding horizontal untuk item
     borderRadius: 8,
     marginBottom: 2,
     position: 'relative',
   },
   activeItemIndicator: {
     position: 'absolute',
-    left: -15,
+    left: -15, // Relatif terhadap paddingHorizontal ScrollView
     top: '20%',
     bottom: '20%',
     width: 4,
@@ -364,33 +407,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconWrapper: {
-    width: 22,
-    marginRight: 14,
+    width: 22, // Lebar area ikon
+    marginRight: 14, // Jarak ikon ke teks
     alignItems: 'center',
   },
   menuText: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
-    flex: 1,
+    flex: 1, // Agar teks bisa menggunakan sisa ruang
   },
   submenuContainer: {
-    marginLeft: 22 + 14 - 2, // (iconWrapper.width + iconWrapper.marginRight) - sedikit overlap
-    paddingLeft: 12,
+    marginLeft: 22, // (iconWrapper.width) - sesuaikan dengan kebutuhan indentasi
+    paddingLeft: 12, // Padding internal submenu
     borderLeftWidth: 1.5,
     marginTop: 1,
     marginBottom: 3,
   },
-  submenuItem: {
+  submenuItem: { // Override untuk submenu item
     paddingVertical: 9,
-    paddingHorizontal: 0,
+    paddingHorizontal: 0, // Padding horizontal sudah diatur oleh submenuContainer dan indentasi
     marginBottom: 0,
   },
   submenuItemText: {
     fontSize: 13.5,
   },
-  chevronIcon: { marginLeft: 'auto' },
-  // menuItemSeparator sudah tidak digunakan lagi, jadi definisinya bisa dihapus
-  // logoutItemStyle: { // <-- Gaya ini tidak digunakan
-  //   // marginTop: 8,
-  // },
+  chevronIcon: { marginLeft: 'auto' }, // Dorong chevron ke kanan
 });
