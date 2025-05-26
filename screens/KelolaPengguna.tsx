@@ -17,14 +17,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Theme } from '@react-navigation/native';
 import {
   UserRound,
-  Edit,
+  Edit3,
   Trash2,
   Plus,
   Users,
   Search,
   X,
   KeyRound, 
-  AtSign,   
+  AtSign,
 } from 'lucide-react-native';
 
 // --- Interface & Types ---
@@ -33,21 +33,21 @@ interface User {
   name: string;
   username: string;
   role: string;
-  password?: string; 
+  password?: string;
   avatarUrl?: string;
 }
 
 // --- Dummy Data Pengguna dengan Username dan Password ---
-// PERINGATAN: Password di sini HANYA dummy dan untuk demonstrasi.
+// PERINGATAN: Menyimpan password plaintext di data (bahkan dummy) bukan praktik terbaik.
+// Idealnya, backend hanya menyimpan hash password.
 const DUMMY_USERS_DATA_WITH_USERNAME: User[] = [
   { id: 'usr_001', name: 'Azharangga Kusuma', username: 'azharangga_k', role: 'Administrator', password: 'password123' },
   { id: 'usr_002', name: 'Siti Aminah', username: 'siti_a', role: 'Petugas Desa', password: 'sitiPassword!' },
-  { id: 'usr_003', name: 'Budi Santoso', username: 'budi_s', role: 'Petugas Desa', password: 'budiSecure' },
-  { id: 'usr_004', name: 'Dewi Lestari', username: 'dewi_l', role: 'Petugas Desa', password: 'userPass4' },
-  { id: 'usr_005', name: 'Rahmat Hidayat', username: 'rahmat_h', role: 'Petugas Desa', password: 'rahmatXYZ' },
-  { id: 'usr_006', name: 'Ahmad Dahlan', username: 'ahmad_d', role: 'Petugas Desa', password: 'adminAhmad' },
+  { id: 'usr_003', name: 'Budi Santoso', username: 'budi_s', role: 'Operator Kecamatan', password: 'budiSecure' },
+  { id: 'usr_004', name: 'Dewi Lestari', username: 'dewi_l', role: 'Pengguna Biasa', password: 'userPass4' },
+  { id: 'usr_005', name: 'Rahmat Hidayat', username: 'rahmat_h', role: 'Petugas Lapangan', password: 'rahmatXYZ' },
+  { id: 'usr_006', name: 'Ahmad Dahlan', username: 'ahmad_d', role: 'Administrator', password: 'adminAhmad' },
   { id: 'usr_007', name: 'Putri Ayu', username: 'putri_a', role: 'Petugas Desa', password: 'putriDesa' },
-  // Tambahkan lebih banyak pengguna jika diperlukan
 ];
 
 const grayColor = '#9A9A9A'; 
@@ -66,11 +66,10 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const primaryActionColor = colors.primary;
-  const destructiveColor = isDarkMode ? '#F87171' : '#EF4444'; // Untuk ikon hapus
-  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280'; // Abu-abu untuk teks sekunder
-  const iconDefaultColor = isDarkMode ? colors.text : '#4A5568'; // Untuk ikon edit
-  const passwordIconColor = secondaryTextColor; // Warna ikon password disamakan dengan teks sekunder (abu-abu)
-  const passwordTextColor = secondaryTextColor; // Warna teks password abu-abu
+  const destructiveColor = isDarkMode ? '#F87171' : '#EF4444';
+  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280';
+  const iconDefaultColor = isDarkMode ? colors.text : '#4A5568';
+  const passwordIconAndTextColor = secondaryTextColor; // Warna ikon dan teks password (abu-abu)
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -88,7 +87,7 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
           const lowercasedQuery = debouncedSearchQuery.toLowerCase().trim();
           dataToProcess = dataToProcess.filter(user =>
             user.name.toLowerCase().includes(lowercasedQuery) ||
-            user.username.toLowerCase().includes(lowercasedQuery) || // Mencari berdasarkan username
+            user.username.toLowerCase().includes(lowercasedQuery) ||
             user.role.toLowerCase().includes(lowercasedQuery)
           );
         }
@@ -105,6 +104,8 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
 
   const handleEditUser = (user: User) => {
     Alert.alert("Edit Pengguna", `Edit pengguna: ${user.name}`);
+    // Di layar edit, Anda tidak akan menampilkan password lama,
+    // tetapi menyediakan field untuk "Password Baru" dan "Konfirmasi Password Baru".
     // navigation.navigate('EditUserScreen', { userId: user.id });
   };
 
@@ -118,20 +119,13 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
           text: "Hapus", 
           style: "destructive", 
           onPress: () => {
-            const updatedData = DUMMY_USERS_DATA_WITH_USERNAME.filter(u => u.id !== userToDelete.id);
-            // Jika DUMMY_USERS_DATA_WITH_USERNAME adalah sumber utama, Anda mungkin perlu cara untuk memodifikasinya
-            // Untuk simulasi ini, kita filter dari sumber utama dan set ulang
-            // Pada aplikasi nyata, ini akan berupa panggilan API
-            let dataToProcess = updatedData;
-            if (debouncedSearchQuery.trim() !== '') {
-                const lowercasedQuery = debouncedSearchQuery.toLowerCase().trim();
-                dataToProcess = dataToProcess.filter(user =>
-                    user.name.toLowerCase().includes(lowercasedQuery) ||
-                    user.username.toLowerCase().includes(lowercasedQuery) ||
-                    user.role.toLowerCase().includes(lowercasedQuery)
-                );
+            // Simulasi penghapusan dari data dummy utama
+            const indexToRemove = DUMMY_USERS_DATA_WITH_USERNAME.findIndex(u => u.id === userToDelete.id);
+            if (indexToRemove > -1) {
+              DUMMY_USERS_DATA_WITH_USERNAME.splice(indexToRemove, 1);
             }
-            setAllUsers(dataToProcess);
+            // Update state lokal
+            setAllUsers(prevUsers => prevUsers.filter(u => u.id !== userToDelete.id));
             console.log(`Pengguna ${userToDelete.name} dihapus.`);
           } 
         },
@@ -140,7 +134,8 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
   };
   
   const viewUserDetails = (user: User) => {
-    Alert.alert("Detail Pengguna", `Nama: ${user.name}\nUsername: ${user.username}\nRole: ${user.role}\nPERINGATAN: Menampilkan password adalah risiko keamanan.`);
+    // Tidak lagi menampilkan password di alert detail
+    Alert.alert("Detail Pengguna", `Nama: ${user.name}\nUsername: ${user.username}\nRole: ${user.role}`);
   };
 
   const handleClearSearch = () => {
@@ -196,7 +191,7 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
     userItemCard: {
       backgroundColor: colors.card,
       borderRadius: 12,
-      paddingVertical: 14, // Sedikit penyesuaian padding
+      paddingVertical: 14,
       paddingHorizontal: 16,
       flexDirection: 'row',
       alignItems: 'center',
@@ -223,28 +218,34 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
       color: colors.text,
       marginBottom: 2,
     },
-    userRole: { // Style untuk role
+    userUsername: { // Style untuk username
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 2,
+    },
+    userUsernameText: {
+        fontSize: 13,
+        fontFamily: 'Poppins-Regular',
+        color: secondaryTextColor, 
+        marginLeft: 4, // Jarak dari ikon AtSign
+    },
+    userRole: {
       fontSize: 13,
       fontFamily: 'Poppins-Regular',
       color: secondaryTextColor,
       marginBottom: 2,
     },
-    userUsername: { // Style baru untuk username
-        fontSize: 13,
-        fontFamily: 'Poppins-Regular',
-        color: secondaryTextColor, // Warna sama dengan role atau sedikit beda
-        marginBottom: 2,
-    },
     userPasswordContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 1, // Sedikit jarak dari atas
+        marginTop: 1,
     },
     userPasswordText: { 
-      fontSize: 12,
-      fontFamily: 'Poppins-Light',
-      color: passwordTextColor, // Menggunakan warna abu-abu
+      fontSize: 14, // Ukuran font bisa disesuaikan agar asterik terlihat jelas
+      fontFamily: 'Poppins-Regular', // Bisa juga pakai Poppins-Light atau Medium
+      color: passwordIconAndTextColor, // Warna abu-abu
       marginLeft: 4, 
+      letterSpacing: 1.5, // Memberi jarak antar asterik
     },
     actionsContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 10 },
     actionButton: { padding: 8, marginLeft: Platform.OS === 'ios' ? 10 : 8 },
@@ -273,25 +274,26 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
       </View>
       <View style={styles.userInfoContainer}>
         <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
-        {/* Menampilkan Username */}
-        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 1}}>
+        
+        <View style={styles.userUsername}>
             <AtSign size={14} color={secondaryTextColor} />
-            <Text style={[styles.userUsername, {marginLeft: 4}]} numberOfLines={1}>{item.username}</Text>
+            <Text style={styles.userUsernameText} numberOfLines={1}>{item.username}</Text>
         </View>
+
         <Text style={styles.userRole} numberOfLines={1}>{item.role}</Text>
-        {/* Menampilkan Password - SANGAT TIDAK DISARANKAN UNTUK PRODUKSI */}
-        {item.password && (
+        
+        {/* Menampilkan Indikasi Password (Masked) */}
+        {item.password && ( // Cek apakah password ada (meski tidak ditampilkan nilainya)
             <View style={styles.userPasswordContainer}>
-                <KeyRound size={14} color={passwordIconColor} /> 
+                <KeyRound size={14} color={passwordIconAndTextColor} /> 
                 <Text style={styles.userPasswordText} numberOfLines={1}>
-                    {item.password} 
-                </Text>
+                    ******** </Text>
             </View>
         )}
       </View>
       <View style={styles.actionsContainer}>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleEditUser(item)}>
-          <Edit size={20} color={iconDefaultColor} />
+          <Edit3 size={20} color={iconDefaultColor} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleDeleteUser(item)}>
           <Trash2 size={20} color={destructiveColor} />
@@ -300,7 +302,7 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
     </TouchableOpacity>
   );
 
-  if (isLoading && !allUsers.length) { // Tampilkan loading hanya jika users belum ada sama sekali
+  if (isLoading && !allUsers.length) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
@@ -348,9 +350,6 @@ const ManageUsers = ({ navigation }: ManageUsersProps) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContentContainer}
           showsVerticalScrollIndicator={false}
-          // onEndReached={handleLoadMore} // Pagination dinonaktifkan sementara
-          // onEndReachedThreshold={0.5} 
-          // ListFooterComponent={renderFooter}
           ListEmptyComponent={
             !isLoading && allUsers.length === 0 ? (
               <View style={styles.emptyStateContainer}>

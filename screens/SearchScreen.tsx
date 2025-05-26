@@ -253,14 +253,14 @@ const SearchScreen = ({ navigation }: any) => {
     emptyStateIcon: { marginBottom: 24 },
     emptyStateTitle: { // Style default untuk judul empty state
       fontSize: 20,
-      fontFamily: 'Poppins-Bold',
+      fontFamily: 'Poppins-SemiBold',
       color: colors.text, // Warna teks standar
       marginBottom: 10,
       textAlign: 'center',
     },
     notFoundTitle: { // Style khusus untuk judul "Tidak Ditemukan"
         fontSize: 20,
-        fontFamily: 'Poppins-Bold',
+        fontFamily: 'Poppins-SemiBold',
         color: searchResultNotFoundErrorColor, // Warna merah khusus
         marginBottom: 10,
         textAlign: 'center',
