@@ -112,7 +112,7 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       backgroundColor: colors.background,
     },
     headerTitle: {
-      fontSize: 26,
+      fontSize: 24,
       fontFamily: 'Poppins-Bold',
       color: colors.text,
     },
