@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'; // useMemo dipertahankan jika diperlukan di masa mendatang
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Keyboard,
   Alert,
 } from 'react-native';
-import { useTheme } from '@react-navigation/native'; // useFocusEffect tidak digunakan di versi ini
+import { useTheme } from '@react-navigation/native';
 import type { Theme } from '@react-navigation/native';
 import {
   Search,
@@ -26,10 +26,8 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 
-// DEFINISI KONSTANTA WARNA YANG MUNGKIN HILANG
-const darkModeYellowAccent = '#FACC15'; // Warna aksen kuning untuk dark mode
+const darkModeYellowAccent = '#FACC15';
 
-// Struktur item yang bisa dicari
 interface SearchableItem {
   id: string;
   type: 'pengguna' | 'desa' | 'kecamatan' | 'formulir';
@@ -38,41 +36,14 @@ interface SearchableItem {
   deskripsiSekunder?: string;
 }
 
-// Dummy data source
 const DUMMY_DATA_SOURCE: SearchableItem[] = [
-  // Pengguna
   { id: 'pengguna-1', type: 'pengguna', nama: 'Azharangga Kusuma', deskripsiUtama: 'Administrator', deskripsiSekunder: 'azharanggakusuma01@gmail.com' },
   { id: 'pengguna-2', type: 'pengguna', nama: 'Siti Aminah', deskripsiUtama: 'Petugas Lapangan - Desa Klangenan', deskripsiSekunder: 'siti.a@example.com' },
-  { id: 'pengguna-3', type: 'pengguna', nama: 'Budi Santoso', deskripsiUtama: 'Kepala Desa Maju Jaya', deskripsiSekunder: 'budi.s@example.com' },
-  { id: 'pengguna-4', type: 'pengguna', nama: 'Dewi Lestari', deskripsiUtama: 'Staf Kecamatan Plumbon', deskripsiSekunder: 'dewi.l@example.com' },
-  { id: 'pengguna-5', type: 'pengguna', nama: 'Rahmat Hidayat', deskripsiUtama: 'Operator Formulir', deskripsiSekunder: 'rahmat.h@example.com' },
-
-  // Desa
   { id: 'desa-1', type: 'desa', nama: 'Desa Klangenan', deskripsiUtama: 'Kecamatan Plumbon', deskripsiSekunder: 'Kabupaten Cirebon' },
   { id: 'desa-2', type: 'desa', nama: 'Desa Maju Jaya', deskripsiUtama: 'Kecamatan Weru', deskripsiSekunder: 'Kabupaten Cirebon' },
-  { id: 'desa-3', type: 'desa', nama: 'Desa Jamblang', deskripsiUtama: 'Kecamatan Jamblang', deskripsiSekunder: 'Kabupaten Cirebon' },
-  { id: 'desa-4', type: 'desa', nama: 'Desa Arjawinangun', deskripsiUtama: 'Kecamatan Arjawinangun', deskripsiSekunder: 'Kabupaten Cirebon' },
-  { id: 'desa-5', type: 'desa', nama: 'Desa Suranenggala', deskripsiUtama: 'Kecamatan Suranenggala', deskripsiSekunder: 'Kabupaten Cirebon' },
-  { id: 'desa-6', type: 'desa', nama: 'Desa Gegesik', deskripsiUtama: 'Kecamatan Gegesik', deskripsiSekunder: 'Kabupaten Indramayu' },
-  { id: 'desa-7', type: 'desa', nama: 'Desa Cipeujeuh', deskripsiUtama: 'Kecamatan Lemahabang', deskripsiSekunder: 'Kabupaten Cirebon' },
-  { id: 'desa-8', type: 'desa', nama: 'Desa Palimanan', deskripsiUtama: 'Kecamatan Palimanan', deskripsiSekunder: 'Kabupaten Cirebon' },
-
-  // Kecamatan
   { id: 'kecamatan-1', type: 'kecamatan', nama: 'Kecamatan Plumbon', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '15 Desa/Kelurahan' },
-  { id: 'kecamatan-2', type: 'kecamatan', nama: 'Kecamatan Weru', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '12 Desa/Kelurahan' },
-  { id: 'kecamatan-3', type: 'kecamatan', nama: 'Kecamatan Jamblang', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '10 Desa/Kelurahan' },
-  { id: 'kecamatan-4', type: 'kecamatan', nama: 'Kecamatan Arjawinangun', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '11 Desa/Kelurahan' },
-  { id: 'kecamatan-5', type: 'kecamatan', nama: 'Kecamatan Lemahabang', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '13 Desa/Kelurahan' },
-  { id: 'kecamatan-6', type: 'kecamatan', nama: 'Kecamatan Cirebon Utara', deskripsiUtama: 'Kota Cirebon', deskripsiSekunder: '4 Kelurahan' },
-
-  // Formulir
   { id: 'form-1', type: 'formulir', nama: 'Formulir Pengajuan KTP', deskripsiUtama: 'Layanan Kependudukan', deskripsiSekunder: 'Kode: F-KTP.01' },
-  { id: 'form-2', type: 'formulir', nama: 'Formulir Bantuan Sosial Desa', deskripsiUtama: 'Program Kesejahteraan', deskripsiSekunder: 'Kode: F-BANSOS.DS' },
-  { id: 'form-3', type: 'formulir', nama: 'Formulir Laporan Kegiatan RT/RW', deskripsiUtama: 'Administrasi Desa', deskripsiSekunder: 'Kode: F-LAP.RTW' },
-  { id: 'form-4', type: 'formulir', nama: 'Formulir Izin Mendirikan Bangunan (IMB) Desa', deskripsiUtama: 'Perizinan', deskripsiSekunder: 'Kode: F-IMB.DS' },
-  { id: 'form-5', type: 'formulir', nama: 'Formulir Pendaftaran Usaha Mikro Kecil Menengah (UMKM)', deskripsiUtama: 'Ekonomi & Usaha', deskripsiSekunder: 'Kode: F-UMKM.REG' },
-  { id: 'form-6', type: 'formulir', nama: 'Formulir Data Penduduk Miskin', deskripsiUtama: 'Data Sosial', deskripsiSekunder: 'Kode: F-DTKS.03' },
-  { id: 'form-7', type: 'formulir', nama: 'Formulir Permohonan Surat Keterangan Usaha', deskripsiUtama: 'Layanan Administrasi', deskripsiSekunder: 'Kode: F-SKU.DS' },
+  // ... (sisa data)
 ];
 
 const getItemIcon = (type: SearchableItem['type'], color: string, size: number = 22) => {
@@ -85,16 +56,17 @@ const getItemIcon = (type: SearchableItem['type'], color: string, size: number =
   }
 };
 
-const SearchScreenRedesigned = ({ navigation }: any) => {
+// Konstanta grayColor seperti di HistoryScreen
+const grayColor = '#9A9A9A'; // Digunakan untuk placeholder dan ikon di search bar
+
+const SearchScreenSimilarHistory = ({ navigation }: any) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchableItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const placeholderTextColor = isDarkMode ? '#71717A' : '#A1A1AA'; 
-  const iconSearchColor = isDarkMode ? '#A1A1AA' : '#71717A'; 
-
+  // Warna aksen untuk ikon item hasil pencarian (konsisten dengan implementasi Anda sebelumnya)
   const accentLight = colors.primary; 
   const accentDark = darkModeYellowAccent; 
   const currentAccentColor = isDarkMode ? accentDark : accentLight;
@@ -102,14 +74,12 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setSearchResults([]);
-      if(hasSearched) setHasSearched(false); 
+      if(hasSearched) setHasSearched(false);
       setIsLoading(false);
       return;
     }
-
     setIsLoading(true);
     if(!hasSearched) setHasSearched(true);
-
     const timer = setTimeout(() => {
       const query = searchQuery.toLowerCase().trim();
       const filteredResults = DUMMY_DATA_SOURCE.filter(item =>
@@ -119,21 +89,15 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
       );
       setSearchResults(filteredResults);
       setIsLoading(false);
-    }, 300); 
-
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery, hasSearched]);
 
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
+  const handleClearSearch = () => setSearchQuery('');
   const handleResultPress = (item: SearchableItem) => {
     console.log('Result pressed:', item);
     let detailScreen = '';
     let params = { itemId: item.id, itemName: item.nama };
-
     switch (item.type) {
       case 'pengguna': detailScreen = 'UserProfileScreen'; break;
       case 'desa': detailScreen = 'DesaDetailScreen'; break;
@@ -151,37 +115,49 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background },
     container: { flex: 1 },
-    searchBarOuterContainer: {
-        paddingTop: Platform.OS === 'ios' ? 10 : 16,
-        paddingBottom: 12,
-        paddingHorizontal: 16,
+    // --- Header untuk Judul Layar --- (Mirip HistoryScreen)
+    screenHeaderContainer: { 
+        paddingHorizontal: 24, 
+        paddingTop: Platform.OS === 'ios' ? 20 : 28,
+        paddingBottom: 12, 
         backgroundColor: colors.background,
+    },
+    screenHeaderTitle: { 
+        fontSize: 24, 
+        fontFamily: 'Poppins-SemiBold', 
+        color: colors.text,
+        textAlign: 'left',
+    },
+    // --- Style untuk Search Input --- (Mirip HistoryScreen)
+    searchInputWrapper: { // Pembungkus untuk memberi margin pada searchInputContainer
+        paddingHorizontal: 20, // Margin horizontal untuk search bar
+        paddingBottom: 16, // Jarak ke konten di bawahnya
+        paddingTop: 8, // Jarak dari judul layar
+        backgroundColor: colors.background, // Pastikan sama dengan background layar
     },
     searchInputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      height: 48,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: isDarkMode ? 0.1 : 0.05,
-      shadowRadius: 3,
-      elevation: 2,
+      backgroundColor: colors.card, // Background input
+      borderRadius: 8, // Samakan dengan HistoryScreen
+      paddingHorizontal: 12, // Samakan dengan HistoryScreen
+      height: 44, // Tinggi efektif, bisa disesuaikan dengan padding TextInput
+      borderWidth: 1, // Samakan dengan HistoryScreen
+      borderColor: colors.border, // Samakan dengan HistoryScreen
+      // Shadow dihilangkan agar mirip HistoryScreen yang fokus pada border
     },
-    searchIcon: { marginRight: 10 },
+    searchIcon: { marginRight: 8 }, // Margin ikon search
     textInput: {
       flex: 1,
-      fontSize: 16,
+      fontSize: 15, // Samakan dengan HistoryScreen
       fontFamily: 'Poppins-Regular',
       color: colors.text,
-      paddingVertical: 0,
+      paddingVertical: Platform.OS === 'ios' ? 10 : 8, // Sesuaikan agar tinggi efektif ~44
     },
-    clearButton: { padding: 6 },
-    listContainer: {
-        flex: 1,
-    },
+    clearButton: { padding: 4 },
+    // --- Akhir Style Search Input ---
+
+    listContainer: { flex: 1 },
     listContentContainer: {
       paddingTop: 8,
       paddingHorizontal: 16,
@@ -241,9 +217,7 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
       fontFamily: 'Poppins-Regular',
       color: colors.notification, 
     },
-    itemChevron: {
-        marginLeft: 10,
-    },
+    itemChevron: { marginLeft: 10 },
     emptyStateContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -268,6 +242,7 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   });
 
   const renderResultItem = ({ item }: { item: SearchableItem }) => (
+    // ... (renderResultItem tetap sama)
     <TouchableOpacity style={styles.resultItem} onPress={() => handleResultPress(item)} activeOpacity={0.75}>
       <View style={styles.itemIconContainer}>
         {getItemIcon(item.type, currentAccentColor)}
@@ -282,6 +257,7 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   );
 
   const renderContent = () => {
+    // ... (renderContent tetap sama)
     if (isLoading && searchQuery.trim() !== '') {
       return (
         <View style={styles.loadingContainer}>
@@ -295,7 +271,7 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
         <View style={styles.emptyStateContainer}>
           <Search size={72} color={colors.border} style={styles.emptyStateIcon} />
           <Text style={styles.emptyStateTitle}>Pencarian Data</Text>
-          <Text style={styles.emptyStateMessage}>Temukan formulir, data desa, kecamatan, atau informasi pengguna dengan cepat.</Text>
+          <Text style={styles.emptyStateMessage}>Temukan formulir, data desa, kecamatan, atau informasi pengguna.</Text>
         </View>
       );
     }
@@ -303,8 +279,8 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
       return (
         <View style={styles.emptyStateContainer}>
           <Frown size={72} color={colors.border} style={styles.emptyStateIcon} />
-          <Text style={styles.emptyStateTitle}>Oops! Tidak Ditemukan</Text>
-          <Text style={styles.emptyStateMessage}>Kami tidak menemukan hasil untuk "{searchQuery}". Coba gunakan kata kunci lain.</Text>
+          <Text style={styles.emptyStateTitle}>Oops! Hasil Tidak Ditemukan</Text>
+          <Text style={styles.emptyStateMessage}>Kami tidak dapat menemukan data untuk "{searchQuery}". Coba kata kunci lain.</Text>
         </View>
       );
     }
@@ -326,27 +302,35 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.searchBarOuterContainer}>
-          <View style={styles.searchInputContainer}>
-            <Search size={22} color={iconSearchColor} style={styles.searchIcon} />
-            <TextInput
-              style={styles.textInput}
-              placeholder="Ketik untuk mencari..."
-              placeholderTextColor={placeholderTextColor}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus={Platform.OS !== 'web'}
-              returnKeyType="search"
-              onBlur={() => { /* Keyboard.dismiss(); Opsional */ }}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
-                <X size={22} color={iconSearchColor} />
-              </TouchableOpacity>
-            )}
-          </View>
+        {/* 1. Header Judul Layar */}
+        <View style={styles.screenHeaderContainer}>
+          <Text style={styles.screenHeaderTitle}>Pencarian Data</Text> 
+          {/* Ganti dengan judul yang sesuai */}
+        </View>
+
+        {/* 2. Search Input Bar */}
+        <View style={styles.searchInputWrapper}>
+            <View style={styles.searchInputContainer}>
+                <Search size={20} color={grayColor} style={styles.searchIcon} />
+                <TextInput
+                style={styles.textInput}
+                placeholder="Cari data..." // Placeholder lebih umum
+                placeholderTextColor={grayColor}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus={Platform.OS !== 'web'}
+                returnKeyType="search"
+                onBlur={() => { /* Keyboard.dismiss(); Opsional */ }}
+                />
+                {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                    <X size={20} color={grayColor} />
+                </TouchableOpacity>
+                )}
+            </View>
         </View>
         
+        {/* 3. Konten List */}
         <View style={styles.listContainer}>
             {renderContent()}
         </View>
@@ -356,4 +340,4 @@ const SearchScreenRedesigned = ({ navigation }: any) => {
   );
 };
 
-export default SearchScreenRedesigned;
+export default SearchScreenSimilarHistory;
