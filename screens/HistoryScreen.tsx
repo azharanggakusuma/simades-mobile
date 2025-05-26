@@ -95,6 +95,7 @@ const formatTimestamp = (date?: Date): string => {
 
 type FilterType = 'Semua' | 'Belum Selesai' | 'Selesai';
 
+const grayColor = '#9A9A9A';
 const STATUS_SELESAI_COLOR = '#10B981';
 const STATUS_BELUM_SELESAI_COLOR = '#EF4444';
 const TEXT_ON_COLORED_BADGE = '#FFFFFF';
@@ -418,11 +419,11 @@ const HistoryScreen = ({ navigation }: any) => {
 
       {/* Search Input */}
       <View style={styles.searchInputContainer}>
-        <Search size={20} color={colors.notification} />
+        <Search size={20} color={grayColor} />
         <TextInput
             style={styles.searchInput}
             placeholder="Cari nama formulir..."
-            placeholderTextColor={colors.notification}
+            placeholderTextColor={grayColor}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
@@ -431,7 +432,7 @@ const HistoryScreen = ({ navigation }: any) => {
         />
         {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchButton}>
-                <XCircle size={20} color={colors.notification} />
+                <XCircle size={20} color={grayColor} />
             </TouchableOpacity>
         )}
       </View>
