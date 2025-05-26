@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react'; // Ditambahkan useMemo dan useCallback
 import {
   View,
   Text,
@@ -9,17 +9,20 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  TextInput,
+  Keyboard,
 } from 'react-native';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Theme } from '@react-navigation/native';
 import {
   UserRound,
-  ChevronRight,
   Edit3,
   Trash2,
   Plus,
   Users,
+  Search, 
+  X,  
 } from 'lucide-react-native';
 
 // --- Interface & Types ---
@@ -40,7 +43,11 @@ const DUMMY_USERS_DATA: User[] = [
   { id: 'usr_005', name: 'Rahmat Hidayat', role: 'Petugas Lapangan', email: 'rahmat.h@example.com' },
   { id: 'usr_006', name: 'Ahmad Dahlan', role: 'Administrator', email: 'ahmad.d@example.com' },
   { id: 'usr_007', name: 'Putri Ayu', role: 'Petugas Desa', email: 'putri.a@example.com' },
+  // Tambahkan lebih banyak data dummy jika ingin menguji dengan daftar panjang
+  // Misalnya, generate 20-30 pengguna.
 ];
+
+const grayColor = '#9A9A9A'; // Warna abu-abu untuk placeholder dan ikon search
 
 interface ManageUsersScreenProps {
   navigation: any; 
@@ -48,9 +55,10 @@ interface ManageUsersScreenProps {
 
 const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
-  const insets = useSafeAreaInsets(); // <<< PANGGIL HOOK DI SINI
+  const insets = useSafeAreaInsets();
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]); // Menyimpan semua pengguna (dari sumber asli)
+  const [searchQuery, setSearchQuery] = useState('');   // State untuk input pencarian
   const [isLoading, setIsLoading] = useState(true);
 
   const primaryActionColor = colors.primary;
@@ -58,16 +66,34 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
   const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280';
   const iconDefaultColor = isDarkMode ? colors.text : '#4A5568';
 
+  // Memuat data pengguna awal
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       setIsLoading(true);
+      // Simulasi pengambilan data
       setTimeout(() => {
-        setUsers(DUMMY_USERS_DATA);
+        setAllUsers(DUMMY_USERS_DATA); // Muat semua data dummy ke allUsers
         setIsLoading(false);
       }, 500);
-      return () => {};
+      return () => {
+        // setAllUsers([]); // Opsional: bersihkan data saat screen tidak fokus
+      };
     }, [])
   );
+
+  // Memoized list pengguna yang sudah difilter berdasarkan searchQuery
+  const filteredUsers = useMemo(() => {
+    if (searchQuery.trim() === '') {
+      return allUsers;
+    }
+    const lowercasedQuery = searchQuery.toLowerCase().trim();
+    return allUsers.filter(user =>
+      user.name.toLowerCase().includes(lowercasedQuery) ||
+      user.role.toLowerCase().includes(lowercasedQuery) ||
+      user.email.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [allUsers, searchQuery]);
+
 
   const handleAddUser = () => {
     Alert.alert("Tambah Pengguna", "Navigasi ke halaman tambah pengguna.");
@@ -79,27 +105,33 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
     // navigation.navigate('EditUserScreen', { userId: user.id });
   };
 
-  const handleDeleteUser = (user: User) => {
+  const handleDeleteUser = (userToDelete: User) => {
     Alert.alert(
       "Hapus Pengguna",
-      `Apakah Anda yakin ingin menghapus pengguna "${user.name}"?`,
+      `Apakah Anda yakin ingin menghapus pengguna "${userToDelete.name}"?`,
       [
         { text: "Batal", style: "cancel" },
         { 
           text: "Hapus", 
           style: "destructive", 
           onPress: () => {
-            setUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
-            console.log(`Pengguna ${user.name} dihapus.`);
+            // Update state allUsers, filteredUsers akan otomatis terupdate karena useMemo
+            setAllUsers(prevUsers => prevUsers.filter(u => u.id !== userToDelete.id));
+            console.log(`Pengguna ${userToDelete.name} dihapus.`);
           } 
         },
       ]
     );
   };
-
+  
   const viewUserDetails = (user: User) => {
     Alert.alert("Detail Pengguna", `Melihat detail untuk ${user.name}.\nRole: ${user.role}\nEmail: ${user.email}`);
     // navigation.navigate('UserDetailScreen', { userId: user.id });
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    Keyboard.dismiss();
   };
 
   const styles = StyleSheet.create({
@@ -108,18 +140,45 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
     headerContainer: {
       paddingHorizontal: 24,
       paddingTop: Platform.OS === 'ios' ? 20 : 28,
-      paddingBottom: 20,
+      paddingBottom: 12, // Kurangi agar lebih dekat ke search bar
       backgroundColor: colors.background,
     },
     headerTitle: {
-      fontSize: 24,
+      fontSize: 26,
       fontFamily: 'Poppins-Bold',
       color: colors.text,
     },
+    // Style untuk Search Input (mirip HistoryScreen/SearchScreen)
+    searchInputWrapper: {
+        paddingHorizontal: 20, 
+        paddingBottom: 16, 
+        paddingTop: 8, 
+        backgroundColor: colors.background,
+    },
+    searchInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchIcon: { marginRight: 8 },
+    textInput: {
+      flex: 1,
+      fontSize: 15,
+      fontFamily: 'Poppins-Regular',
+      color: colors.text,
+      paddingVertical: Platform.OS === 'ios' ? 10 : 8,
+    },
+    clearButton: { padding: 4 },
+    // Akhir Style Search Input
     listContentContainer: {
       paddingHorizontal: 16,
-      paddingTop: 8,
-      paddingBottom: 80, 
+      paddingTop: 0, // List langsung di bawah search/filter
+      paddingBottom: 80 + insets.bottom, 
       flexGrow: 1,
     },
     userItemCard: {
@@ -144,9 +203,7 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       alignItems: 'center',
       marginRight: 16,
     },
-    userInfoContainer: {
-      flex: 1,
-    },
+    userInfoContainer: { flex: 1 },
     userName: {
       fontSize: 16,
       fontFamily: 'Poppins-SemiBold',
@@ -164,57 +221,23 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       fontFamily: 'Poppins-Light',
       color: colors.border,
     },
-    actionsContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginLeft: 10,
-    },
-    actionButton: {
-      padding: 8,
-      marginLeft: 8,
-    },
+    actionsContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 10 },
+    actionButton: { padding: 8, marginLeft: Platform.OS === 'ios' ? 10 : 8 }, // Jarak antar tombol aksi
     fab: {
-      position: 'absolute',
-      margin: 16,
-      right: 10,
-      // Menggunakan insets.bottom untuk memastikan FAB tidak tertutup navigasi sistem
-      bottom: 10 + insets.bottom, 
-      backgroundColor: primaryActionColor,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      justifyContent: 'center',
-      alignItems: 'center',
-      elevation: 6,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
+      position: 'absolute', margin: 16, right: 10, bottom: 10 + insets.bottom, 
+      backgroundColor: primaryActionColor, width: 56, height: 56, borderRadius: 28, 
+      justifyContent: 'center', alignItems: 'center', elevation: 6,
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84,
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    emptyStateContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    emptyStateContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     emptyStateTextTitle: {
-        fontSize: 18,
-        fontFamily: 'Poppins-SemiBold',
-        color: colors.text,
-        marginTop: 16,
-        textAlign: 'center'
+      fontSize: 18, fontFamily: 'Poppins-SemiBold', color: colors.text, 
+      marginTop: 16, textAlign: 'center'
     },
     emptyStateTextMessage: {
-        fontSize: 14,
-        fontFamily: 'Poppins-Regular',
-        color: colors.notification,
-        textAlign: 'center',
-        marginTop: 4,
+      fontSize: 14, fontFamily: 'Poppins-Regular', color: colors.notification, 
+      textAlign: 'center', marginTop: 4, lineHeight: 20
     }
   });
 
@@ -259,18 +282,51 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
           <Text style={styles.headerTitle}>Kelola Pengguna</Text>
         </View>
 
+        {/* Search Input Bar */}
+        <View style={styles.searchInputWrapper}>
+            <View style={styles.searchInputContainer}>
+                <Search size={20} color={grayColor} style={styles.searchIcon} />
+                <TextInput
+                style={styles.textInput}
+                placeholder="Cari pengguna (nama, peran, email)..."
+                placeholderTextColor={grayColor}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onBlur={() => Keyboard.dismiss()}
+                />
+                {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                    <X size={20} color={grayColor} />
+                </TouchableOpacity>
+                )}
+            </View>
+        </View>
+
         <FlatList
-          data={users}
+          data={filteredUsers} // Menggunakan filteredUsers
           renderItem={renderUserItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContentContainer}
           showsVerticalScrollIndicator={false}
+          // Pagination akan ditambahkan di sini jika diperlukan nanti
+          // onEndReached={handleLoadMore}
+          // onEndReachedThreshold={0.5} 
+          // ListFooterComponent={renderFooter}
           ListEmptyComponent={
-            <View style={styles.emptyStateContainer}>
-                <Users size={64} color={colors.border} />
-                <Text style={styles.emptyStateTextTitle}>Belum Ada Pengguna</Text>
-                <Text style={styles.emptyStateTextMessage}>Anda dapat menambahkan pengguna baru melalui tombol di bawah.</Text>
-            </View>
+            !isLoading && filteredUsers.length === 0 ? (
+              <View style={styles.emptyStateContainer}>
+                  <Users size={64} color={colors.border} />
+                  <Text style={styles.emptyStateTextTitle}>
+                    {searchQuery ? `Tidak Ada Hasil untuk "${searchQuery}"` : "Belum Ada Pengguna"}
+                  </Text>
+                  <Text style={styles.emptyStateTextMessage}>
+                    {searchQuery ? "Coba kata kunci lain atau periksa kembali." : "Anda dapat menambahkan pengguna baru melalui tombol di bawah."}
+                  </Text>
+              </View>
+            ) : null
           }
         />
       </View>
