@@ -1,5 +1,3 @@
-// KeteranganTempatScreen.tsx (Dasar yang Rapi & Sederhana)
-
 import React, { useState } from 'react';
 import {
   View,
@@ -73,7 +71,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
     // Implementasi logika submit data
   };
 
-  // Stylesheet yang sangat mendasar dan rapi
+  // Stylesheet yang disesuaikan untuk desain minimalis
   const styles = StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -83,82 +81,77 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
       flex: 1,
     },
     scrollViewContainer: {
-      flexGrow: 1, // Memastikan konten bisa di-scroll jika panjang
-      paddingHorizontal: 20, // Padding kiri-kanan untuk konten
-      paddingVertical: 24,   // Padding atas-bawah untuk konten
+      flexGrow: 1,
+      paddingHorizontal: 20,
+      paddingVertical: 24,
     },
     screenTitle: {
-      fontSize: 28, // Ukuran judul yang jelas
-      fontFamily: 'Poppins-Bold', // Menggunakan Poppins (pastikan sudah ada)
+      fontSize: 26, // Sedikit lebih kecil
+      fontFamily: 'Poppins-Bold',
       color: colors.text,
-      textAlign: 'center', // Judul di tengah untuk kesan formal
-      marginBottom: 32,   // Jarak yang cukup setelah judul
+      textAlign: 'center',
+      marginBottom: 28, // Sedikit dikurangi
     },
-    // Kontainer untuk setiap bagian form (SK, Alamat, Kecamatan)
     sectionContainer: {
-      marginBottom: 28, // Jarak antar bagian form
+      marginBottom: 24, // Sedikit dikurangi
     },
     sectionTitle: {
-      fontSize: 18,
+      fontSize: 16, // Sedikit lebih kecil
       fontFamily: 'Poppins-SemiBold',
       color: colors.text,
-      marginBottom: 16, // Jarak dari judul bagian ke input pertama
+      marginBottom: 12, // Sedikit dikurangi
     },
-    // Grup untuk setiap pasangan label dan input
     fieldGroup: {
-      marginBottom: 20, // Jarak antar field input
+      marginBottom: 16, // Sedikit dikurangi
     },
     label: {
-      fontSize: 15,
+      fontSize: 14, // Sedikit lebih kecil
       fontFamily: 'Poppins-Medium',
-      color: colors.text, // Warna teks label standar
-      marginBottom: 8,    // Jarak dari label ke input box
+      color: colors.text,
+      marginBottom: 6, // Sedikit dikurangi
     },
-    // Styling dasar untuk TextInput
     textInput: {
-      backgroundColor: colors.card, // Background input agar sedikit berbeda dari layar
+      backgroundColor: colors.card,
       color: colors.text,
       fontFamily: 'Poppins-Regular',
-      fontSize: 16,
+      fontSize: 15, // Ukuran font input standar
       borderWidth: 1,
-      borderColor: colors.border, // Border standar
-      borderRadius: 8,          // Sudut sedikit membulat
-      paddingHorizontal: 14,    // Padding dalam input
-      paddingVertical: Platform.OS === 'ios' ? 15 : 12, // Sesuaikan padding per platform
+      borderColor: colors.border,
+      borderRadius: 6, // Sudut lebih halus
+      paddingHorizontal: 12, // Padding horizontal sedikit dikurangi
+      paddingVertical: Platform.OS === 'ios' ? 12 : 10, // Padding vertikal disesuaikan
     },
     multilineTextInput: {
-      minHeight: 100,             // Tinggi minimal untuk input multi-baris
-      textAlignVertical: 'top',   // Teks mulai dari atas untuk multi-baris
-      paddingTop: Platform.OS === 'ios' ? 15 : 12, // Padding atas konsisten
+      minHeight: 100,
+      textAlignVertical: 'top',
+      paddingTop: Platform.OS === 'ios' ? 12 : 10, // Padding atas konsisten dengan textInput
     },
-    // Wrapper untuk Picker agar bisa diberi style border, dll.
     pickerContainer: {
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 8,
-      overflow: 'hidden', // Penting agar borderRadius bekerja di Android
+      borderRadius: 6, // Sudut lebih halus, konsisten dengan textInput
+      overflow: 'hidden',
     },
     picker: {
       color: colors.text,
-      height: Platform.OS === 'android' ? 52 : undefined, // Tinggi standar Picker di Android
+      height: Platform.OS === 'android' ? 50 : undefined, // Tinggi Picker Android disesuaikan
       // Untuk iOS, tinggi akan menyesuaikan konten.
     },
-    // Tombol Submit
     submitButton: {
-      backgroundColor: colors.primary, // Warna primer untuk tombol aksi
+      backgroundColor: colors.primary,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 16,      // Padding vertikal tombol
-      borderRadius: 10,         // Sudut tombol yang membulat
-      marginTop: 24,            // Jarak dari elemen form terakhir
+      paddingVertical: 12, // Padding vertikal tombol sedikit dikurangi
+      borderRadius: 6, // Sudut lebih halus, konsisten dengan input
+      marginTop: 20, // Margin atas sedikit dikurangi
     },
     submitButtonText: {
-      color: '#FFFFFF',           // Warna teks tombol (biasanya putih)
-      fontSize: 17,
+      color: '#FFFFFF',
+      fontSize: 16, // Sedikit lebih kecil
       fontFamily: 'Poppins-SemiBold',
-      marginLeft: 10,             // Jarak ikon ke teks
+      marginLeft: 8, // Jarak ikon ke teks sedikit dikurangi
     },
   });
 
@@ -171,7 +164,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
         <ScrollView
           contentContainerStyle={styles.scrollViewContainer}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false} // Sembunyikan scrollbar untuk tampilan bersih
+          showsVerticalScrollIndicator={false}
         >
           <Text style={styles.screenTitle}>{screenTitle}</Text>
 
@@ -185,7 +178,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
                   selectedValue={selectedSkDocument}
                   onValueChange={(itemValue) => setSelectedSkDocument(itemValue)}
                   style={styles.picker}
-                  prompt="Pilih Dokumen SK" // Untuk dialog Picker di Android
+                  prompt="Pilih Dokumen SK"
                 >
                   {skDocumentOptions.map((option) => (
                     <Picker.Item key={option.value || "sk-default"} label={option.label} value={option.value} />
@@ -207,7 +200,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
                 placeholder="Masukkan alamat lengkap balai desa/kantor kelurahan"
                 placeholderTextColor={isDarkMode ? '#999999' : '#AAAAAA'}
                 multiline
-                selectionColor={colors.primary} // Warna kursor dan seleksi teks
+                selectionColor={colors.primary}
               />
             </View>
           </View>
