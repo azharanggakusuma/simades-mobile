@@ -46,9 +46,13 @@ interface FormScreenProps {
 const FormScreen = ({ navigation }: FormScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
-  const iconColor = isDarkMode ? colors.primary : '#4A5568'; 
-  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280';
-  const chevronListItemColor = isDarkMode ? colors.border : '#CBD5E0';
+  // Warna untuk ikon dan teks sekunder
+  // Untuk mode light, ikon akan menggunakan warna primer tema (diharapkan biru)
+  // Untuk mode dark, ikon juga akan menggunakan warna primer tema (mungkin aksen kuning atau lainnya)
+  const iconColor = colors.primary; 
+  
+  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280'; // Abu-abu untuk teks kategori
+  const chevronListItemColor = isDarkMode ? colors.border : '#CBD5E0'; // Warna chevron
 
 
   const handleFormItemPress = (formItem: FormListItem) => {
@@ -84,7 +88,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       paddingHorizontal: 16,
       paddingTop: 8,
       paddingBottom: 24,
-      flexGrow: 1, // Agar ListEmptyComponent bisa di tengah jika list kosong
+      flexGrow: 1, 
     },
     formItemCard: {
       backgroundColor: colors.card,
@@ -103,7 +107,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       width: 44,
       height: 44,
       borderRadius: 22, 
-      backgroundColor: `${iconColor}1A`, 
+      backgroundColor: `${iconColor}1A`, // Tint background menggunakan iconColor (yang sudah dinamis)
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
@@ -126,19 +130,19 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       marginLeft: 10,
     },
     emptyStateContainer: {
-        flex: 1, // Mengambil sisa ruang jika list kosong
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
     },
-    emptyStateTextTitle: { // Style khusus untuk judul empty state
+    emptyStateTextTitle: {
         fontSize: 18,
         fontFamily: 'Poppins-SemiBold',
         color: colors.text,
         marginTop: 16,
         textAlign: 'center'
     },
-    emptyStateTextMessage: { // Style khusus untuk pesan empty state
+    emptyStateTextMessage: {
         fontSize: 14,
         fontFamily: 'Poppins-Regular',
         color: colors.notification,
@@ -154,7 +158,8 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       activeOpacity={0.7}
     >
       <View style={styles.itemIconContainer}>
-        <FileText size={22} color={iconColor} strokeWidth={1.8} />
+        <FileText size={22} color={iconColor} strokeWidth={1.8} /> 
+        {/* iconColor sekarang akan biru di light mode jika colors.primary Anda biru */}
       </View>
       <View style={styles.itemTextContainer}>
         <Text style={styles.formName} numberOfLines={2}>{item.name}</Text>
@@ -182,7 +187,6 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
           ListEmptyComponent={
             <View style={styles.emptyStateContainer}>
                 <Archive size={64} color={colors.border} /> 
-                {/* Ikon Archive sekarang bisa dirender */}
                 <Text style={styles.emptyStateTextTitle}>Belum Ada Formulir</Text>
                 <Text style={styles.emptyStateTextMessage}>Daftar formulir akan muncul di sini.</Text>
             </View>
