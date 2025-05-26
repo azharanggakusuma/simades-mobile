@@ -153,7 +153,7 @@ const SearchScreen = ({ navigation }: any) => {
     },
     screenHeaderTitle: { 
         fontSize: 24, 
-        fontFamily: 'Poppins-SemiBold', 
+        fontFamily: 'Poppins-Bold', 
         color: colors.text,
         textAlign: 'left',
     },

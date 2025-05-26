@@ -180,7 +180,7 @@ const HistoryScreen = ({ navigation }: any) => {
     },
     headerTitle: { 
         fontSize: 24, 
-        fontFamily: 'Poppins-SemiBold', 
+        fontFamily: 'Poppins-Bold', 
         color: colors.text,
         textAlign: 'left',
     },

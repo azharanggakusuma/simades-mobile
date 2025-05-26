@@ -80,7 +80,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
     },
     headerTitle: {
       fontSize: 24,
-      fontFamily: 'Poppins-SemiBold',
+      fontFamily: 'Poppins-Bold',
       color: colors.text,
       textAlign: 'left',
     },
