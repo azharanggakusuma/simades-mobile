@@ -11,15 +11,13 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import type { Theme } from '@react-navigation/native';
-import { FileText, ChevronRight, Archive } from 'lucide-react-native'; // Menggunakan FileText untuk semua form
+import { FileText, ChevronRight, Archive } from 'lucide-react-native';
 
 // Interface untuk setiap item formulir dalam daftar
 interface FormListItem {
   id: string;
   name: string;
-  category: string; // Kategori atau deskripsi singkat
-  // Anda bisa menambahkan properti lain seperti screen tujuan navigasi jika perlu
-  // navigateTo?: string; 
+  category: string; 
 }
 
 // Daftar 15 Formulir
@@ -42,20 +40,18 @@ const ALL_FORMS_LIST: FormListItem[] = [
 ];
 
 interface FormScreenProps {
-  navigation: any; // Tipe navigasi dari React Navigation
+  navigation: any; 
 }
 
 const FormScreen = ({ navigation }: FormScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
-  // Warna untuk ikon dan teks sekunder
-  const iconColor = isDarkMode ? colors.primary : '#4A5568'; // Warna primer di dark mode, abu-abu di light
+  const iconColor = isDarkMode ? colors.primary : '#4A5568'; 
   const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280';
   const chevronListItemColor = isDarkMode ? colors.border : '#CBD5E0';
 
 
   const handleFormItemPress = (formItem: FormListItem) => {
-    // Placeholder untuk navigasi atau aksi lainnya
     Alert.alert(
       `Formulir: ${formItem.name}`,
       `Anda memilih formulir "${formItem.name}" dari kategori "${formItem.category}".\n\n(Implementasi navigasi ke halaman pengisian form untuk ID: ${formItem.id} di sini)`
@@ -76,9 +72,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       paddingHorizontal: 24,
       paddingTop: Platform.OS === 'ios' ? 20 : 28,
       paddingBottom: 20,
-      backgroundColor: colors.background, // Atau colors.card jika ingin header terpisah
-      // borderBottomWidth: 1, // Opsional: garis pemisah jika header menyatu dengan background
-      // borderBottomColor: colors.border,
+      backgroundColor: colors.background, 
     },
     headerTitle: {
       fontSize: 26,
@@ -90,37 +84,32 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       paddingHorizontal: 16,
       paddingTop: 8,
       paddingBottom: 24,
+      flexGrow: 1, // Agar ListEmptyComponent bisa di tengah jika list kosong
     },
-    // Style untuk setiap item formulir (kartu)
     formItemCard: {
       backgroundColor: colors.card,
       borderRadius: 12,
       padding: 16,
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 12, // Jarak antar kartu
-      // Shadow halus untuk kartu (opsional, bisa diganti border)
+      marginBottom: 12, 
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDarkMode ? 0.12 : 0.06,
       shadowRadius: 5,
       elevation: isDarkMode ? 2 : 3,
-      // Jika ingin menggunakan border:
-      // borderWidth: 1,
-      // borderColor: colors.border,
-      // elevation: 0, shadowOpacity: 0,
     },
     itemIconContainer: {
       width: 44,
       height: 44,
-      borderRadius: 22, // Lingkaran
-      backgroundColor: `${iconColor}1A`, // Tint dari warna ikon (misal: warna primer dengan opacity)
+      borderRadius: 22, 
+      backgroundColor: `${iconColor}1A`, 
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
     },
     itemTextContainer: {
-      flex: 1, // Agar teks mengambil sisa ruang
+      flex: 1, 
     },
     formName: {
       fontSize: 16,
@@ -137,16 +126,24 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       marginLeft: 10,
     },
     emptyStateContainer: {
-        flex: 1,
+        flex: 1, // Mengambil sisa ruang jika list kosong
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
     },
-    emptyStateText: {
-        fontSize: 16,
+    emptyStateTextTitle: { // Style khusus untuk judul empty state
+        fontSize: 18,
+        fontFamily: 'Poppins-SemiBold',
+        color: colors.text,
+        marginTop: 16,
+        textAlign: 'center'
+    },
+    emptyStateTextMessage: { // Style khusus untuk pesan empty state
+        fontSize: 14,
         fontFamily: 'Poppins-Regular',
         color: colors.notification,
         textAlign: 'center',
+        marginTop: 4,
     }
   });
 
@@ -157,7 +154,6 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       activeOpacity={0.7}
     >
       <View style={styles.itemIconContainer}>
-        {/* Semua form menggunakan ikon FileText untuk konsistensi, bisa diubah jika perlu */}
         <FileText size={22} color={iconColor} strokeWidth={1.8} />
       </View>
       <View style={styles.itemTextContainer}>
@@ -183,11 +179,12 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContentContainer}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={ // Jika suatu saat daftar bisa kosong
+          ListEmptyComponent={
             <View style={styles.emptyStateContainer}>
-                <Archive size={64} color={colors.border} />
-                <Text style={[styles.formName, {marginTop: 16, textAlign: 'center'}]}>Belum Ada Formulir</Text>
-                <Text style={[styles.formCategory, {textAlign: 'center'}]}>Daftar formulir akan muncul di sini.</Text>
+                <Archive size={64} color={colors.border} /> 
+                {/* Ikon Archive sekarang bisa dirender */}
+                <Text style={styles.emptyStateTextTitle}>Belum Ada Formulir</Text>
+                <Text style={styles.emptyStateTextMessage}>Daftar formulir akan muncul di sini.</Text>
             </View>
           }
         />
