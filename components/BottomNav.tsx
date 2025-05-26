@@ -14,35 +14,27 @@ import HomeStackNavigator from '../navigation/HomeStackNavigator'; // Navigator 
 const Tab = createBottomTabNavigator();
 const darkModeYellowAccent = '#FACC15';
 
-/**
- * Komponen AnimatedFormButton adalah tombol aksi mengambang (FAB) kustom
- * dengan animasi tekan yang lebih kaya.
- *
- * @param {function} onPress - Fungsi yang dipanggil saat FAB ditekan.
- * @param {boolean} darkMode - Status mode gelap untuk penyesuaian style FAB.
- */
 const AnimatedFormButton = ({ onPress, darkMode }) => {
   const scale = useRef(new Animated.Value(1)).current;
-  const translateY = useRef(new Animated.Value(0)).current; // Untuk animasi naik/turun
-  const opacity = useRef(new Animated.Value(1)).current;   // Untuk animasi opacity
+  const translateY = useRef(new Animated.Value(0)).current; 
+  const opacity = useRef(new Animated.Value(1)).current;   
 
   const fabBackgroundColor = darkMode ? darkModeYellowAccent : '#3b82f6';
   const iconColorInFab = darkMode ? '#1F2937' : '#FFFFFF';
 
-  // Animasi saat FAB ditekan masuk
   const handlePressIn = () => {
     Animated.parallel([
-      Animated.timing(scale, { // Skala mengecil dengan cepat
+      Animated.timing(scale, {
         toValue: 0.92,
-        duration: 100, // Durasi singkat untuk kesan responsif
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, { // Tombol sedikit turun
-        toValue: 3, // Turun 3 piksel
         duration: 100,
         useNativeDriver: true,
       }),
-      Animated.timing(opacity, { // Opacity sedikit berkurang
+      Animated.timing(translateY, {
+        toValue: 3,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
         toValue: 0.8,
         duration: 100,
         useNativeDriver: true,
@@ -50,28 +42,27 @@ const AnimatedFormButton = ({ onPress, darkMode }) => {
     ]).start();
   };
 
-  // Animasi saat FAB dilepas
   const handlePressOut = () => {
     Animated.parallel([
-      Animated.spring(scale, { // Skala kembali dengan efek pegas
+      Animated.spring(scale, {
         toValue: 1,
-        friction: 4, // Sedikit lebih teredam dari sebelumnya
-        tension: 70, // Kekuatan pegas
+        friction: 4,
+        tension: 70,
         useNativeDriver: true,
       }),
-      Animated.spring(translateY, { // Tombol kembali ke posisi semula
+      Animated.spring(translateY, {
         toValue: 0,
         friction: 4,
         tension: 70,
         useNativeDriver: true,
       }),
-      Animated.timing(opacity, { // Opacity kembali normal
+      Animated.timing(opacity, {
         toValue: 1,
-        duration: 150, // Sedikit lebih lama agar terasa halus
+        duration: 150,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      if (onPress) onPress(); // Panggil aksi setelah animasi selesai
+      if (onPress) onPress();
     });
   };
 
@@ -81,8 +72,8 @@ const AnimatedFormButton = ({ onPress, darkMode }) => {
         style={[
           styles.fabWrapper, 
           { 
-            transform: [{ scale }, { translateY }], // Terapkan scale dan translateY
-            opacity: opacity // Terapkan opacity
+            transform: [{ scale }, { translateY }],
+            opacity: opacity 
           }
         ]}
       >
@@ -94,7 +85,6 @@ const AnimatedFormButton = ({ onPress, darkMode }) => {
   );
 };
 
-// Komponen BottomNav tetap sama, hanya AnimatedFormButton yang berubah
 const BottomNav = ({ darkMode }) => {
   const insets = useSafeAreaInsets();
   const iconMap = { Beranda: Home, Cari: Search, Riwayat: Clock, Akun: User };
@@ -113,14 +103,17 @@ const BottomNav = ({ darkMode }) => {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 11,
-          marginBottom: Platform.OS === 'ios' ? (insets.bottom > 0 ? 0 : 2) : 5,
+          // Menambah marginBottom, terutama untuk Android, agar label tidak terlalu mepet ke bawah
+          // Untuk iOS, jika ada safe area (insets.bottom > 0), marginBottom bisa lebih kecil karena sudah ada padding dari insets.bottom
+          marginBottom: Platform.OS === 'ios' ? (insets.bottom > 0 ? 2 : 5) : 8, 
           fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular',
           color: focused ? labelColorActive : labelColorInactive,
         },
         tabBarStyle: {
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom,
-          paddingTop: 8,
+          // Sedikit menaikkan tinggi dasar tab bar
+          height: (Platform.OS === 'android' ? 60 : 58) + insets.bottom, 
+          paddingBottom: insets.bottom, // Padding bawah tetap untuk safe area
+          paddingTop: Platform.OS === 'android' ? 6 : 8, // Sedikit padding atas untuk ruang ikon
           backgroundColor: tabBarBackgroundColor,
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: topBorderColor, 
@@ -133,6 +126,8 @@ const BottomNav = ({ darkMode }) => {
               size={24}
               color={iconFocused ? iconColorActive : iconColorInactive}
               strokeWidth={iconFocused ? 2.5 : 2}
+              // Memberi sedikit ruang di atas ikon jika labelnya pendek dan marginBottomnya kecil
+              // style={{ marginTop: Platform.OS === 'ios' && insets.bottom === 0 ? 2 : 0 }}
             />
           );
         },
@@ -155,7 +150,7 @@ const BottomNav = ({ darkMode }) => {
           tabBarLabel: '',
           tabBarIcon: () => null,
           tabBarButton: (props) => (
-            <AnimatedFormButton // Menggunakan AnimatedFormButton yang sudah diimprove
+            <AnimatedFormButton
               {...props}
               darkMode={darkMode}
               onPress={() => navigation.navigate(route.name)}
@@ -169,10 +164,11 @@ const BottomNav = ({ darkMode }) => {
   );
 };
 
-// StyleSheet untuk FAB (posisi top mungkin perlu sedikit penyesuaian jika animasi Y mengubah persepsi)
 const styles = StyleSheet.create({
   fabWrapper: { 
     position: 'absolute', 
+    // Jika tinggi tab bar berubah, posisi FAB mungkin perlu sedikit disesuaikan
+    // (misal, jika tinggi dasar menjadi 60, -30 mungkin pas, atau -28 tetap oke)
     top: -28, 
     alignSelf: 'center', 
     zIndex: 10 
