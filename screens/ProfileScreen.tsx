@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import type { Theme } from '@react-navigation/native';
 import {
-  UserRound, // Ikon ini akan digunakan untuk avatar
+  UserRound, 
   Settings,
   Bell,
   HelpCircle,
@@ -32,19 +32,36 @@ interface ProfileScreenProps {
 const user = {
   name: 'Azharangga Kusuma',
   role: 'Administrator',
-  // avatarInitials: 'AK', // Tidak lagi digunakan untuk tampilan avatar
 };
 
 const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
-  // Handler Aksi (tetap sama)
-  const handleEditProfile = () => navigation.navigate('EditProfileScreen');
-  const handleSettings = () => navigation.navigate('SettingsScreen');
-  const handleNotifications = () => navigation.navigate('NotificationSettingsScreen');
-  const handleHelp = () => navigation.navigate('HelpScreen');
-  const handlePrivacyPolicy = () => navigation.navigate('PrivacyPolicyScreen');
-  const handleMyActivity = () => navigation.navigate('MyActivityScreen');
+  // Handler Aksi dengan navigasi dikomentari
+  const handleEditProfile = () => {
+    Alert.alert("Informasi Akun", "Aksi untuk edit profil."); // Pesan bisa disesuaikan
+    // navigation.navigate('EditProfileScreen'); 
+  };
+  const handleSettings = () => {
+    Alert.alert("Pengaturan Aplikasi", "Aksi untuk pengaturan aplikasi.");
+    // navigation.navigate('SettingsScreen');
+  };
+  const handleNotifications = () => {
+    Alert.alert("Notifikasi", "Aksi untuk pengaturan notifikasi.");
+    // navigation.navigate('NotificationSettingsScreen');
+  };
+  const handleHelp = () => {
+    Alert.alert("Bantuan & Dukungan", "Aksi untuk bantuan & dukungan.");
+    // navigation.navigate('HelpScreen');
+  };
+  const handlePrivacyPolicy = () => {
+    Alert.alert("Kebijakan Privasi", "Aksi untuk kebijakan privasi.");
+    // navigation.navigate('PrivacyPolicyScreen');
+  };
+  const handleMyActivity = () => {
+    Alert.alert("Aktivitas Saya", "Aksi untuk aktivitas saya.");
+    // navigation.navigate('MyActivityScreen');
+  };
   const handleLogout = () => {
     Alert.alert(
       'Keluar Akun',
@@ -56,7 +73,8 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
           style: 'destructive',
           onPress: () => {
             console.log('Pengguna telah keluar');
-            // Implementasi logika keluar, misal: navigation.replace('AuthStack');
+            // Implementasi logika keluar, misal: 
+            // navigation.replace('AuthStack'); 
           },
         },
       ],
@@ -64,7 +82,8 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     );
   };
 
-  const defaultIconColor = isDarkMode ? colors.text : '#4A5568';
+  // Warna ikon default (sesuai kode asli Anda)
+  const defaultIconColor = isDarkMode ? colors.text : '#4A5568'; 
   const chevronColor = isDarkMode ? colors.border : '#A0AEC0';
 
   const menuItemsConfig = [
@@ -84,8 +103,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     },
   ];
 
-  // Warna ikon avatar yang kontras dengan background avatar (colors.primary)
-  const avatarIconColor = isDarkMode ? ( (colors.primary === '#FACC15' || colors.primary === '#fde047') ? '#1F2937' : colors.card ) : colors.card ; // Jika primary kuning/terang, ikon gelap, jika tidak, ikon warna kartu (biasanya putih)
+  const avatarIconColor = isDarkMode ? ( (colors.primary === '#FACC15' || colors.primary === '#fde047') ? '#1F2937' : colors.card ) : colors.card ;
 
 
   const styles = StyleSheet.create({
@@ -119,7 +137,6 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       shadowOpacity: 0.1,
       shadowRadius: 4,
     },
-    // avatarText tidak digunakan lagi
     userName: {
       fontSize: 22,
       fontFamily: 'Poppins-Bold',
@@ -148,7 +165,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       backgroundColor: colors.card,
       borderRadius: 16,
       marginHorizontal: 16,
-      marginTop: 10,
+      marginTop: 10, // Dari kode Anda, saya sesuaikan dengan desain sebelumnya yang menuCard-nya sedikit lebih jauh dari header
       paddingVertical: 8,
       elevation: isDarkMode ? 2 : 4,
       shadowColor: '#000000',
@@ -224,11 +241,10 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            {/* Menggunakan ikon UserRound untuk avatar */}
             <UserRound 
-              size={60} // Ukuran ikon lebih besar di dalam kontainer 100x100
-              color={avatarIconColor} // Warna ikon kontras dengan background avatar
-              strokeWidth={1.5} // Ketebalan garis ikon (opsional)
+              size={60}
+              color={avatarIconColor}
+              strokeWidth={1.5}
             />
           </View>
           <Text style={styles.userName}>{user.name}</Text>
