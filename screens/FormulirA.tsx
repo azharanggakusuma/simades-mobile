@@ -364,7 +364,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
       return;
     }
     console.log('Data Formulir Dinamis:', formData);
-    Alert.alert('Berhasil', 'Data keterangan tempat (dinamis) telah disimulasikan untuk dikirim!');
+    Alert.alert('Berhasil', 'Data keterangan tempat telah disimulasikan untuk dikirim!');
     // Reset form (opsional)
     // setFormData(initialFormData);
     // setErrors({});
