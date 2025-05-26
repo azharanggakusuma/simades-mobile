@@ -1,4 +1,4 @@
-// KeteranganTempatScreen.tsx (Redesain Esensial & Fokus)
+// KeteranganTempatScreen.tsx (Dasar yang Rapi & Sederhana)
 
 import React, { useState } from 'react';
 import {
@@ -14,36 +14,66 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Save } from 'lucide-react-native'; // Hanya ikon untuk tombol simpan
+import { Picker } from '@react-native-picker/picker'; // Pastikan sudah diinstal
+import { CheckCircle } from 'lucide-react-native'; // Ikon untuk tombol submit
 
 interface KeteranganTempatScreenProps {
-  route?: { params?: { formName?: string } };
+  route?: { params?: { formTitle?: string } };
 }
 
 const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
   const { colors, dark: isDarkMode } = useTheme();
-  const screenTitle = route?.params?.formName || "Detail Lokasi";
+  // Judul utama layar, bisa dari navigasi atau default
+  const screenTitle = route?.params?.formTitle || "Keterangan Tempat";
 
+  // State untuk input
+  const [selectedSkDocument, setSelectedSkDocument] = useState<string | undefined>();
   const [alamatBalaiDesa, setAlamatBalaiDesa] = useState('');
-  const [namaKecamatan, setNamaKecamatan] = useState('');
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string | undefined>();
 
-  // State untuk fokus input, untuk mengubah warna garis bawah
-  const [isAlamatFocused, setIsAlamatFocused] = useState(false);
-  const [isKecamatanFocused, setIsKecamatanFocused] = useState(false);
+  // Opsi untuk Picker (contoh data)
+  const skDocumentOptions = [
+    { label: "Pilih Dokumen SK...", value: undefined },
+    { label: "SK Bupati Pembentukan Desa", value: "sk_bupati_pembentukan" },
+    { label: "SK Gubernur Pengesahan Kelurahan", value: "sk_gubernur_pengesahan" },
+    { label: "Peraturan Desa tentang Batas Wilayah", value: "perdes_batas" },
+    { label: "Lainnya", value: "lainnya" },
+  ];
 
-  const handleSimpan = () => {
+  const kecamatanOptions = [
+    { label: "Pilih Kecamatan...", value: undefined },
+    { label: "Kecamatan Kesambi", value: "kesambi" },
+    { label: "Kecamatan Pekalipan", value: "pekalipan" },
+    { label: "Kecamatan Harjamukti", value: "harjamukti" },
+    { label: "Kecamatan Lemahwungkuk", value: "lemahwungkuk" },
+    { label: "Kecamatan Kejaksan", value: "kejaksan" },
+  ];
+
+  const handleSubmit = () => {
+    if (!selectedSkDocument) {
+      Alert.alert("Data Belum Lengkap", "Mohon pilih Dokumen SK.");
+      return;
+    }
     if (!alamatBalaiDesa.trim()) {
-      Alert.alert('Data Belum Lengkap', 'Mohon isi Alamat Balai Desa/Kantor Kelurahan.');
+      Alert.alert("Data Belum Lengkap", "Mohon isi Alamat Balai Desa/Kantor Kelurahan.");
       return;
     }
-    if (!namaKecamatan.trim()) {
-      Alert.alert('Data Belum Lengkap', 'Mohon isi Nama Kecamatan.');
+    if (!selectedKecamatan) {
+      Alert.alert("Data Belum Lengkap", "Mohon pilih Nama Kecamatan.");
       return;
     }
-    console.log('Data Disimpan:', { Alamat: alamatBalaiDesa, Kecamatan: namaKecamatan });
-    Alert.alert('Berhasil', 'Informasi lokasi telah disimpan (simulasi).');
+
+    const formData = {
+      skDokumen: selectedSkDocument,
+      alamat: alamatBalaiDesa,
+      kecamatan: selectedKecamatan,
+    };
+    console.log("Data Formulir:", formData);
+    Alert.alert("Berhasil", "Data keterangan tempat telah disimulasikan untuk dikirim!");
+    // Implementasi logika submit data
   };
 
+  // Stylesheet yang sangat mendasar dan rapi
   const styles = StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -52,65 +82,83 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
     keyboardAvoidingView: {
       flex: 1,
     },
-    // Kontainer utama untuk scroll view
     scrollViewContainer: {
-      flexGrow: 1, // Memastikan konten bisa scroll dan tombol bisa di bawah
-      paddingHorizontal: 28, // Padding horizontal lebih lega
-      paddingTop: Platform.OS === 'ios' ? 30 : 40, // Padding atas lebih lega
-      paddingBottom: 30, // Padding bawah
+      flexGrow: 1, // Memastikan konten bisa di-scroll jika panjang
+      paddingHorizontal: 20, // Padding kiri-kanan untuk konten
+      paddingVertical: 24,   // Padding atas-bawah untuk konten
     },
-    // Judul Layar
     screenTitle: {
-      fontSize: 30, // Font lebih besar untuk judul
-      fontFamily: 'Poppins-Bold', // Tegas
+      fontSize: 28, // Ukuran judul yang jelas
+      fontFamily: 'Poppins-Bold', // Menggunakan Poppins (pastikan sudah ada)
       color: colors.text,
-      marginBottom: 40, // Jarak besar setelah judul
-      textAlign: 'center', // Judul di tengah untuk kesan formal & bersih
+      textAlign: 'center', // Judul di tengah untuk kesan formal
+      marginBottom: 32,   // Jarak yang cukup setelah judul
     },
-    // Grup Input Field
+    // Kontainer untuk setiap bagian form (SK, Alamat, Kecamatan)
+    sectionContainer: {
+      marginBottom: 28, // Jarak antar bagian form
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontFamily: 'Poppins-SemiBold',
+      color: colors.text,
+      marginBottom: 16, // Jarak dari judul bagian ke input pertama
+    },
+    // Grup untuk setiap pasangan label dan input
     fieldGroup: {
-      marginBottom: 35, // Jarak antar field lebih besar
+      marginBottom: 20, // Jarak antar field input
     },
     label: {
       fontSize: 15,
-      fontFamily: 'Poppins-Medium', // Label yang jelas
-      color: isDarkMode ? '#C0C0C0' : '#505050', // Warna label yang lembut
-      marginBottom: 12, // Jarak label ke input
+      fontFamily: 'Poppins-Medium',
+      color: colors.text, // Warna teks label standar
+      marginBottom: 8,    // Jarak dari label ke input box
     },
+    // Styling dasar untuk TextInput
     textInput: {
+      backgroundColor: colors.card, // Background input agar sedikit berbeda dari layar
       color: colors.text,
-      fontSize: 17, // Ukuran font input yang nyaman dibaca
       fontFamily: 'Poppins-Regular',
-      paddingVertical: 14, // Padding vertikal input
-      paddingHorizontal: 4, // Sedikit padding horizontal untuk teks
-      borderBottomWidth: 1.5, // Hanya garis bawah
-      // Warna border diatur dinamis berdasarkan fokus
+      fontSize: 16,
+      borderWidth: 1,
+      borderColor: colors.border, // Border standar
+      borderRadius: 8,          // Sudut sedikit membulat
+      paddingHorizontal: 14,    // Padding dalam input
+      paddingVertical: Platform.OS === 'ios' ? 15 : 12, // Sesuaikan padding per platform
     },
     multilineTextInput: {
-      minHeight: 90, // Tinggi minimal untuk input alamat
-      textAlignVertical: 'top',
+      minHeight: 100,             // Tinggi minimal untuk input multi-baris
+      textAlignVertical: 'top',   // Teks mulai dari atas untuk multi-baris
+      paddingTop: Platform.OS === 'ios' ? 15 : 12, // Padding atas konsisten
     },
-    // Tombol Simpan
-    saveButton: {
+    // Wrapper untuk Picker agar bisa diberi style border, dll.
+    pickerContainer: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      overflow: 'hidden', // Penting agar borderRadius bekerja di Android
+    },
+    picker: {
+      color: colors.text,
+      height: Platform.OS === 'android' ? 52 : undefined, // Tinggi standar Picker di Android
+      // Untuk iOS, tinggi akan menyesuaikan konten.
+    },
+    // Tombol Submit
+    submitButton: {
+      backgroundColor: colors.primary, // Warna primer untuk tombol aksi
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.primary, // Warna primer tema
-      paddingVertical: 18, // Tombol lebih tinggi
-      borderRadius: 12, // Sudut yang lebih membulat
-      marginTop: 25, // Jarak dari field terakhir ke tombol
-      // Tidak ada shadow/elevation untuk tampilan yang sangat flat
+      paddingVertical: 16,      // Padding vertikal tombol
+      borderRadius: 10,         // Sudut tombol yang membulat
+      marginTop: 24,            // Jarak dari elemen form terakhir
     },
-    saveButtonText: {
-      color: '#FFFFFF', // Teks putih
+    submitButtonText: {
+      color: '#FFFFFF',           // Warna teks tombol (biasanya putih)
       fontSize: 17,
-      fontFamily: 'Poppins-SemiBold', // Teks tombol yang jelas
-      marginLeft: 10,
-    },
-    // Spacer untuk mendorong tombol ke bawah jika konten pendek
-    spacer: {
-      flex: 1,
-      minHeight: 20, // Beri tinggi minimal agar berfungsi
+      fontFamily: 'Poppins-SemiBold',
+      marginLeft: 10,             // Jarak ikon ke teks
     },
   });
 
@@ -122,56 +170,72 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
       >
         <ScrollView
           contentContainerStyle={styles.scrollViewContainer}
-          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false} // Sembunyikan scrollbar untuk tampilan bersih
         >
           <Text style={styles.screenTitle}>{screenTitle}</Text>
 
-          {/* Field Alamat */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Alamat Balai Desa/Kantor Kelurahan</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                styles.multilineTextInput,
-                { borderBottomColor: isAlamatFocused ? colors.primary : colors.border }
-              ]}
-              value={alamatBalaiDesa}
-              onChangeText={setAlamatBalaiDesa}
-              placeholder="Ketik alamat lengkap di sini"
-              placeholderTextColor={isDarkMode ? '#707070' : '#B0B0B0'}
-              multiline
-              onFocus={() => setIsAlamatFocused(true)}
-              onBlur={() => setIsAlamatFocused(false)}
-              selectionColor={colors.primary}
-            />
+          {/* Bagian SK Pembentukan/Pengesahan */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>SK Pembentukan/Pengesahan Desa/Kelurahan</Text>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Pilihan Dokumen SK</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedSkDocument}
+                  onValueChange={(itemValue) => setSelectedSkDocument(itemValue)}
+                  style={styles.picker}
+                  prompt="Pilih Dokumen SK" // Untuk dialog Picker di Android
+                >
+                  {skDocumentOptions.map((option) => (
+                    <Picker.Item key={option.value || "sk-default"} label={option.label} value={option.value} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
           </View>
 
-          {/* Field Kecamatan */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Nama Kecamatan</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                { borderBottomColor: isKecamatanFocused ? colors.primary : colors.border }
-              ]}
-              value={namaKecamatan}
-              onChangeText={setNamaKecamatan}
-              placeholder="Ketik nama kecamatan"
-              placeholderTextColor={isDarkMode ? '#707070' : '#B0B0B0'}
-              onFocus={() => setIsKecamatanFocused(true)}
-              onBlur={() => setIsKecamatanFocused(false)}
-              selectionColor={colors.primary}
-            />
+          {/* Bagian Alamat Balai Desa/Kantor Kelurahan */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Alamat Balai Desa/Kantor Kelurahan</Text>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Alamat Lengkap</Text>
+              <TextInput
+                style={[styles.textInput, styles.multilineTextInput]}
+                value={alamatBalaiDesa}
+                onChangeText={setAlamatBalaiDesa}
+                placeholder="Masukkan alamat lengkap balai desa/kantor kelurahan"
+                placeholderTextColor={isDarkMode ? '#999999' : '#AAAAAA'}
+                multiline
+                selectionColor={colors.primary} // Warna kursor dan seleksi teks
+              />
+            </View>
           </View>
 
-          {/* Spacer untuk mendorong tombol ke bawah */}
-          <View style={styles.spacer} />
+          {/* Bagian Nama Kecamatan */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Nama Kecamatan</Text>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Pilihan Kecamatan</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedKecamatan}
+                  onValueChange={(itemValue) => setSelectedKecamatan(itemValue)}
+                  style={styles.picker}
+                  prompt="Pilih Nama Kecamatan"
+                >
+                  {kecamatanOptions.map((option) => (
+                    <Picker.Item key={option.value || "kec-default"} label={option.label} value={option.value} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+          </View>
 
-          {/* Tombol Simpan */}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSimpan} activeOpacity={0.8}>
-            <Save size={20} color="#FFFFFF" />
-            <Text style={styles.saveButtonText}>Simpan Data</Text>
+          {/* Tombol Submit */}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
+            <CheckCircle size={20} color="#FFFFFF" />
+            <Text style={styles.submitButtonText}>Submit Data</Text>
           </TouchableOpacity>
 
         </ScrollView>
