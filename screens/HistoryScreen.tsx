@@ -9,14 +9,16 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  TextInput, // Import TextInput
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import type { Theme } from '@react-navigation/native';
 import {
   Archive,
   ChevronRight,
-  CheckCircle2, // Untuk Selesai
-  XCircle,      // Untuk Belum Selesai (menggantikan Edit3)
+  CheckCircle2,
+  XCircle,
+  Search, // Icon untuk input pencarian
 } from 'lucide-react-native';
 
 // --- Data Model dan Dummy Data (Tetap sama) ---
@@ -93,17 +95,17 @@ const formatTimestamp = (date?: Date): string => {
 
 type FilterType = 'Semua' | 'Belum Selesai' | 'Selesai';
 
-// Definisikan warna status secara eksplisit
-const STATUS_SELESAI_COLOR = '#10B981'; // Hijau emerald-500 tailwind
-const STATUS_BELUM_SELESAI_COLOR = '#EF4444'; // Merah red-500 tailwind
-const TEXT_ON_COLORED_BADGE = '#FFFFFF'; // Putih untuk teks di atas badge berwarna
+const STATUS_SELESAI_COLOR = '#10B981';
+const STATUS_BELUM_SELESAI_COLOR = '#EF4444';
+const TEXT_ON_COLORED_BADGE = '#FFFFFF';
 
-const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
+const FormWithSearchAndFilterScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const { colors, dark: isDarkMode } = theme;
 
   const [allProcessedItems, setAllProcessedItems] = useState<UIDisplayItem[]>([]);
   const [currentFilter, setCurrentFilter] = useState<FilterType>('Semua');
+  const [searchQuery, setSearchQuery] = useState(''); // State untuk search query
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -137,16 +139,28 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
 
   const displayedItems = useMemo(() => {
     if (isLoading) return [];
+    
+    // 1. Filter berdasarkan status (currentFilter)
+    let itemsFilteredByStatus = allProcessedItems;
     if (currentFilter === 'Belum Selesai') {
-      return allProcessedItems.filter(item => item.uiStatus === 'Belum Selesai');
+      itemsFilteredByStatus = allProcessedItems.filter(item => item.uiStatus === 'Belum Selesai');
+    } else if (currentFilter === 'Selesai') {
+      itemsFilteredByStatus = allProcessedItems.filter(item => item.uiStatus === 'Selesai');
     }
-    if (currentFilter === 'Selesai') {
-      return allProcessedItems.filter(item => item.uiStatus === 'Selesai');
+
+    // 2. Filter berdasarkan kueri pencarian (searchQuery)
+    if (searchQuery.trim() === '') {
+      return itemsFilteredByStatus; // Jika tidak ada query, kembalikan hasil filter status
     }
-    return allProcessedItems;
-  }, [allProcessedItems, currentFilter, isLoading]);
+
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return itemsFilteredByStatus.filter(item =>
+      item.formName.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [allProcessedItems, currentFilter, searchQuery, isLoading]);
 
   const handleItemPress = (item: UIDisplayItem) => {
+    // ... (fungsi handleItemPress tetap sama)
     let message = `Formulir: ${item.formName}\nStatus: ${item.uiStatus}`;
     if (item.uiStatus === 'Selesai') {
       if (item.inputDate) message += `\nDiinput pada: ${formatTimestamp(item.inputDate)}`;
@@ -163,7 +177,7 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
     headerContainer: { 
         paddingHorizontal: 24, 
         paddingTop: Platform.OS === 'ios' ? 20 : 28,
-        paddingBottom: 20,
+        paddingBottom: 12, // Kurangi padding bawah untuk beri ruang ke search input
         backgroundColor: colors.background,
     },
     headerTitle: { 
@@ -172,6 +186,31 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
         color: colors.text,
         textAlign: 'left',
     },
+    // Style untuk Search Input
+    searchInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.card,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        marginHorizontal: 20, // Samakan dengan padding filter jika ada
+        marginTop: 8,
+        marginBottom: 16, // Jarak ke filter
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    searchInput: {
+        flex: 1,
+        paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+        fontSize: 15,
+        fontFamily: 'Poppins-Regular',
+        color: colors.text,
+        marginLeft: 8,
+    },
+    clearSearchButton: {
+        padding: 4,
+    },
+    // Akhir Style Search Input
     filterContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -223,8 +262,6 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
         marginBottom: 12,
         borderWidth: 1,
         borderColor: colors.border, 
-        elevation: 0,
-        shadowOpacity: 0,
     },
     itemIconContainer: { 
         marginRight: 16, 
@@ -263,7 +300,7 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
     },
     statusText: { 
         fontSize: 12, 
-        fontFamily: 'Poppins-Medium', // Bisa SemiBold jika ingin lebih tegas
+        fontFamily: 'Poppins-Medium',
         marginLeft: 6, 
     },
     itemChevronContainer: { marginLeft: 12, justifyContent: 'center' },
@@ -298,20 +335,21 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
   });
 
   const renderListItem = ({ item }: { item: UIDisplayItem }) => {
+    // ... (renderListItem tetap sama dengan implementasi warna hijau/merah dan ikon X/Centang)
     let MainIconComponent, mainIconColor, badgeBgColor, badgeTextColor, BadgeIconComponent;
 
     if (item.uiStatus === 'Selesai') {
         MainIconComponent = CheckCircle2;
-        mainIconColor = STATUS_SELESAI_COLOR; // Hijau untuk ikon utama
-        badgeBgColor = STATUS_SELESAI_COLOR;   // Hijau untuk background badge
-        badgeTextColor = TEXT_ON_COLORED_BADGE; // Putih untuk teks badge
-        BadgeIconComponent = CheckCircle2;     // Centang untuk ikon badge
-    } else { // Belum Selesai
-        MainIconComponent = XCircle;           // X untuk ikon utama
-        mainIconColor = STATUS_BELUM_SELESAI_COLOR; // Merah untuk ikon utama
-        badgeBgColor = STATUS_BELUM_SELESAI_COLOR; // Merah untuk background badge
-        badgeTextColor = TEXT_ON_COLORED_BADGE;   // Putih untuk teks badge
-        BadgeIconComponent = XCircle;          // X untuk ikon badge
+        mainIconColor = STATUS_SELESAI_COLOR;
+        badgeBgColor = STATUS_SELESAI_COLOR;
+        badgeTextColor = TEXT_ON_COLORED_BADGE;
+        BadgeIconComponent = CheckCircle2;
+    } else { 
+        MainIconComponent = XCircle;
+        mainIconColor = STATUS_BELUM_SELESAI_COLOR;
+        badgeBgColor = STATUS_BELUM_SELESAI_COLOR;
+        badgeTextColor = TEXT_ON_COLORED_BADGE;
+        BadgeIconComponent = XCircle;
     }
 
     return (
@@ -321,7 +359,6 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
         activeOpacity={0.7}
       >
         <View style={[styles.itemIconContainer, { backgroundColor: `${mainIconColor}1A` }]}> 
-          {/* Tint background dengan opacity rendah dari warna ikon utama */}
           <MainIconComponent size={20} color={mainIconColor} />
         </View>
         <View style={styles.itemTextContent}>
@@ -345,10 +382,11 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
   };
   
   const renderFilterButton = (filterValue: FilterType, filterText: string) => (
+    // ... (renderFilterButton tetap sama)
     <TouchableOpacity
         style={[
             styles.filterButton,
-            currentFilter === filterValue ? styles.activeFilterButton : styles.inactiveFilterButton,
+            currentFilter === filterValue && styles.activeFilterButton,
         ]}
         onPress={() => setCurrentFilter(filterValue)}
         activeOpacity={0.7}
@@ -364,6 +402,7 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
 
   if (isLoading) {
     return (
+        // ... (Loading state tetap sama)
         <SafeAreaView style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={{color: colors.text, fontSize: 16, marginTop: 16, fontFamily: 'Poppins-Regular'}}>Memuat formulir...</Text>
@@ -375,6 +414,26 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Status Formulir Desa</Text>
+      </View>
+
+      {/* Search Input */}
+      <View style={styles.searchInputContainer}>
+        <Search size={20} color={colors.notification} />
+        <TextInput
+            style={styles.searchInput}
+            placeholder="Cari nama formulir..."
+            placeholderTextColor={colors.notification}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchButton}>
+                <XCircle size={20} color={colors.notification} />
+            </TouchableOpacity>
+        )}
       </View>
       
       <View style={styles.filterContainer}>
@@ -392,10 +451,10 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
             <View style={styles.emptyStateContainer}>
                 <Archive size={72} color={colors.border} style={styles.emptyStateIcon} />
                 <Text style={styles.emptyStateTitle}>
-                    {currentFilter === 'Semua' && displayedItems.length === 0 ? 'Belum Ada Formulir' : `Formulir ${currentFilter} Kosong`}
+                    {searchQuery ? 'Formulir Tidak Ditemukan' : (currentFilter === 'Semua' && displayedItems.length === 0 ? 'Belum Ada Formulir' : `Formulir ${currentFilter} Kosong`)}
                 </Text>
                 <Text style={styles.emptyStateMessage}>
-                    {currentFilter === 'Semua' && displayedItems.length === 0 ? 'Saat ini belum ada data formulir yang tersedia.' : `Tidak ada formulir yang berstatus "${currentFilter}" untuk ditampilkan.`}
+                    {searchQuery ? `Tidak ada formulir yang cocok dengan pencarian "${searchQuery}".` : (currentFilter === 'Semua' && displayedItems.length === 0 ? 'Saat ini belum ada data formulir yang tersedia.' : `Tidak ada formulir yang berstatus "${currentFilter}" untuk ditampilkan.`)}
                 </Text>
             </View>
         }
@@ -404,4 +463,4 @@ const FormWithTrafficLightStatusScreen = ({ navigation }: any) => {
   );
 };
 
-export default FormWithTrafficLightStatusScreen;
+export default FormWithSearchAndFilterScreen;
