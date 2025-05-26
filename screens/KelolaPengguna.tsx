@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'; // Ditambahkan useMemo dan useCallback
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,83 +17,86 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Theme } from '@react-navigation/native';
 import {
   UserRound,
-  Edit3,
+  Edit,
   Trash2,
   Plus,
   Users,
-  Search, 
-  X,  
+  Search,
+  X,
+  KeyRound, 
+  AtSign,   
 } from 'lucide-react-native';
 
 // --- Interface & Types ---
 interface User {
   id: string;
   name: string;
+  username: string;
   role: string;
-  email: string;
+  password?: string; 
   avatarUrl?: string;
 }
 
-// --- Dummy Data Pengguna ---
-const DUMMY_USERS_DATA: User[] = [
-  { id: 'usr_001', name: 'Azharangga Kusuma', role: 'Administrator', email: 'azhar@example.com' },
-  { id: 'usr_002', name: 'Siti Aminah', role: 'Petugas Desa', email: 'siti.a@example.com' },
-  { id: 'usr_003', name: 'Budi Santoso', role: 'Operator Kecamatan', email: 'budi.s@example.com' },
-  { id: 'usr_004', name: 'Dewi Lestari', role: 'Pengguna Biasa', email: 'dewi.l@example.com' },
-  { id: 'usr_005', name: 'Rahmat Hidayat', role: 'Petugas Lapangan', email: 'rahmat.h@example.com' },
-  { id: 'usr_006', name: 'Ahmad Dahlan', role: 'Administrator', email: 'ahmad.d@example.com' },
-  { id: 'usr_007', name: 'Putri Ayu', role: 'Petugas Desa', email: 'putri.a@example.com' },
-  // Tambahkan lebih banyak data dummy jika ingin menguji dengan daftar panjang
-  // Misalnya, generate 20-30 pengguna.
+// --- Dummy Data Pengguna dengan Username dan Password ---
+// PERINGATAN: Password di sini HANYA dummy dan untuk demonstrasi.
+const DUMMY_USERS_DATA_WITH_USERNAME: User[] = [
+  { id: 'usr_001', name: 'Azharangga Kusuma', username: 'azharangga_k', role: 'Administrator', password: 'password123' },
+  { id: 'usr_002', name: 'Siti Aminah', username: 'siti_a', role: 'Petugas Desa', password: 'sitiPassword!' },
+  { id: 'usr_003', name: 'Budi Santoso', username: 'budi_s', role: 'Petugas Desa', password: 'budiSecure' },
+  { id: 'usr_004', name: 'Dewi Lestari', username: 'dewi_l', role: 'Petugas Desa', password: 'userPass4' },
+  { id: 'usr_005', name: 'Rahmat Hidayat', username: 'rahmat_h', role: 'Petugas Desa', password: 'rahmatXYZ' },
+  { id: 'usr_006', name: 'Ahmad Dahlan', username: 'ahmad_d', role: 'Petugas Desa', password: 'adminAhmad' },
+  { id: 'usr_007', name: 'Putri Ayu', username: 'putri_a', role: 'Petugas Desa', password: 'putriDesa' },
+  // Tambahkan lebih banyak pengguna jika diperlukan
 ];
 
-const grayColor = '#9A9A9A'; // Warna abu-abu untuk placeholder dan ikon search
+const grayColor = '#9A9A9A'; 
 
-interface ManageUsersScreenProps {
+interface ManageUsersProps {
   navigation: any; 
 }
 
-const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
+const ManageUsers = ({ navigation }: ManageUsersProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
   const insets = useSafeAreaInsets();
-
-  const [allUsers, setAllUsers] = useState<User[]>([]); // Menyimpan semua pengguna (dari sumber asli)
-  const [searchQuery, setSearchQuery] = useState('');   // State untuk input pencarian
+  
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   const primaryActionColor = colors.primary;
-  const destructiveColor = isDarkMode ? '#F87171' : '#EF4444';
-  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280';
-  const iconDefaultColor = isDarkMode ? colors.text : '#4A5568';
+  const destructiveColor = isDarkMode ? '#F87171' : '#EF4444'; // Untuk ikon hapus
+  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280'; // Abu-abu untuk teks sekunder
+  const iconDefaultColor = isDarkMode ? colors.text : '#4A5568'; // Untuk ikon edit
+  const passwordIconColor = secondaryTextColor; // Warna ikon password disamakan dengan teks sekunder (abu-abu)
+  const passwordTextColor = secondaryTextColor; // Warna teks password abu-abu
 
-  // Memuat data pengguna awal
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   useFocusEffect(
     useCallback(() => {
       setIsLoading(true);
-      // Simulasi pengambilan data
       setTimeout(() => {
-        setAllUsers(DUMMY_USERS_DATA); // Muat semua data dummy ke allUsers
+        let dataToProcess = DUMMY_USERS_DATA_WITH_USERNAME;
+        if (debouncedSearchQuery.trim() !== '') {
+          const lowercasedQuery = debouncedSearchQuery.toLowerCase().trim();
+          dataToProcess = dataToProcess.filter(user =>
+            user.name.toLowerCase().includes(lowercasedQuery) ||
+            user.username.toLowerCase().includes(lowercasedQuery) || // Mencari berdasarkan username
+            user.role.toLowerCase().includes(lowercasedQuery)
+          );
+        }
+        setAllUsers(dataToProcess);
         setIsLoading(false);
       }, 500);
-      return () => {
-        // setAllUsers([]); // Opsional: bersihkan data saat screen tidak fokus
-      };
-    }, [])
+    }, [debouncedSearchQuery])
   );
-
-  // Memoized list pengguna yang sudah difilter berdasarkan searchQuery
-  const filteredUsers = useMemo(() => {
-    if (searchQuery.trim() === '') {
-      return allUsers;
-    }
-    const lowercasedQuery = searchQuery.toLowerCase().trim();
-    return allUsers.filter(user =>
-      user.name.toLowerCase().includes(lowercasedQuery) ||
-      user.role.toLowerCase().includes(lowercasedQuery) ||
-      user.email.toLowerCase().includes(lowercasedQuery)
-    );
-  }, [allUsers, searchQuery]);
-
 
   const handleAddUser = () => {
     Alert.alert("Tambah Pengguna", "Navigasi ke halaman tambah pengguna.");
@@ -115,8 +118,20 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
           text: "Hapus", 
           style: "destructive", 
           onPress: () => {
-            // Update state allUsers, filteredUsers akan otomatis terupdate karena useMemo
-            setAllUsers(prevUsers => prevUsers.filter(u => u.id !== userToDelete.id));
+            const updatedData = DUMMY_USERS_DATA_WITH_USERNAME.filter(u => u.id !== userToDelete.id);
+            // Jika DUMMY_USERS_DATA_WITH_USERNAME adalah sumber utama, Anda mungkin perlu cara untuk memodifikasinya
+            // Untuk simulasi ini, kita filter dari sumber utama dan set ulang
+            // Pada aplikasi nyata, ini akan berupa panggilan API
+            let dataToProcess = updatedData;
+            if (debouncedSearchQuery.trim() !== '') {
+                const lowercasedQuery = debouncedSearchQuery.toLowerCase().trim();
+                dataToProcess = dataToProcess.filter(user =>
+                    user.name.toLowerCase().includes(lowercasedQuery) ||
+                    user.username.toLowerCase().includes(lowercasedQuery) ||
+                    user.role.toLowerCase().includes(lowercasedQuery)
+                );
+            }
+            setAllUsers(dataToProcess);
             console.log(`Pengguna ${userToDelete.name} dihapus.`);
           } 
         },
@@ -125,8 +140,7 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
   };
   
   const viewUserDetails = (user: User) => {
-    Alert.alert("Detail Pengguna", `Melihat detail untuk ${user.name}.\nRole: ${user.role}\nEmail: ${user.email}`);
-    // navigation.navigate('UserDetailScreen', { userId: user.id });
+    Alert.alert("Detail Pengguna", `Nama: ${user.name}\nUsername: ${user.username}\nRole: ${user.role}\nPERINGATAN: Menampilkan password adalah risiko keamanan.`);
   };
 
   const handleClearSearch = () => {
@@ -140,19 +154,18 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
     headerContainer: {
       paddingHorizontal: 24,
       paddingTop: Platform.OS === 'ios' ? 20 : 28,
-      paddingBottom: 12, // Kurangi agar lebih dekat ke search bar
+      paddingBottom: 12,
       backgroundColor: colors.background,
     },
     headerTitle: {
-      fontSize: 26,
+      fontSize: 24,
       fontFamily: 'Poppins-Bold',
       color: colors.text,
     },
-    // Style untuk Search Input (mirip HistoryScreen/SearchScreen)
     searchInputWrapper: {
-        paddingHorizontal: 20, 
-        paddingBottom: 16, 
-        paddingTop: 8, 
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        paddingTop: 8,
         backgroundColor: colors.background,
     },
     searchInputContainer: {
@@ -174,17 +187,17 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       paddingVertical: Platform.OS === 'ios' ? 10 : 8,
     },
     clearButton: { padding: 4 },
-    // Akhir Style Search Input
     listContentContainer: {
       paddingHorizontal: 16,
-      paddingTop: 0, // List langsung di bawah search/filter
+      paddingTop: 0, 
       paddingBottom: 80 + insets.bottom, 
       flexGrow: 1,
     },
     userItemCard: {
       backgroundColor: colors.card,
       borderRadius: 12,
-      padding: 16,
+      paddingVertical: 14, // Sedikit penyesuaian padding
+      paddingHorizontal: 16,
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 12,
@@ -210,19 +223,31 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       color: colors.text,
       marginBottom: 2,
     },
-    userRole: {
+    userRole: { // Style untuk role
       fontSize: 13,
       fontFamily: 'Poppins-Regular',
       color: secondaryTextColor,
-      marginBottom: 1,
+      marginBottom: 2,
     },
-    userEmail: {
+    userUsername: { // Style baru untuk username
+        fontSize: 13,
+        fontFamily: 'Poppins-Regular',
+        color: secondaryTextColor, // Warna sama dengan role atau sedikit beda
+        marginBottom: 2,
+    },
+    userPasswordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 1, // Sedikit jarak dari atas
+    },
+    userPasswordText: { 
       fontSize: 12,
       fontFamily: 'Poppins-Light',
-      color: colors.border,
+      color: passwordTextColor, // Menggunakan warna abu-abu
+      marginLeft: 4, 
     },
     actionsContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 10 },
-    actionButton: { padding: 8, marginLeft: Platform.OS === 'ios' ? 10 : 8 }, // Jarak antar tombol aksi
+    actionButton: { padding: 8, marginLeft: Platform.OS === 'ios' ? 10 : 8 },
     fab: {
       position: 'absolute', margin: 16, right: 10, bottom: 10 + insets.bottom, 
       backgroundColor: primaryActionColor, width: 56, height: 56, borderRadius: 28, 
@@ -248,12 +273,25 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
       </View>
       <View style={styles.userInfoContainer}>
         <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
+        {/* Menampilkan Username */}
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 1}}>
+            <AtSign size={14} color={secondaryTextColor} />
+            <Text style={[styles.userUsername, {marginLeft: 4}]} numberOfLines={1}>{item.username}</Text>
+        </View>
         <Text style={styles.userRole} numberOfLines={1}>{item.role}</Text>
-        <Text style={styles.userEmail} numberOfLines={1}>{item.email}</Text>
+        {/* Menampilkan Password - SANGAT TIDAK DISARANKAN UNTUK PRODUKSI */}
+        {item.password && (
+            <View style={styles.userPasswordContainer}>
+                <KeyRound size={14} color={passwordIconColor} /> 
+                <Text style={styles.userPasswordText} numberOfLines={1}>
+                    {item.password} 
+                </Text>
+            </View>
+        )}
       </View>
       <View style={styles.actionsContainer}>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleEditUser(item)}>
-          <Edit3 size={20} color={iconDefaultColor} />
+          <Edit size={20} color={iconDefaultColor} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleDeleteUser(item)}>
           <Trash2 size={20} color={destructiveColor} />
@@ -262,7 +300,7 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
     </TouchableOpacity>
   );
 
-  if (isLoading) {
+  if (isLoading && !allUsers.length) { // Tampilkan loading hanya jika users belum ada sama sekali
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
@@ -282,13 +320,12 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
           <Text style={styles.headerTitle}>Kelola Pengguna</Text>
         </View>
 
-        {/* Search Input Bar */}
         <View style={styles.searchInputWrapper}>
             <View style={styles.searchInputContainer}>
                 <Search size={20} color={grayColor} style={styles.searchIcon} />
                 <TextInput
                 style={styles.textInput}
-                placeholder="Cari pengguna (nama, peran, email)..."
+                placeholder="Cari pengguna..."
                 placeholderTextColor={grayColor}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -306,24 +343,23 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
         </View>
 
         <FlatList
-          data={filteredUsers} // Menggunakan filteredUsers
+          data={allUsers} 
           renderItem={renderUserItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContentContainer}
           showsVerticalScrollIndicator={false}
-          // Pagination akan ditambahkan di sini jika diperlukan nanti
-          // onEndReached={handleLoadMore}
+          // onEndReached={handleLoadMore} // Pagination dinonaktifkan sementara
           // onEndReachedThreshold={0.5} 
           // ListFooterComponent={renderFooter}
           ListEmptyComponent={
-            !isLoading && filteredUsers.length === 0 ? (
+            !isLoading && allUsers.length === 0 ? (
               <View style={styles.emptyStateContainer}>
                   <Users size={64} color={colors.border} />
                   <Text style={styles.emptyStateTextTitle}>
-                    {searchQuery ? `Tidak Ada Hasil untuk "${searchQuery}"` : "Belum Ada Pengguna"}
+                    {debouncedSearchQuery ? `Tidak Ada Hasil untuk "${debouncedSearchQuery}"` : "Belum Ada Pengguna"}
                   </Text>
                   <Text style={styles.emptyStateTextMessage}>
-                    {searchQuery ? "Coba kata kunci lain atau periksa kembali." : "Anda dapat menambahkan pengguna baru melalui tombol di bawah."}
+                    {debouncedSearchQuery ? "Coba kata kunci lain atau periksa kembali." : "Anda dapat menambahkan pengguna baru."}
                   </Text>
               </View>
             ) : null
@@ -338,4 +374,4 @@ const ManageUsersScreen = ({ navigation }: ManageUsersScreenProps) => {
   );
 };
 
-export default ManageUsersScreen;
+export default ManageUsers;
