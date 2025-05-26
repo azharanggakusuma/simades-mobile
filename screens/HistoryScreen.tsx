@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Tambahkan useMemo
 import {
   View,
   Text,
@@ -14,11 +14,12 @@ import type { Theme } from '@react-navigation/native';
 import {
   Archive,
   ChevronRight,
-  CheckCircle2, // Ikon untuk 'Selesai'
-  Edit3,        // Ikon untuk 'Belum Selesai' (belum diisi)
+  CheckCircle2,
+  Edit3,
+  ListFilter, // Icon untuk filter
 } from 'lucide-react-native';
 
-// Daftar Master Formulir (tetap sama)
+// --- Data Model dan Dummy Data (Sama seperti versi sebelum tab) ---
 const MASTER_FORM_LIST = [
   { id: 'mf1', name: 'Keterangan Tempat' },
   { id: 'mf2', name: 'Keterangan Umum Desa Kelurahan' },
@@ -37,52 +38,43 @@ const MASTER_FORM_LIST = [
   { id: 'mf15', name: 'Data Lokasi Geospasial' },
 ];
 
-// Interface untuk data inputan desa yang sudah ada
-// Keberadaan record ini untuk sebuah masterFormId menandakan form tersebut "Selesai"
 interface DesaInputRecord {
-  id: string; // ID unik untuk record inputan ini
+  id: string;
   masterFormId: string;
-  // formName tidak perlu disimpan di sini karena bisa diambil dari MASTER_FORM_LIST
-  inputBy: string; // Nama Desa atau akun yang menginput
+  inputBy: string;
   inputDate: Date;
-  notes?: string; // Catatan opsional saat input
+  notes?: string;
 }
 
-// Interface untuk item yang akan ditampilkan di UI (lebih sederhana sekarang)
 interface UIDisplayItem {
   masterFormId: string;
   formName: string;
   uiStatus: 'Selesai' | 'Belum Selesai';
-  // Detail di bawah ini hanya ada jika uiStatus adalah 'Selesai'
   inputBy?: string;
   inputDate?: Date;
   notes?: string;
-  originalInputId?: string; // ID dari DesaInputRecord
+  originalInputId?: string;
 }
 
-// Fungsi untuk membuat data dummy inputan desa
 const createDummyDesaInputs = (): DesaInputRecord[] => {
-  console.log('[createDummyDesaInputs] Generating dummy Desa input data...');
+  // console.log('[createDummyDesaInputs] Generating dummy Desa input data...');
   const inputs: DesaInputRecord[] = [];
-  const desas = ['Desa Klangenan', 'Desa Maju Jaya', 'Desa Plumbon'];
-  
+  const desas = ['Desa Klangenan', 'Desa Maju Jaya', 'Desa Plumbon', 'Desa Suranenggala', 'Desa Gempol'];
   let inputCounter = 1;
-  // Ambil sebagian dari master list untuk disimulasikan sudah diinput
   const formsAlreadyInputted = [...MASTER_FORM_LIST]
-    .sort(() => 0.5 - Math.random()) // Acak urutan
-    .slice(0, Math.floor(MASTER_FORM_LIST.length * 0.6)); // Misal 60% form sudah diinput
+    .sort(() => 0.5 - Math.random())
+    .slice(0, Math.floor(MASTER_FORM_LIST.length * Math.random() * 0.8 + MASTER_FORM_LIST.length * 0.1)); // Antara 10% - 90%
 
   formsAlreadyInputted.forEach(masterForm => {
     inputs.push({
       id: `input${inputCounter++}`,
       masterFormId: masterForm.id,
       inputBy: desas[inputCounter % desas.length],
-      inputDate: new Date(Date.now() - inputCounter * (Math.random() * 10 + 5) * 24 * 60 * 60 * 1000), // Beberapa hari/minggu lalu
-      notes: Math.random() > 0.7 ? `Catatan untuk ${masterForm.name}` : undefined,
+      inputDate: new Date(Date.now() - inputCounter * (Math.random() * 10 + 5) * 24 * 60 * 60 * 1000),
+      notes: Math.random() > 0.7 ? `Catatan penting untuk ${masterForm.name}` : undefined,
     });
   });
-
-  console.log(`[createDummyDesaInputs] Total Desa inputs generated: ${inputs.length}`);
+  // console.log(`[createDummyDesaInputs] Total Desa inputs generated: ${inputs.length}`);
   return inputs;
 };
 
@@ -101,80 +93,70 @@ const formatTimestamp = (date?: Date): string => {
   if (days < 7) return `${days} hr lalu`;
   return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 };
+// --- Akhir Data Model dan Dummy Data ---
 
-const VerySimpleFormStatusScreen = ({ navigation }: any) => {
+type FilterType = 'Semua' | 'Belum Selesai' | 'Selesai';
+
+const FormWithFilterScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const { colors, dark: isDarkMode } = theme;
 
-  const [selesaiItems, setSelesaiItems] = useState<UIDisplayItem[]>([]);
-  const [belumSelesaiItems, setBelumSelesaiItems] = useState<UIDisplayItem[]>([]);
+  // State untuk menyimpan semua item yang sudah diproses
+  const [allProcessedItems, setAllProcessedItems] = useState<UIDisplayItem[]>([]);
+  // State untuk filter yang aktif
+  const [currentFilter, setCurrentFilter] = useState<FilterType>('Semua');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     const allDesaInputs = createDummyDesaInputs();
-    const processedSelesai: UIDisplayItem[] = [];
-    const processedBelumSelesai: UIDisplayItem[] = [];
-
-    // Buat Set dari masterFormId yang sudah diinput untuk pencarian cepat
-    const inputtedMasterFormIds = new Set(allDesaInputs.map(input => input.masterFormId));
-    // Jika ada beberapa input untuk masterFormId yang sama, ambil yang terbaru (opsional, tergantung logika bisnis)
-    // Untuk sekarang, kita anggap satu input per masterFormId sudah cukup untuk dummy.
-    // Jika perlu yang terbaru, buat map:
+    const processedItems: UIDisplayItem[] = [];
     const latestInputMap = new Map<string, DesaInputRecord>();
-    allDesaInputs.sort((a,b) => b.inputDate.getTime() - a.inputDate.getTime()); // Terbaru dulu
+
+    allDesaInputs.sort((a,b) => b.inputDate.getTime() - a.inputDate.getTime());
     for (const input of allDesaInputs) {
         if(!latestInputMap.has(input.masterFormId)) {
             latestInputMap.set(input.masterFormId, input);
         }
     }
 
-
     MASTER_FORM_LIST.forEach(masterForm => {
-      const desaInput = latestInputMap.get(masterForm.id); // Cek apakah ada input untuk form ini
+      const desaInput = latestInputMap.get(masterForm.id);
       let displayItem: UIDisplayItem;
-
-      if (desaInput) { // Jika ada record input, berarti "Selesai"
-        displayItem = {
-          masterFormId: masterForm.id,
-          formName: masterForm.name,
-          uiStatus: 'Selesai',
-          inputBy: desaInput.inputBy,
-          inputDate: desaInput.inputDate,
-          notes: desaInput.notes,
-          originalInputId: desaInput.id,
-        };
-        processedSelesai.push(displayItem);
-      } else { // Jika tidak ada record input, berarti "Belum Selesai"
-        displayItem = {
-          masterFormId: masterForm.id,
-          formName: masterForm.name,
-          uiStatus: 'Belum Selesai',
-        };
-        processedBelumSelesai.push(displayItem);
+      if (desaInput) {
+        displayItem = { masterFormId: masterForm.id, formName: masterForm.name, uiStatus: 'Selesai', inputBy: desaInput.inputBy, inputDate: desaInput.inputDate, notes: desaInput.notes, originalInputId: desaInput.id };
+      } else {
+        displayItem = { masterFormId: masterForm.id, formName: masterForm.name, uiStatus: 'Belum Selesai' };
       }
+      processedItems.push(displayItem);
     });
     
-    const sortByName = (a: UIDisplayItem, b: UIDisplayItem) => a.formName.localeCompare(b.formName);
-    processedSelesai.sort(sortByName);
-    processedBelumSelesai.sort(sortByName); // Cukup sort by name untuk "Belum Selesai"
-
-    setSelesaiItems(processedSelesai);
-    setBelumSelesaiItems(processedBelumSelesai);
-    console.log(`Selesai: ${processedSelesai.length}, Belum Selesai: ${processedBelumSelesai.length}`);
+    // Urutkan semua item berdasarkan nama form secara default
+    processedItems.sort((a, b) => a.formName.localeCompare(b.formName));
+    setAllProcessedItems(processedItems);
+    setIsLoading(false);
   }, []);
+
+  // Gunakan useMemo untuk memfilter item yang akan ditampilkan berdasarkan currentFilter
+  const displayedItems = useMemo(() => {
+    if (isLoading) return []; // Jangan proses jika masih loading
+    // console.log(`Filtering for: ${currentFilter}, total items: ${allProcessedItems.length}`);
+    if (currentFilter === 'Belum Selesai') {
+      return allProcessedItems.filter(item => item.uiStatus === 'Belum Selesai');
+    }
+    if (currentFilter === 'Selesai') {
+      return allProcessedItems.filter(item => item.uiStatus === 'Selesai');
+    }
+    return allProcessedItems; // 'Semua'
+  }, [allProcessedItems, currentFilter, isLoading]);
 
   const handleItemPress = (item: UIDisplayItem) => {
     let message = `Formulir: ${item.formName}\nStatus: ${item.uiStatus}`;
     if (item.uiStatus === 'Selesai') {
-      if (item.inputDate) {
-        message += `\nDiinput pada: ${formatTimestamp(item.inputDate)}`;
-      }
-      if (item.inputBy) {
-        message += `\nOleh: ${item.inputBy}`;
-      }
-      if (item.notes) {
-        message += `\nCatatan: ${item.notes}`;
-      }
-    } else { // Belum Selesai
+      if (item.inputDate) message += `\nDiinput pada: ${formatTimestamp(item.inputDate)}`;
+      if (item.inputBy) message += `\nOleh: ${item.inputBy}`;
+      if (item.notes) message += `\nCatatan: ${item.notes}`;
+    } else {
         message += '\n\nFormulir ini belum diisi oleh desa.';
     }
     Alert.alert("Detail Formulir", message);
@@ -185,9 +167,39 @@ const VerySimpleFormStatusScreen = ({ navigation }: any) => {
     container: { flex: 1 },
     headerContainer: { paddingHorizontal: 20, paddingVertical: Platform.OS === 'ios' ? 12 : 16, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: isDarkMode ? colors.card : '#FFFFFF' },
     headerTitle: { fontSize: 22, fontFamily: 'Poppins-Bold', color: colors.text, textAlign: 'center' },
-    sectionTitleContainer: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10, backgroundColor: colors.background },
-    sectionTitle: { fontSize: 18, fontFamily: 'Poppins-SemiBold', color: colors.text },
-    listContentContainer: { paddingBottom: 16 },
+    
+    filterContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        backgroundColor: colors.card,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    filterButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20, // Lebih bulat
+        borderWidth: 1,
+        borderColor: colors.border, // Default border
+    },
+    filterButtonText: {
+        fontFamily: 'Poppins-Medium',
+        fontSize: 14,
+    },
+    activeFilterButton: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+    },
+    activeFilterButtonText: {
+        color: '#FFFFFF', // Teks putih untuk tombol aktif
+    },
+    inactiveFilterButtonText: {
+        color: colors.text,
+    },
+
+    listContentContainer: { paddingVertical: 8, paddingBottom: 16, flexGrow: 1 }, // flexGrow agar empty state di tengah
 
     itemContainer: { backgroundColor: colors.card, marginHorizontal: 16, marginVertical: 6, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', elevation: 2, shadowColor: '#000000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: isDarkMode ? 0.12 : 0.06, shadowRadius: 3 },
     itemIconContainer: { marginRight: 16, width: 42, height: 42, borderRadius: 21, justifyContent: 'center', alignItems: 'center' },
@@ -199,10 +211,11 @@ const VerySimpleFormStatusScreen = ({ navigation }: any) => {
     itemNotes: { fontSize: 12, fontFamily: 'Poppins-Italic', color: colors.notification, marginTop: 4 },
     itemChevronContainer: { marginLeft: 10, justifyContent: 'center' },
     
-    emptyStateContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20, minHeight: 150 },
+    emptyStateContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, marginTop: 20 },
     emptyStateIcon: { marginBottom: 16 },
     emptyStateTitle: { fontSize: 18, fontFamily: 'Poppins-SemiBold', color: colors.text, marginBottom: 8, textAlign: 'center' },
     emptyStateMessage: { fontSize: 14, fontFamily: 'Poppins-Regular', color: colors.notification, textAlign: 'center' },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background},
   });
 
   const renderListItem = ({ item }: { item: UIDisplayItem }) => {
@@ -210,15 +223,15 @@ const VerySimpleFormStatusScreen = ({ navigation }: any) => {
 
     if (item.uiStatus === 'Selesai') {
         MainIconComponent = CheckCircle2;
-        mainIconColor = isDarkMode ? '#A7F3D0' : '#059669'; // Hijau
-        badgeBgColor = isDarkMode ? '#065F464D' : '#D1FAE5'; // Background hijau muda
+        mainIconColor = isDarkMode ? '#A7F3D0' : '#059669';
+        badgeBgColor = isDarkMode ? '#065F464D' : '#D1FAE5';
         badgeTextColor = mainIconColor;
         BadgeIconComponent = CheckCircle2;
-    } else { // uiStatus === 'Belum Selesai'
+    } else { // Belum Selesai
         MainIconComponent = Edit3;
-        mainIconColor = colors.primary; // Warna primary untuk ikon "edit"
-        badgeBgColor = isDarkMode ? '#4A5568' : '#E5E7EB'; // Abu-abu netral
-        badgeTextColor = isDarkMode ? colors.card : colors.text; // Warna teks kontras dengan badge
+        mainIconColor = colors.primary;
+        badgeBgColor = isDarkMode ? '#4A5568' : '#E5E7EB';
+        badgeTextColor = isDarkMode ? colors.card : colors.text;
         BadgeIconComponent = Edit3;
     }
 
@@ -239,12 +252,10 @@ const VerySimpleFormStatusScreen = ({ navigation }: any) => {
           {item.uiStatus === 'Selesai' && item.inputBy && (
              <Text style={styles.itemDetailsText}>Oleh: {item.inputBy}</Text>
           )}
-          
           <View style={[styles.statusBadge, { backgroundColor: badgeBgColor }]}>
             <BadgeIconComponent size={15} color={badgeTextColor} />
             <Text style={[styles.statusText, { color: badgeTextColor }]}>{item.uiStatus}</Text>
           </View>
-
           {item.uiStatus === 'Selesai' && item.notes && (
             <Text style={styles.itemNotes}>Catatan: {item.notes}</Text>
           )}
@@ -256,50 +267,63 @@ const VerySimpleFormStatusScreen = ({ navigation }: any) => {
     );
   };
   
-  const ListHeader = ({ title } : {title: string}) => (
-    <View style={styles.sectionTitleContainer}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-    </View>
+  const renderFilterButton = (filterValue: FilterType, filterText: string) => (
+    <TouchableOpacity
+        style={[
+            styles.filterButton,
+            currentFilter === filterValue && styles.activeFilterButton,
+        ]}
+        onPress={() => setCurrentFilter(filterValue)}
+    >
+        <Text style={[
+            styles.filterButtonText,
+            currentFilter === filterValue ? styles.activeFilterButtonText : styles.inactiveFilterButtonText,
+        ]}>
+            {filterText}
+        </Text>
+    </TouchableOpacity>
   );
 
-   const flatListData = [
-    { type: 'header', title: 'Belum Selesai Diinput Desa', id: 'header-belum-selesai' },
-    ...(belumSelesaiItems.length > 0 
-        ? belumSelesaiItems.map(item => ({ ...item, type: 'item' })) 
-        : [{ type: 'empty', title: 'Tidak Ada Form Belum Diinput', message: 'Semua formulir telah diinput oleh desa atau belum ada data.', id: 'empty-belum-selesai'}]),
-    { type: 'header', title: 'Sudah Selesai Diinput Desa', id: 'header-sudah-selesai' },
-    ...(selesaiItems.length > 0 
-        ? selesaiItems.map(item => ({ ...item, type: 'item' }))
-        : [{ type: 'empty', title: 'Belum Ada Form Diinput', message: 'Belum ada formulir yang diinput oleh desa.', id: 'empty-sudah-selesai'}]),
-  ];
+  if (isLoading) {
+    return (
+        <SafeAreaView style={styles.loadingContainer}>
+            <ListFilter size={48} color={colors.primary} />
+            <Text style={{color: colors.text, fontSize: 18, marginTop: 10, fontFamily: 'Poppins-Regular'}}>Memuat formulir...</Text>
+        </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Status Input Formulir Desa</Text>
       </View>
+      
+      <View style={styles.filterContainer}>
+        {renderFilterButton('Semua', 'Semua')}
+        {renderFilterButton('Belum Selesai', 'Belum Selesai')}
+        {renderFilterButton('Selesai', 'Selesai')}
+      </View>
+
       <FlatList
-        data={flatListData}
-        keyExtractor={(item, index) => item.id || `list-item-${index}`} // item.id di sini merujuk ke UIDisplayItem.masterFormId atau header/empty id
-        renderItem={({ item }) => {
-          if (item.type === 'header') {
-            return <ListHeader title={item.title as string} />;
-          }
-          if (item.type === 'empty') {
-            return (
-              <View style={styles.emptyStateContainer}>
-                <Archive size={48} color={colors.border} style={styles.emptyStateIcon} />
-                <Text style={styles.emptyStateTitle}>{item.title as string}</Text>
-                <Text style={styles.emptyStateMessage}>{item.message as string}</Text>
-              </View>
-            );
-          }
-          return renderListItem({ item: item as UIDisplayItem });
-        }}
+        data={displayedItems}
+        renderItem={renderListItem}
+        keyExtractor={(item) => item.masterFormId}
         contentContainerStyle={styles.listContentContainer}
+        ListEmptyComponent={
+            <View style={styles.emptyStateContainer}>
+                <Archive size={64} color={colors.border} style={styles.emptyStateIcon} />
+                <Text style={styles.emptyStateTitle}>
+                    {currentFilter === 'Semua' && displayedItems.length === 0 ? 'Tidak Ada Formulir' : `Tidak Ada Form ${currentFilter}`}
+                </Text>
+                <Text style={styles.emptyStateMessage}>
+                    {currentFilter === 'Semua' && displayedItems.length === 0 ? 'Daftar formulir akan muncul di sini.' : `Tidak ada formulir yang cocok dengan filter "${currentFilter}".`}
+                </Text>
+            </View>
+        }
       />
     </SafeAreaView>
   );
 };
 
-export default VerySimpleFormStatusScreen;
+export default FormWithFilterScreen;
