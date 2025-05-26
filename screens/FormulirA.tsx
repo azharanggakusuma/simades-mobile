@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Tambahkan useEffect dan useMemo
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-import { CheckCircle, MapPin, FileText, ChevronDown, AlertCircle } from 'lucide-react-native';
+import { CheckCircle, MapPin, FileText, ChevronDown, AlertCircle, User, Hash, Building } from 'lucide-react-native'; // Tambahkan ikon lain jika perlu
 
 // --- Constants (Data bisa dipindah ke file terpisah jika makin banyak) ---
 const SK_DOCUMENT_OPTIONS = [
@@ -33,11 +33,125 @@ const KECAMATAN_OPTIONS = [
   { label: 'Kecamatan Kejaksan', value: 'kejaksan' },
 ];
 
-// --- Interface ---
+const JENIS_KELAMIN_OPTIONS = [
+    { label: 'Pilih Jenis Kelamin...', value: undefined },
+    { label: 'Laki-laki', value: 'laki_laki' },
+    { label: 'Perempuan', value: 'perempuan' },
+];
+
+// --- Definisi Struktur Form Dinamis ---
+// Definisikan tipe untuk field dan section
+type FormFieldType = 'text' | 'picker' | 'multiline-text' | 'number';
+
+interface FormField {
+  name: string; // Harus unik, digunakan sebagai key di state
+  label: string;
+  type: FormFieldType;
+  icon: React.ElementType; // Komponen ikon (mis. FileText, MapPin)
+  placeholder?: string;
+  options?: Array<{ label: string; value: string | number | undefined }>;
+  prompt?: string;
+  numberOfLines?: number;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+  required?: boolean;
+  requiredMessage?: string;
+  // Tambahkan properti lain sesuai kebutuhan (mis. validasi regex, minLength, dll.)
+}
+
+interface FormSection {
+  id: string; // Harus unik
+  title: string;
+  fields: FormField[];
+}
+
+// Konfigurasi Form
+const FORM_SECTIONS_CONFIG: FormSection[] = [
+  {
+    id: 'skCard',
+    title: 'SK Desa/Kelurahan',
+    fields: [
+      {
+        name: 'skDocument',
+        label: 'Pilihan Dokumen SK',
+        type: 'picker',
+        icon: FileText,
+        options: SK_DOCUMENT_OPTIONS,
+        prompt: 'Pilih Dokumen SK',
+        required: true,
+        requiredMessage: 'Mohon pilih Dokumen SK.',
+      },
+    ],
+  },
+  {
+    id: 'alamatCard',
+    title: 'Alamat Kantor',
+    fields: [
+      {
+        name: 'alamatBalaiDesa',
+        label: 'Alamat Lengkap',
+        type: 'multiline-text',
+        icon: MapPin,
+        placeholder: 'Masukkan alamat lengkap...',
+        numberOfLines: 4,
+        required: true,
+        requiredMessage: 'Mohon isi Alamat Balai Desa/Kantor Kelurahan.',
+      },
+      {
+        name: 'kecamatan',
+        label: 'Kecamatan',
+        type: 'picker',
+        icon: MapPin, // Menggunakan MapPin lagi, bisa diganti jika ada ikon yang lebih spesifik
+        options: KECAMATAN_OPTIONS,
+        prompt: 'Pilih Nama Kecamatan',
+        required: true,
+        requiredMessage: 'Mohon pilih Nama Kecamatan.',
+      },
+    ],
+  },
+  // Contoh Penambahan Kartu dan Input Baru (mis. Data Kepala Desa)
+  {
+    id: 'kepalaDesaCard',
+    title: 'Data Kepala Desa/Lurah',
+    fields: [
+        {
+            name: 'namaKepalaDesa',
+            label: 'Nama Lengkap Kepala Desa/Lurah',
+            type: 'text',
+            icon: User,
+            placeholder: 'Masukkan nama lengkap...',
+            required: true,
+            requiredMessage: 'Nama Kepala Desa/Lurah wajib diisi.',
+        },
+        {
+            name: 'nikKepalaDesa',
+            label: 'NIK Kepala Desa/Lurah',
+            type: 'number',
+            icon: Hash,
+            placeholder: 'Masukkan NIK...',
+            keyboardType: 'numeric',
+            required: true,
+            requiredMessage: 'NIK Kepala Desa/Lurah wajib diisi.',
+        },
+        {
+            name: 'jenisKelaminKepalaDesa',
+            label: 'Jenis Kelamin',
+            type: 'picker',
+            icon: User, // Bisa diganti dengan ikon yang lebih spesifik
+            options: JENIS_KELAMIN_OPTIONS,
+            prompt: 'Pilih Jenis Kelamin',
+            required: false, // Contoh field tidak wajib
+        },
+    ]
+  }
+];
+
+
+// --- Interface (yang sudah ada bisa tetap, atau disesuaikan jika perlu) ---
 interface KeteranganTempatScreenProps {
   route?: { params?: { formTitle?: string } };
 }
 
+// Props untuk komponen kustom tidak berubah banyak
 interface FormCardProps {
   title: string;
   children: React.ReactNode;
@@ -45,9 +159,9 @@ interface FormCardProps {
 
 interface CustomPickerProps {
   label: string;
-  selectedValue: string | undefined;
-  onValueChange: (itemValue: string | undefined) => void;
-  items: Array<{ label: string; value: string | undefined }>;
+  selectedValue: any; // Bisa string, number, atau undefined
+  onValueChange: (itemValue: any) => void;
+  items: Array<{ label: string; value: any }>;
   prompt?: string;
   icon: React.ReactNode;
   error?: string;
@@ -57,15 +171,16 @@ interface CustomTextInputProps {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder: string;
+  placeholder?: string; // Dibuat opsional
   icon: React.ReactNode;
   multiline?: boolean;
   numberOfLines?: number;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
   error?: string;
 }
 
-// --- Reusable Components ---
-
+// --- Reusable Components (FormCard, CustomPicker, CustomTextInput) ---
+// Tidak ada perubahan signifikan pada definisi komponen ini, hanya penggunaannya yang akan dinamis
 const FormCard: React.FC<FormCardProps> = ({ title, children }) => {
   const { colors, dark: isDarkMode } = useTheme();
   const styles = createStyles(colors, isDarkMode);
@@ -77,7 +192,7 @@ const FormCard: React.FC<FormCardProps> = ({ title, children }) => {
   );
 };
 
-const CustomPicker: React.FC<CustomPickerProps> = ({
+const CustomPicker: React.FC<CustomPickerProps> = React.memo(({ // React.memo untuk optimasi
   label,
   selectedValue,
   onValueChange,
@@ -95,7 +210,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
       <View style={[styles.pickerWrapper, error ? styles.inputErrorBorder : {}]}>
         {React.cloneElement(icon as React.ReactElement, {
           size: 20,
-          color: error ? colors.notification : colors.text, // Ganti warna ikon jika ada error
+          color: error ? colors.notification : colors.text,
           style: { marginLeft: 15, marginRight: 5 },
         })}
         <View style={styles.pickerContainer}>
@@ -108,13 +223,13 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
           >
             {items.map((option, index) => (
               <Picker.Item
-                key={option.value || `picker-item-${index}`}
+                key={option.value !== undefined ? option.value.toString() : `picker-item-${index}`}
                 label={option.label}
                 value={option.value}
                 style={
                   option.value === undefined
                     ? styles.pickerPlaceholder
-                    : { fontFamily: 'Poppins-Regular', color: colors.text } // Pastikan warna teks item juga dari tema
+                    : { fontFamily: 'Poppins-Regular', color: colors.text }
                 }
               />
             ))}
@@ -130,9 +245,9 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
       )}
     </View>
   );
-};
+});
 
-const CustomTextInput: React.FC<CustomTextInputProps> = ({
+const CustomTextInput: React.FC<CustomTextInputProps> = React.memo(({ // React.memo untuk optimasi
   label,
   value,
   onChangeText,
@@ -140,6 +255,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   icon,
   multiline = false,
   numberOfLines = 1,
+  keyboardType = 'default',
   error,
 }) => {
   const { colors, dark: isDarkMode } = useTheme();
@@ -150,13 +266,11 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
     multiline && styles.multilineTextInputContainer,
     error ? styles.inputErrorBorder : {}
   ];
-
   const iconStyle = [
     styles.inputIcon,
     multiline && { marginTop: Platform.OS === 'ios' ? 14 : 12 },
-    error ? {color: colors.notification} : {} // Ganti warna ikon jika ada error
+    error ? {color: colors.notification} : {}
   ];
-
 
   return (
     <View style={styles.fieldGroup}>
@@ -164,7 +278,6 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
       <View style={inputContainerStyle}>
         {React.cloneElement(icon as React.ReactElement, {
           size: 20,
-        //   color: colors.text, // Warna diatur oleh iconStyle
           style: iconStyle,
         })}
         <TextInput
@@ -175,6 +288,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           placeholderTextColor={isDarkMode ? '#999999' : '#AAAAAA'}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          keyboardType={keyboardType}
           selectionColor={colors.primary}
         />
       </View>
@@ -186,59 +300,73 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
       )}
     </View>
   );
-};
+});
 
 // --- Main Screen Component ---
 const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
   const { colors, dark: isDarkMode } = useTheme();
-  const styles = createStyles(colors, isDarkMode); // Panggil createStyles
+  const styles = createStyles(colors, isDarkMode);
   const screenTitle = route?.params?.formTitle || 'Keterangan Tempat';
 
-  // State untuk input
-  const [selectedSkDocument, setSelectedSkDocument] = useState<string | undefined>();
-  const [alamatBalaiDesa, setAlamatBalaiDesa] = useState('');
-  const [selectedKecamatan, setSelectedKecamatan] = useState<string | undefined>();
+  // Membuat initial state untuk formData dan errors secara dinamis
+  const initialFormData = useMemo(() => {
+    const data: { [key: string]: any } = {};
+    FORM_SECTIONS_CONFIG.forEach(section => {
+      section.fields.forEach(field => {
+        data[field.name] = field.type === 'picker' ? undefined : ''; // Default untuk picker adalah undefined
+      });
+    });
+    return data;
+  }, []);
 
-  // State untuk error (opsional, untuk UI error yang lebih baik dari Alert)
-  const [errors, setErrors] = useState<{ sk?: string; alamat?: string; kecamatan?: string }>({});
+  const [formData, setFormData] = useState<{ [key: string]: any }>(initialFormData);
+  const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({});
 
-
-  const validate = () => {
-    const newErrors: { sk?: string; alamat?: string; kecamatan?: string } = {};
-    if (!selectedSkDocument) {
-      newErrors.sk = 'Mohon pilih Dokumen SK.';
+  // Handler input generik
+  const handleInputChange = (name: string, value: any) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }));
+    // Hapus error untuk field yang sedang diubah
+    if (errors[name]) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: undefined,
+      }));
     }
-    if (!alamatBalaiDesa.trim()) {
-      newErrors.alamat = 'Mohon isi Alamat Balai Desa/Kantor Kelurahan.';
-    }
-    if (!selectedKecamatan) {
-      newErrors.kecamatan = 'Mohon pilih Nama Kecamatan.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
+  const validate = () => {
+    const newErrors: { [key: string]: string | undefined } = {};
+    let isValid = true;
+
+    FORM_SECTIONS_CONFIG.forEach(section => {
+      section.fields.forEach(field => {
+        if (field.required) {
+          const value = formData[field.name];
+          if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+            newErrors[field.name] = field.requiredMessage || `${field.label} wajib diisi.`;
+            isValid = false;
+          }
+        }
+        // Tambahkan aturan validasi lain di sini jika perlu
+      });
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = () => {
     if (!validate()) {
-      // Alert.alert('Data Belum Lengkap', 'Silakan periksa kembali data yang Anda masukkan.');
-      // Bisa juga menampilkan toast atau Snackbar
-      // Untuk saat ini, error inline sudah cukup
+      Alert.alert('Data Belum Lengkap', 'Silakan periksa kembali data yang Anda masukkan.');
       return;
     }
-
-    const formData = {
-      skDokumen: selectedSkDocument,
-      alamat: alamatBalaiDesa,
-      kecamatan: selectedKecamatan,
-    };
-    console.log('Data Formulir:', formData);
-    Alert.alert('Berhasil', 'Data keterangan tempat telah disimulasikan untuk dikirim!');
-    // Implementasi logika submit data
-    // Reset form setelah submit berhasil (opsional)
-    // setSelectedSkDocument(undefined);
-    // setAlamatBalaiDesa('');
-    // setSelectedKecamatan(undefined);
+    console.log('Data Formulir Dinamis:', formData);
+    Alert.alert('Berhasil', 'Data keterangan tempat (dinamis) telah disimulasikan untuk dikirim!');
+    // Reset form (opsional)
+    // setFormData(initialFormData);
     // setErrors({});
   };
 
@@ -255,48 +383,43 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
         >
           <Text style={styles.screenTitle}>{screenTitle}</Text>
 
-          <FormCard title="SK Desa/Kelurahan">
-            <CustomPicker
-              label="Pilihan Dokumen SK"
-              selectedValue={selectedSkDocument}
-              onValueChange={(value) => {
-                setSelectedSkDocument(value);
-                if (errors.sk) setErrors(prev => ({...prev, sk: undefined}));
-              }}
-              items={SK_DOCUMENT_OPTIONS}
-              prompt="Pilih Dokumen SK"
-              icon={<FileText />}
-              error={errors.sk}
-            />
-          </FormCard>
-
-          <FormCard title="Alamat Kantor">
-            <CustomTextInput
-              label="Alamat Lengkap"
-              value={alamatBalaiDesa}
-              onChangeText={(text) => {
-                setAlamatBalaiDesa(text);
-                if (errors.alamat) setErrors(prev => ({...prev, alamat: undefined}));
-              }}
-              placeholder="Masukkan alamat lengkap..."
-              icon={<MapPin />}
-              multiline
-              numberOfLines={4}
-              error={errors.alamat}
-            />
-            <CustomPicker
-              label="Kecamatan"
-              selectedValue={selectedKecamatan}
-              onValueChange={(value) => {
-                setSelectedKecamatan(value);
-                if (errors.kecamatan) setErrors(prev => ({...prev, kecamatan: undefined}));
-              }}
-              items={KECAMATAN_OPTIONS}
-              prompt="Pilih Nama Kecamatan"
-              icon={<MapPin />}
-              error={errors.kecamatan}
-            />
-          </FormCard>
+          {/* Rendering Form Secara Dinamis */}
+          {FORM_SECTIONS_CONFIG.map(section => (
+            <FormCard key={section.id} title={section.title}>
+              {section.fields.map(field => {
+                const IconComponent = field.icon; // Ambil komponen ikon dari konfigurasi
+                if (field.type === 'picker') {
+                  return (
+                    <CustomPicker
+                      key={field.name}
+                      label={field.label}
+                      selectedValue={formData[field.name]}
+                      onValueChange={(value) => handleInputChange(field.name, value)}
+                      items={field.options || []}
+                      prompt={field.prompt}
+                      icon={<IconComponent />} // Render ikon
+                      error={errors[field.name]}
+                    />
+                  );
+                }
+                // Untuk 'text' dan 'multiline-text' atau 'number'
+                return (
+                  <CustomTextInput
+                    key={field.name}
+                    label={field.label}
+                    value={String(formData[field.name] || '')} // Pastikan value selalu string atau default ke string kosong
+                    onChangeText={(text) => handleInputChange(field.name, text)}
+                    placeholder={field.placeholder}
+                    icon={<IconComponent />} // Render ikon
+                    multiline={field.type === 'multiline-text'}
+                    numberOfLines={field.numberOfLines}
+                    keyboardType={field.keyboardType || (field.type === 'number' ? 'numeric' : 'default')}
+                    error={errors[field.name]}
+                  />
+                );
+              })}
+            </FormCard>
+          ))}
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.7}>
             <CheckCircle size={22} color="#FFFFFF" />
@@ -308,8 +431,8 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
   );
 };
 
-// --- Stylesheet ---
-// Mengubah StyleSheet menjadi fungsi agar bisa menerima `colors` dan `isDarkMode`
+// --- Stylesheet (createStyles function) ---
+// Fungsi createStyles tetap sama, tidak perlu diubah
 const createStyles = (colors: any, isDarkMode: boolean) =>
   StyleSheet.create({
     safeArea: {
@@ -325,7 +448,7 @@ const createStyles = (colors: any, isDarkMode: boolean) =>
       paddingVertical: 20,
     },
     screenTitle: {
-      fontSize: 28,
+      fontSize: 24,
       fontFamily: 'Poppins-Bold',
       color: colors.text,
       textAlign: 'center',
@@ -369,18 +492,18 @@ const createStyles = (colors: any, isDarkMode: boolean) =>
       borderRadius: 8,
       paddingHorizontal: 12,
     },
-    inputErrorBorder: { // Style untuk border error
-        borderColor: colors.notification, // Biasanya warna merah untuk error
+    inputErrorBorder: {
+        borderColor: colors.notification,
     },
-    errorContainer: { // Container untuk teks error
+    errorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 6,
     },
-    errorText: { // Style untuk teks error
+    errorText: {
         fontSize: 13,
         fontFamily: 'Poppins-Regular',
-        color: colors.notification, // Biasanya warna merah untuk error
+        color: colors.notification,
         marginLeft: 5,
     },
     inputIcon: {
@@ -417,8 +540,6 @@ const createStyles = (colors: any, isDarkMode: boolean) =>
       color: colors.text,
       fontFamily: 'Poppins-Regular',
       height: Platform.OS === 'android' ? 50 : undefined,
-       // Untuk iOS, atur padding atau height pada wrapper jika perlu
-       // width: '100%' // pastikan picker mengisi wrapper
     },
     pickerPlaceholder: {
       fontFamily: 'Poppins-Regular',
@@ -427,8 +548,6 @@ const createStyles = (colors: any, isDarkMode: boolean) =>
     pickerIcon: {
       position: 'absolute',
       right: 15,
-      top: Platform.OS === 'ios' ? 'auto' : 16, // Biarkan iOS mengatur sendiri atau sesuaikan
-      // color: colors.text, // warna sudah diatur saat pemanggilan komponen
     },
     submitButton: {
       backgroundColor: colors.primary,
