@@ -85,12 +85,12 @@ const styles = StyleSheet.create<Style>({
     marginBottom: 28,
   },
   heading: {
-    fontSize: 26,
+    fontSize: 24,
     fontFamily: 'Poppins-Bold',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subheading: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Poppins-Regular',
   },
   sectionTitle: {
