@@ -327,7 +327,7 @@ const createStyles = (colors: any, isDarkMode: boolean) =>
     screenTitle: {
       fontSize: 28,
       fontFamily: 'Poppins-Bold',
-      color: colors.primary,
+      color: colors.text,
       textAlign: 'center',
       marginBottom: 30,
     },
