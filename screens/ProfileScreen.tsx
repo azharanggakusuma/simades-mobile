@@ -159,7 +159,6 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       color: colors.text,
     },
     logoutButtonContainer: {
-      marginBottom: 120,
       paddingHorizontal: 18,
     },
     logoutMenuItem: {

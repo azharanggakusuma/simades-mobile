@@ -99,7 +99,7 @@ const STATUS_SELESAI_COLOR = '#10B981';
 const STATUS_BELUM_SELESAI_COLOR = '#EF4444';
 const TEXT_ON_COLORED_BADGE = '#FFFFFF';
 
-const FormWithSearchAndFilterScreen = ({ navigation }: any) => {
+const HistoryScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const { colors, dark: isDarkMode } = theme;
 
@@ -463,4 +463,4 @@ const FormWithSearchAndFilterScreen = ({ navigation }: any) => {
   );
 };
 
-export default FormWithSearchAndFilterScreen;
+export default HistoryScreen;
