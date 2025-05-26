@@ -58,11 +58,11 @@ interface SettingsSectionConfig {
   items: SettingItem[];
 }
 
-interface SettingsScreenProps {
+interface SettingProps {
   navigation: any;
 }
 
-const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
+const Setting = ({ navigation }: SettingProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
   // --- State untuk Pengaturan (Contoh) ---
@@ -287,4 +287,4 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
   );
 };
 
-export default SettingsScreen;
+export default Setting;
