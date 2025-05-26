@@ -95,7 +95,7 @@ const formatTimestamp = (date?: Date): string => {
 
 type FilterType = 'Semua' | 'Belum Selesai' | 'Selesai';
 
-const grayColor = '#9A9A9A';
+const grayColor = '#9A9A9A'; // Warna abu-abu yang diinginkan
 const STATUS_SELESAI_COLOR = '#10B981';
 const STATUS_BELUM_SELESAI_COLOR = '#EF4444';
 const TEXT_ON_COLORED_BADGE = '#FFFFFF';
@@ -106,7 +106,7 @@ const HistoryScreen = ({ navigation }: any) => {
 
   const [allProcessedItems, setAllProcessedItems] = useState<UIDisplayItem[]>([]);
   const [currentFilter, setCurrentFilter] = useState<FilterType>('Semua');
-  const [searchQuery, setSearchQuery] = useState(''); // State untuk search query
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -141,7 +141,6 @@ const HistoryScreen = ({ navigation }: any) => {
   const displayedItems = useMemo(() => {
     if (isLoading) return [];
     
-    // 1. Filter berdasarkan status (currentFilter)
     let itemsFilteredByStatus = allProcessedItems;
     if (currentFilter === 'Belum Selesai') {
       itemsFilteredByStatus = allProcessedItems.filter(item => item.uiStatus === 'Belum Selesai');
@@ -149,9 +148,8 @@ const HistoryScreen = ({ navigation }: any) => {
       itemsFilteredByStatus = allProcessedItems.filter(item => item.uiStatus === 'Selesai');
     }
 
-    // 2. Filter berdasarkan kueri pencarian (searchQuery)
     if (searchQuery.trim() === '') {
-      return itemsFilteredByStatus; // Jika tidak ada query, kembalikan hasil filter status
+      return itemsFilteredByStatus;
     }
 
     const lowercasedQuery = searchQuery.toLowerCase();
@@ -161,7 +159,6 @@ const HistoryScreen = ({ navigation }: any) => {
   }, [allProcessedItems, currentFilter, searchQuery, isLoading]);
 
   const handleItemPress = (item: UIDisplayItem) => {
-    // ... (fungsi handleItemPress tetap sama)
     let message = `Formulir: ${item.formName}\nStatus: ${item.uiStatus}`;
     if (item.uiStatus === 'Selesai') {
       if (item.inputDate) message += `\nDiinput pada: ${formatTimestamp(item.inputDate)}`;
@@ -178,7 +175,7 @@ const HistoryScreen = ({ navigation }: any) => {
     headerContainer: { 
         paddingHorizontal: 24, 
         paddingTop: Platform.OS === 'ios' ? 20 : 28,
-        paddingBottom: 12, // Kurangi padding bawah untuk beri ruang ke search input
+        paddingBottom: 12,
         backgroundColor: colors.background,
     },
     headerTitle: { 
@@ -187,16 +184,15 @@ const HistoryScreen = ({ navigation }: any) => {
         color: colors.text,
         textAlign: 'left',
     },
-    // Style untuk Search Input
     searchInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.card,
         borderRadius: 8,
         paddingHorizontal: 12,
-        marginHorizontal: 20, // Samakan dengan padding filter jika ada
+        marginHorizontal: 20,
         marginTop: 8,
-        marginBottom: 16, // Jarak ke filter
+        marginBottom: 16,
         borderWidth: 1,
         borderColor: colors.border,
     },
@@ -211,7 +207,6 @@ const HistoryScreen = ({ navigation }: any) => {
     clearSearchButton: {
         padding: 4,
     },
-    // Akhir Style Search Input
     filterContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -286,7 +281,7 @@ const HistoryScreen = ({ navigation }: any) => {
     itemDetailsText: { 
         fontSize: 13, 
         fontFamily: 'Poppins-Regular', 
-        color: colors.notification, 
+        color: grayColor, // DIGANTI KE grayColor
         marginBottom: 2,
         lineHeight: 18,
     },
@@ -323,7 +318,7 @@ const HistoryScreen = ({ navigation }: any) => {
     emptyStateMessage: { 
         fontSize: 15, 
         fontFamily: 'Poppins-Regular', 
-        color: colors.notification, 
+        color: grayColor, // DIGANTI KE grayColor (jika colors.notification tidak diinginkan)
         textAlign: 'center',
         lineHeight: 22,
     },
@@ -336,7 +331,6 @@ const HistoryScreen = ({ navigation }: any) => {
   });
 
   const renderListItem = ({ item }: { item: UIDisplayItem }) => {
-    // ... (renderListItem tetap sama dengan implementasi warna hijau/merah dan ikon X/Centang)
     let MainIconComponent, mainIconColor, badgeBgColor, badgeTextColor, BadgeIconComponent;
 
     if (item.uiStatus === 'Selesai') {
@@ -383,7 +377,6 @@ const HistoryScreen = ({ navigation }: any) => {
   };
   
   const renderFilterButton = (filterValue: FilterType, filterText: string) => (
-    // ... (renderFilterButton tetap sama)
     <TouchableOpacity
         style={[
             styles.filterButton,
@@ -403,7 +396,6 @@ const HistoryScreen = ({ navigation }: any) => {
 
   if (isLoading) {
     return (
-        // ... (Loading state tetap sama)
         <SafeAreaView style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={{color: colors.text, fontSize: 16, marginTop: 16, fontFamily: 'Poppins-Regular'}}>Memuat formulir...</Text>
@@ -417,13 +409,12 @@ const HistoryScreen = ({ navigation }: any) => {
         <Text style={styles.headerTitle}>Status Formulir Desa</Text>
       </View>
 
-      {/* Search Input */}
       <View style={styles.searchInputContainer}>
         <Search size={20} color={grayColor} />
         <TextInput
             style={styles.searchInput}
             placeholder="Cari nama formulir..."
-            placeholderTextColor={grayColor}
+            placeholderTextColor={grayColor} // Placeholder juga menggunakan grayColor
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
