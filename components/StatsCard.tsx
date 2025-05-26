@@ -1,22 +1,70 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ViewStyle, TextStyle } from 'react-native';
+import { FileText, Building, MapPin, Users } from 'lucide-react-native'; // Import ikon di sini
 import type { LucideIcon } from 'lucide-react-native';
-import type { Theme } from '@react-navigation/native'; // Impor tipe Theme
+import type { Theme } from '@react-navigation/native';
 
-interface StatsCardProps {
+// 1. Definisikan tipe kartu yang mungkin
+export type StatsCardType = 'formulir' | 'desa' | 'kecamatan' | 'pengguna';
+
+// Interface untuk konfigurasi setiap tipe kartu
+interface CardSpecificConfig {
   title: string;
-  value: string;
+  value: string; // Untuk saat ini, nilai kita letakkan di sini. Bisa diubah jadi dinamis nanti.
   icon: LucideIcon;
-  color: string; // Warna aksen untuk ikon dan latar belakangnya
-  theme: Theme; // Tambahkan prop theme
+  color: string; // Warna aksen utama untuk kartu ini
 }
 
-const StatsCard = ({ title, value, icon: Icon, color, theme }: StatsCardProps) => {
-  const { colors, dark: isDarkMode } = theme; // Dapatkan colors dan status dark mode dari theme
+// 2. Peta Konfigurasi untuk setiap tipe kartu
+const cardConfigurations: Record<StatsCardType, CardSpecificConfig> = {
+  formulir: {
+    title: "Formulir",
+    value: "16", // Contoh nilai
+    icon: FileText,
+    color: "#6366f1", // Indigo
+  },
+  desa: {
+    title: "Desa",
+    value: "424", // Contoh nilai
+    icon: Building, // Menggunakan Building untuk Desa agar beda dengan Kecamatan
+    color: "#10b981", // Hijau
+  },
+  kecamatan: {
+    title: "Kecamatan",
+    value: "40",  // Contoh nilai
+    icon: MapPin,   // Menggunakan MapPin untuk Kecamatan
+    color: "#f59e0b", // Kuning/Amber
+  },
+  pengguna: {
+    title: "Pengguna",
+    value: "425", // Contoh nilai
+    icon: Users,
+    color: "#ef4444", // Merah
+  },
+};
 
-  // Warna teks sekunder berdasarkan mode
-  const cardTitleColor = isDarkMode ? '#9ca3af' : '#6b7280'; // gray-400 untuk dark, gray-500 untuk light
-  // Warna bayangan yang lebih lembut untuk dark mode
+// 3. Ubah Props StatsCard
+interface StatsCardProps {
+  type: StatsCardType; // Prop utama sekarang adalah 'type'
+  theme: Theme;
+  // Jika nilai ingin dinamis dari HomeScreen, Anda bisa tambahkan prop value opsional:
+  // dynamicValue?: string; 
+}
+
+const StatsCard = ({ type, theme /*, dynamicValue */ }: StatsCardProps) => {
+  const { colors, dark: isDarkMode } = theme;
+
+  // 4. Ambil konfigurasi berdasarkan tipe
+  const config = cardConfigurations[type];
+  if (!config) {
+    // Fallback jika tipe tidak ditemukan, meskipun seharusnya tidak terjadi dengan TypeScript
+    return <View><Text>Konfigurasi tidak ditemukan</Text></View>;
+  }
+
+  const { title, value: initialValue, icon: Icon, color: accentColor } = config;
+  // const displayValue = dynamicValue || initialValue; // Jika ada dynamicValue
+
+  const cardTitleColor = isDarkMode ? '#9ca3af' : '#6b7280';
   const shadowColor = isDarkMode ? '#050505' : '#000';
 
   return (
@@ -24,14 +72,12 @@ const StatsCard = ({ title, value, icon: Icon, color, theme }: StatsCardProps) =
       style={[
         styles.card,
         {
-          backgroundColor: colors.card, // Latar belakang kartu dari theme
-          shadowColor: shadowColor, // Warna bayangan dinamis
+          backgroundColor: colors.card,
+          shadowColor: shadowColor,
         },
       ]}>
-      {/* Latar belakang iconBox menggunakan warna aksen dengan opacity, ini seharusnya baik-baik saja */}
-      <View style={[styles.iconBox, { backgroundColor: `${color}1A` }]}>
-        {/* Warna ikon tetap menggunakan prop 'color' sebagai aksen */}
-        <Icon color={color} size={22} />
+      <View style={[styles.iconBox, { backgroundColor: `${accentColor}1A` }]}>
+        <Icon color={accentColor} size={22} />
       </View>
       <View style={styles.textWrapper}>
         <Text
@@ -40,8 +86,9 @@ const StatsCard = ({ title, value, icon: Icon, color, theme }: StatsCardProps) =
           ellipsizeMode="tail">
           {title}
         </Text>
-        {/* Warna nilai kartu menggunakan warna teks utama dari theme */}
-        <Text style={[styles.cardValue, { color: colors.text }]}>{value}</Text>
+        <Text style={[styles.cardValue, { color: colors.text }]}>
+          {initialValue /* Ganti dengan displayValue jika menggunakan dynamicValue */}
+        </Text>
       </View>
     </View>
   );
@@ -49,6 +96,7 @@ const StatsCard = ({ title, value, icon: Icon, color, theme }: StatsCardProps) =
 
 export default StatsCard;
 
+// Interface dan Stylesheet tetap sama (tidak ada perubahan signifikan di sini)
 interface Style {
   card: ViewStyle;
   iconBox: ViewStyle;
@@ -57,18 +105,16 @@ interface Style {
   cardValue: TextStyle;
 }
 
-const CARD_WIDTH = (Dimensions.get('window').width - 60) / 2; // (paddingLayar * 2 + gapAntarCard) / 2
+const CARD_WIDTH = (Dimensions.get('window').width - 60) / 2;
 
 const styles = StyleSheet.create<Style>({
   card: {
     width: CARD_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: akan diatur oleh theme
     padding: 14,
     borderRadius: 14,
-    // shadowColor: akan diatur oleh theme
-    shadowOpacity: 0.04, // Opacity bisa tetap, atau disesuaikan jika perlu
+    shadowOpacity: 0.04,
     shadowRadius: 10,
     elevation: 2,
     columnGap: 12,
@@ -83,14 +129,12 @@ const styles = StyleSheet.create<Style>({
   },
   cardTitle: {
     fontSize: 13,
-    // color: akan diatur oleh theme
     marginBottom: 2,
     flexShrink: 1,
     fontFamily: 'Poppins-Regular',
   },
   cardValue: {
     fontSize: 16,
-    // color: akan diatur oleh theme
     fontFamily: 'Poppins-SemiBold',
   },
 });
