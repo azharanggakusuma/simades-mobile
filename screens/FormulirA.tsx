@@ -12,8 +12,8 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Picker } from '@react-native-picker/picker'; // Pastikan sudah diinstal
-import { CheckCircle } from 'lucide-react-native'; // Ikon untuk tombol submit
+import { Picker } from '@react-native-picker/picker';
+import { CheckCircle, MapPin, FileText, ChevronDown } from 'lucide-react-native'; // Menambahkan ikon
 
 interface KeteranganTempatScreenProps {
   route?: { params?: { formTitle?: string } };
@@ -21,7 +21,6 @@ interface KeteranganTempatScreenProps {
 
 const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
   const { colors, dark: isDarkMode } = useTheme();
-  // Judul utama layar, bisa dari navigasi atau default
   const screenTitle = route?.params?.formTitle || "Keterangan Tempat";
 
   // State untuk input
@@ -29,7 +28,7 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
   const [alamatBalaiDesa, setAlamatBalaiDesa] = useState('');
   const [selectedKecamatan, setSelectedKecamatan] = useState<string | undefined>();
 
-  // Opsi untuk Picker (contoh data)
+  // Opsi untuk Picker
   const skDocumentOptions = [
     { label: "Pilih Dokumen SK...", value: undefined },
     { label: "SK Bupati Pembentukan Desa", value: "sk_bupati_pembentukan" },
@@ -71,87 +70,141 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
     // Implementasi logika submit data
   };
 
-  // Stylesheet yang disesuaikan untuk desain minimalis
+  // Stylesheet yang disesuaikan untuk desain baru
   const styles = StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: colors.background, // Warna latar belakang dari tema
     },
     keyboardAvoidingView: {
       flex: 1,
     },
     scrollViewContainer: {
       flexGrow: 1,
-      paddingHorizontal: 20,
-      paddingVertical: 24,
+      paddingHorizontal: 16, // Padding horizontal untuk konten scroll
+      paddingVertical: 20,
     },
     screenTitle: {
-      fontSize: 26, // Sedikit lebih kecil
+      fontSize: 28, // Ukuran font judul layar lebih besar
       fontFamily: 'Poppins-Bold',
-      color: colors.text,
+      color: colors.primary, // Warna judul menggunakan warna primer tema
       textAlign: 'center',
-      marginBottom: 28, // Sedikit dikurangi
+      marginBottom: 30, // Margin bawah lebih besar
     },
-    sectionContainer: {
-      marginBottom: 24, // Sedikit dikurangi
+    // Gaya untuk setiap kartu bagian
+    card: {
+      backgroundColor: colors.card, // Warna latar kartu dari tema
+      borderRadius: 12, // Sudut kartu lebih bulat
+      padding: 20, // Padding di dalam kartu
+      marginBottom: 24, // Margin bawah antar kartu
+      shadowColor: '#000', // Warna bayangan
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: isDarkMode ? 0.3 : 0.1, // Opasitas bayangan berbeda untuk mode gelap/terang
+      shadowRadius: 4,
+      elevation: 3, // Elevasi untuk Android
     },
     sectionTitle: {
-      fontSize: 16, // Sedikit lebih kecil
+      fontSize: 18, // Ukuran font judul bagian lebih besar
       fontFamily: 'Poppins-SemiBold',
       color: colors.text,
-      marginBottom: 12, // Sedikit dikurangi
+      marginBottom: 16,
+      borderBottomWidth: 1, // Garis bawah tipis untuk memisahkan judul bagian
+      borderBottomColor: colors.border,
+      paddingBottom: 8,
     },
     fieldGroup: {
-      marginBottom: 16, // Sedikit dikurangi
+      marginBottom: 20, // Margin bawah untuk setiap grup field
     },
     label: {
-      fontSize: 14, // Sedikit lebih kecil
+      fontSize: 15, // Ukuran font label
       fontFamily: 'Poppins-Medium',
       color: colors.text,
-      marginBottom: 6, // Sedikit dikurangi
+      marginBottom: 8,
+    },
+    // Kontainer untuk input teks dan ikon
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.border : '#FFFFFF', // Latar belakang input field
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8, // Sudut input field lebih bulat
+      paddingHorizontal: 12, // Padding horizontal di dalam input container
+    },
+    inputIcon: {
+      marginRight: 10, // Jarak kanan ikon dari teks input
+      color: colors.text, // Warna ikon menyesuaikan tema
     },
     textInput: {
-      backgroundColor: colors.card,
+      flex: 1, // Agar TextInput mengisi sisa ruang
       color: colors.text,
       fontFamily: 'Poppins-Regular',
-      fontSize: 15, // Ukuran font input standar
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 6, // Sudut lebih halus
-      paddingHorizontal: 12, // Padding horizontal sedikit dikurangi
-      paddingVertical: Platform.OS === 'ios' ? 12 : 10, // Padding vertikal disesuaikan
+      fontSize: 16,
+      paddingVertical: Platform.OS === 'ios' ? 14 : 12, // Padding vertikal disesuaikan
+    },
+    multilineTextInputContainer: {
+        minHeight: 120, // Tinggi minimum untuk input multi-baris
+        alignItems: 'flex-start', // Ratakan ikon ke atas untuk input multi-baris
     },
     multilineTextInput: {
-      minHeight: 100,
-      textAlignVertical: 'top',
-      paddingTop: Platform.OS === 'ios' ? 12 : 10, // Padding atas konsisten dengan textInput
+      textAlignVertical: 'top', // Teks mulai dari atas untuk multi-baris
+      paddingTop: Platform.OS === 'ios' ? 14 : 12,
     },
+    // Pembungkus untuk Picker dan ikon dropdown kustom
+    pickerWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: isDarkMode ? colors.border : '#FFFFFF',
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 8,
+    },
+    // Kontainer untuk komponen Picker itu sendiri
     pickerContainer: {
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 6, // Sudut lebih halus, konsisten dengan textInput
-      overflow: 'hidden',
+      flex: 1,
     },
     picker: {
       color: colors.text,
-      height: Platform.OS === 'android' ? 50 : undefined, // Tinggi Picker Android disesuaikan
-      // Untuk iOS, tinggi akan menyesuaikan konten.
+      fontFamily: 'Poppins-Regular', // Konsistensi font
+      height: Platform.OS === 'android' ? 50 : undefined,
+    },
+    // Gaya untuk item placeholder di Picker
+    pickerPlaceholder: {
+        fontFamily: 'Poppins-Regular',
+        color: isDarkMode ? '#888888' : '#AAAAAA', // Warna placeholder lebih lembut
+    },
+    // Ikon dropdown untuk Picker (terutama untuk iOS)
+    pickerIcon: {
+        position: 'absolute', // Posisi absolut untuk menempatkan di kanan
+        right: 15,
+        top: Platform.OS === 'ios' ? 15 : 16, // Sesuaikan posisi vertikal
+        color: colors.text,
     },
     submitButton: {
-      backgroundColor: colors.primary,
+      backgroundColor: colors.primary, // Warna tombol submit dari tema
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 12, // Padding vertikal tombol sedikit dikurangi
-      borderRadius: 6, // Sudut lebih halus, konsisten dengan input
-      marginTop: 20, // Margin atas sedikit dikurangi
+      paddingVertical: 16, // Padding vertikal lebih besar untuk tombol yang lebih menonjol
+      borderRadius: 8, // Sudut tombol lebih bulat
+      marginTop: 24,
+      shadowColor: colors.primary, // Bayangan tombol menggunakan warna primer
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+      elevation: 6, // Elevasi untuk Android
     },
     submitButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16, // Sedikit lebih kecil
-      fontFamily: 'Poppins-SemiBold',
-      marginLeft: 8, // Jarak ikon ke teks sedikit dikurangi
+      color: '#FFFFFF', // Warna teks tombol putih
+      fontSize: 17, // Ukuran font teks tombol
+      fontFamily: 'Poppins-Bold', // Font tebal untuk teks tombol
+      marginLeft: 10, // Jarak teks dari ikon
     },
   });
 
@@ -169,65 +222,93 @@ const KeteranganTempatScreen = ({ route }: KeteranganTempatScreenProps) => {
           <Text style={styles.screenTitle}>{screenTitle}</Text>
 
           {/* Bagian SK Pembentukan/Pengesahan */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>SK Pembentukan/Pengesahan Desa/Kelurahan</Text>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>SK Desa/Kelurahan</Text>
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Pilihan Dokumen SK</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedSkDocument}
-                  onValueChange={(itemValue) => setSelectedSkDocument(itemValue)}
-                  style={styles.picker}
-                  prompt="Pilih Dokumen SK"
-                >
-                  {skDocumentOptions.map((option) => (
-                    <Picker.Item key={option.value || "sk-default"} label={option.label} value={option.value} />
-                  ))}
-                </Picker>
+              {/* Menggunakan pickerWrapper untuk styling yang konsisten */}
+              <View style={styles.pickerWrapper}>
+                <FileText size={20} color={colors.text} style={{ marginLeft: 15, marginRight: 5}} />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedSkDocument}
+                    onValueChange={(itemValue) => setSelectedSkDocument(itemValue)}
+                    style={styles.picker}
+                    prompt="Pilih Dokumen SK"
+                    dropdownIconColor={colors.text} // Warna ikon dropdown untuk Android
+                  >
+                    {skDocumentOptions.map((option, index) => (
+                      <Picker.Item
+                        key={option.value || `sk-default-${index}`} // Kunci unik
+                        label={option.label}
+                        value={option.value}
+                        // Terapkan gaya placeholder jika item adalah placeholder
+                        style={option.value === undefined ? styles.pickerPlaceholder : { fontFamily: 'Poppins-Regular' }}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+                {/* Tampilkan ikon ChevronDown untuk iOS sebagai indikator visual */}
+                {Platform.OS === 'ios' && <ChevronDown size={20} style={styles.pickerIcon} />}
               </View>
             </View>
           </View>
 
           {/* Bagian Alamat Balai Desa/Kantor Kelurahan */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Alamat Balai Desa/Kantor Kelurahan</Text>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Alamat Kantor</Text>
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Alamat Lengkap</Text>
-              <TextInput
-                style={[styles.textInput, styles.multilineTextInput]}
-                value={alamatBalaiDesa}
-                onChangeText={setAlamatBalaiDesa}
-                placeholder="Masukkan alamat lengkap balai desa/kantor kelurahan"
-                placeholderTextColor={isDarkMode ? '#999999' : '#AAAAAA'}
-                multiline
-                selectionColor={colors.primary}
-              />
+              <View style={[styles.inputContainer, styles.multilineTextInputContainer]}>
+                {/* Ikon untuk field alamat */}
+                <MapPin size={20} color={colors.text} style={[styles.inputIcon, { marginTop: Platform.OS === 'ios' ? 14 : 12 }]} />
+                <TextInput
+                  style={[styles.textInput, styles.multilineTextInput]}
+                  value={alamatBalaiDesa}
+                  onChangeText={setAlamatBalaiDesa}
+                  placeholder="Masukkan alamat lengkap..."
+                  placeholderTextColor={isDarkMode ? '#999999' : '#AAAAAA'}
+                  multiline
+                  numberOfLines={4} // Saran jumlah baris
+                  selectionColor={colors.primary} // Warna kursor
+                />
+              </View>
             </View>
           </View>
 
           {/* Bagian Nama Kecamatan */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Nama Kecamatan</Text>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Kecamatan</Text>
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Pilihan Kecamatan</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedKecamatan}
-                  onValueChange={(itemValue) => setSelectedKecamatan(itemValue)}
-                  style={styles.picker}
-                  prompt="Pilih Nama Kecamatan"
-                >
-                  {kecamatanOptions.map((option) => (
-                    <Picker.Item key={option.value || "kec-default"} label={option.label} value={option.value} />
-                  ))}
-                </Picker>
+              <View style={styles.pickerWrapper}>
+                 <MapPin size={20} color={colors.text} style={{ marginLeft: 15, marginRight: 5 }} />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedKecamatan}
+                    onValueChange={(itemValue) => setSelectedKecamatan(itemValue)}
+                    style={styles.picker}
+                    prompt="Pilih Nama Kecamatan"
+                    dropdownIconColor={colors.text}
+                  >
+                    {kecamatanOptions.map((option, index) => (
+                      <Picker.Item
+                        key={option.value || `kec-default-${index}`}
+                        label={option.label}
+                        value={option.value}
+                        style={option.value === undefined ? styles.pickerPlaceholder : { fontFamily: 'Poppins-Regular' }}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+                {Platform.OS === 'ios' && <ChevronDown size={20} style={styles.pickerIcon} />}
               </View>
             </View>
           </View>
 
           {/* Tombol Submit */}
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
-            <CheckCircle size={20} color="#FFFFFF" />
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.7}>
+            <CheckCircle size={22} color="#FFFFFF" />
             <Text style={styles.submitButtonText}>Submit Data</Text>
           </TouchableOpacity>
 
