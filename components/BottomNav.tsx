@@ -111,7 +111,7 @@ const BottomNav = ({ darkMode }) => {
         },
         tabBarStyle: {
           // Sedikit menaikkan tinggi dasar tab bar
-          height: (Platform.OS === 'android' ? 60 : 58) + insets.bottom, 
+          height: (Platform.OS === 'android' ? 65 : 58) + insets.bottom, 
           paddingBottom: insets.bottom, // Padding bawah tetap untuk safe area
           paddingTop: Platform.OS === 'android' ? 6 : 8, // Sedikit padding atas untuk ruang ikon
           backgroundColor: tabBarBackgroundColor,
