@@ -23,14 +23,11 @@ const darkModeYellowAccent = '#FACC15'; // Warna aksen kuning untuk dark mode
  */
 const AnimatedFormButton = ({ onPress, darkMode }) => {
   const scale = useRef(new Animated.Value(1)).current;
-  // Warna FAB disesuaikan dengan darkMode, ikon di dalamnya juga
   const fabBackgroundColor = darkMode ? darkModeYellowAccent : '#3b82f6';
-  const iconColorInFab = darkMode ? '#1F2937' : '#FFFFFF'; // Warna ikon kontras dengan background FAB
+  const iconColorInFab = darkMode ? '#1F2937' : '#FFFFFF';
 
-  // Animasi saat FAB ditekan masuk
   const handlePressIn = () =>
     Animated.spring(scale, { toValue: 0.9, useNativeDriver: true }).start();
-  // Animasi saat FAB dilepas
   const handlePressOut = () =>
     Animated.spring(scale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start(
       () => {
@@ -56,52 +53,56 @@ const AnimatedFormButton = ({ onPress, darkMode }) => {
  * @param {boolean} darkMode - Status mode gelap saat ini.
  */
 const BottomNav = ({ darkMode }) => {
-  const insets = useSafeAreaInsets(); // Untuk padding berdasarkan safe area
-  // Mapping nama rute tab ke komponen ikonnya
+  const insets = useSafeAreaInsets();
   const iconMap = { Beranda: Home, Cari: Search, Riwayat: Clock, Akun: User };
 
-  // Definisi warna dinamis berdasarkan darkMode
-  const tabBarBackgroundColor = darkMode ? 'rgba(31, 41, 55, 0.97)' : 'rgba(255,255,255,0.97)'; // Warna dasar #1f2937 (Tailwind gray-800) untuk dark
-  const labelColorInactive = darkMode ? '#9CA3AF' : '#6B7280'; // Label tidak aktif (Tailwind gray-400/500)
-  const labelColorActive = darkMode ? darkModeYellowAccent : '#3b82f6'; // Label aktif
-  const iconColorInactive = darkMode ? '#9CA3AF' : '#9ca3af'; // Ikon tidak aktif
-  const iconColorActive = darkMode ? darkModeYellowAccent : '#3b82f6'; // Ikon aktif
-  const shadowColor = darkMode ? '#050505' : '#000000'; // Warna bayangan
+  const tabBarBackgroundColor = darkMode ? 'rgba(31, 41, 55, 0.98)' : 'rgba(255,255,255,0.98)'; // Sedikit lebih solid
+  const labelColorInactive = darkMode ? '#9CA3AF' : '#6B7280';
+  const labelColorActive = darkMode ? darkModeYellowAccent : '#3b82f6';
+  const iconColorInactive = darkMode ? '#9CA3AF' : '#9ca3af';
+  const iconColorActive = darkMode ? darkModeYellowAccent : '#3b82f6';
+  // Warna border atas untuk tab bar yang tidak mengambang
+  const topBorderColor = darkMode ? '#374151' : '#E5E7EB'; // Tailwind gray-700 / gray-200
 
   return (
     <Tab.Navigator
       screenOptions={({ route, focused }) => ({
-        // 'focused' dari screenOptions untuk styling dinamis
         headerShown: false,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: 11, // Ukuran font label
-          marginBottom: Platform.OS === 'ios' ? 0 : 4, // Jarak bawah label di Android
-          fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular', // Font lebih tebal untuk label aktif
-          color: focused ? labelColorActive : labelColorInactive, // Warna label dinamis
+          fontSize: 11,
+          marginBottom: Platform.OS === 'ios' ? (insets.bottom > 0 ? 0 : 2) : 5, // Sesuaikan margin jika ada safe area
+          fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular',
+          color: focused ? labelColorActive : labelColorInactive,
         },
         tabBarStyle: {
-          // Menggunakan style asli dari user dengan warna dinamis
-          position: 'absolute',
-          bottom: 8, // Posisi dari bawah layar
-          left: 16, // Jarak horizontal dari tepi layar
-          right: 16,
-          height: 60 + insets.bottom, // Tinggi tab bar + safe area bawah
-          paddingBottom: insets.bottom || 10, // Padding bawah untuk safe area atau default
-          paddingTop: 8, // Padding atas
-          borderRadius: 20,
+          // --- PERUBAHAN STYLE UNTUK TAB BAR TIDAK MENGAMBANG ---
+          // Hapus position: 'absolute', left, right, bottom (untuk margin mengambang), borderRadius
+          // Hapus shadow properties dan elevation jika tidak ingin ada efek bayangan sama sekali
+          
+          // position: 'absolute', // DIHAPUS
+          // bottom: 8, // DIHAPUS
+          // left: 16, // DIHAPUS
+          // right: 16, // DIHAPUS
+          // borderRadius: 20, // DIHAPUS
+
+          height: 56 + insets.bottom, // Tinggi tab bar standar + safe area bawah
+          paddingBottom: insets.bottom, // Padding bawah hanya untuk safe area
+          paddingTop: 8,
           backgroundColor: tabBarBackgroundColor,
-          borderTopWidth: 0, // Tidak ada border atas
-          shadowColor: shadowColor,
-          shadowOffset: { width: 0, height: darkMode ? 2 : 4 }, // Offset bayangan
-          shadowOpacity: darkMode ? 0.2 : 0.1, // Opasitas bayangan
-          shadowRadius: darkMode ? 6 : 10, // Radius bayangan
-          elevation: 10, // Elevasi untuk Android
+          borderTopWidth: StyleSheet.hairlineWidth, // Garis tipis di atas tab bar
+          borderTopColor: topBorderColor, 
+
+          // Jika masih ingin sedikit shadow (opsional, untuk desain yang lebih flat bisa dihilangkan)
+          // shadowColor: darkMode ? '#050505' : '#000000',
+          // shadowOffset: { width: 0, height: -2 }, // Shadow ke atas
+          // shadowOpacity: darkMode ? 0.15 : 0.05,
+          // shadowRadius: darkMode ? 4 : 6,
+          // elevation: 5, // Elevasi minimal jika shadow diinginkan
         },
         tabBarIcon: ({ focused: iconFocused }) => {
-          // Ganti nama 'focused' agar tidak konflik dengan 'focused' dari screenOptions
           const IconComponent = iconMap[route.name];
-          if (!IconComponent) return null; // Jika tidak ada ikon (misal untuk FAB)
+          if (!IconComponent) return null;
           return (
             <IconComponent
               size={24}
@@ -111,7 +112,6 @@ const BottomNav = ({ darkMode }) => {
           );
         },
       })}>
-      {/* Tab Beranda, menggunakan HomeStackNavigator dan listener untuk reset ke HomeActual */}
       <Tab.Screen
         name="Beranda"
         component={HomeStackNavigator}
@@ -123,21 +123,16 @@ const BottomNav = ({ darkMode }) => {
         })}
       />
       <Tab.Screen name="Cari" component={SearchScreen} />
-      {/* Tab untuk FAB, menggunakan komponen kustom AnimatedFormButton */}
       <Tab.Screen
-        name="Form" // Ini adalah nama rute tab yang akan dituju
-        component={FormScreen} // FormScreen akan dirender sebagai konten dari tab ini
+        name="Form"
+        component={FormScreen}
         options={({ navigation, route }) => ({
-          tabBarLabel: '', // Tidak ada label teks di bawah FAB
-          tabBarIcon: () => null, // Tidak ada ikon standar, karena kita pakai FAB kustom
-          tabBarButton: (
-            props // props ini dari React Navigation, berisi accessibilityState, onPress default, dll.
-          ) => (
+          tabBarLabel: '',
+          tabBarIcon: () => null,
+          tabBarButton: (props) => (
             <AnimatedFormButton
-              {...props} // Penting untuk meneruskan props ini agar FAB berperilaku sebagai tombol tab
+              {...props}
               darkMode={darkMode}
-              // Aksi FAB: Navigasi ke tab "Form" itu sendiri
-              // props.onPress() juga bisa digunakan di sini, atau navigation.navigate(route.name)
               onPress={() => navigation.navigate(route.name)}
             />
           ),
@@ -149,20 +144,28 @@ const BottomNav = ({ darkMode }) => {
   );
 };
 
-// StyleSheet untuk FAB (sesuai permintaan user)
+// StyleSheet untuk FAB
 const styles = StyleSheet.create({
-  fabWrapper: { position: 'absolute', top: -35, alignSelf: 'center', zIndex: 10 },
+  fabWrapper: { 
+    position: 'absolute', 
+    // Sesuaikan 'top' agar FAB pas di atas tab bar yang baru
+    // Jika tinggi tab bar sekitar 56px, maka -28 akan menempatkan FAB di tengah atas
+    // Atau -25 agar sedikit lebih naik
+    top: -28, // Sebelumnya -35, disesuaikan karena tab bar tidak lagi ada margin bawah yg besar
+    alignSelf: 'center', 
+    zIndex: 10 
+  },
   fabButton: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    /* backgroundColor diatur inline */ alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 10,
+    elevation: 10, // Biarkan elevasi FAB tetap ada
   },
 });
 
