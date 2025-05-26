@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, ScrollView, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '@react-navigation/native'; // Impor useTheme
 import StatsChart from '../components/VisitorsChart';
-import MiniCard from '../components/StatsCard';
+import StatsCard from '../components/StatsCard';
 import { FileText, Building, MapPin, Users } from 'lucide-react-native';
 import FormProgressChart from '../components/FormProgressChart';
 
@@ -25,11 +25,11 @@ export default function HomeScreen() {
         </Text>
 
         <View style={styles.grid}>
-          {/* Teruskan prop 'theme' ke MiniCard */}
-          <MiniCard theme={theme} title="Formulir" value="16" icon={FileText} color="#6366f1" />
-          <MiniCard theme={theme} title="Desa" value="424" icon={Building} color="#10b981" />
-          <MiniCard theme={theme} title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
-          <MiniCard theme={theme} title="Pengguna" value="425" icon={Users} color="#ef4444" />
+          {/* Teruskan prop 'theme' ke StatsCard */}
+          <StatsCard theme={theme} title="Formulir" value="16" icon={FileText} color="#6366f1" />
+          <StatsCard theme={theme} title="Desa" value="424" icon={Building} color="#10b981" />
+          <StatsCard theme={theme} title="Kecamatan" value="40" icon={MapPin} color="#f59e0b" />
+          <StatsCard theme={theme} title="Pengguna" value="425" icon={Users} color="#ef4444" />
         </View>
 
         {/* Teruskan prop 'theme' ke FormProgressChart dan StatsChart */}

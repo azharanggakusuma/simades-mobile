@@ -406,7 +406,7 @@ const HistoryScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Status Formulir Desa</Text>
+        <Text style={styles.headerTitle}>Riwayat Pengisian</Text>
       </View>
 
       <View style={styles.searchInputContainer}>
