@@ -41,13 +41,43 @@ interface SearchableItem {
 }
 
 const DUMMY_DATA_SOURCE: SearchableItem[] = [
-  { id: 'pengguna-1', type: 'pengguna', nama: 'Azharangga Kusuma', deskripsiUtama: 'Administrator', deskripsiSekunder: 'azharanggakusuma01@gmail.com' },
+  // Pengguna (contoh tetap ada)
+  { id: 'pengguna-1', type: 'pengguna', nama: 'Azharangga Kusuma', deskripsiUtama: 'Administrator Sistem', deskripsiSekunder: 'azharanggakusuma01@gmail.com' },
   { id: 'pengguna-2', type: 'pengguna', nama: 'Siti Aminah', deskripsiUtama: 'Petugas Lapangan - Desa Klangenan', deskripsiSekunder: 'siti.a@example.com' },
+  { id: 'pengguna-3', type: 'pengguna', nama: 'Budi Santoso', deskripsiUtama: 'Kepala Desa Maju Jaya', deskripsiSekunder: 'budi.s@example.com' },
+  { id: 'pengguna-4', type: 'pengguna', nama: 'Dewi Lestari', deskripsiUtama: 'Staf Kecamatan Plumbon', deskripsiSekunder: 'dewi.l@example.com' },
+  { id: 'pengguna-5', type: 'pengguna', nama: 'Rahmat Hidayat', deskripsiUtama: 'Operator Formulir Desa Makmur', deskripsiSekunder: 'rahmat.h@example.com' },
+
+
+  // Desa (contoh tetap ada)
   { id: 'desa-1', type: 'desa', nama: 'Desa Klangenan', deskripsiUtama: 'Kecamatan Plumbon', deskripsiSekunder: 'Kabupaten Cirebon' },
   { id: 'desa-2', type: 'desa', nama: 'Desa Maju Jaya', deskripsiUtama: 'Kecamatan Weru', deskripsiSekunder: 'Kabupaten Cirebon' },
+  { id: 'desa-3', type: 'desa', nama: 'Desa Jamblang', deskripsiUtama: 'Kecamatan Jamblang', deskripsiSekunder: 'Kabupaten Cirebon' },
+  // ... (tambahkan lebih banyak desa jika ada dari contoh sebelumnya)
+
+
+  // Kecamatan (contoh tetap ada)
   { id: 'kecamatan-1', type: 'kecamatan', nama: 'Kecamatan Plumbon', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '15 Desa/Kelurahan' },
-  { id: 'form-1', type: 'formulir', nama: 'Formulir Pengajuan KTP', deskripsiUtama: 'Layanan Kependudukan', deskripsiSekunder: 'Kode: F-KTP.01' },
-  // ... (isi dengan sisa DUMMY_DATA_SOURCE Anda)
+  { id: 'kecamatan-2', type: 'kecamatan', nama: 'Kecamatan Weru', deskripsiUtama: 'Kabupaten Cirebon', deskripsiSekunder: '12 Desa/Kelurahan' },
+  // ... (tambahkan lebih banyak kecamatan jika ada dari contoh sebelumnya)
+
+
+  // Formulir (LENGKAP DENGAN 15 FORMULIR)
+  { id: 'form-1', type: 'formulir', nama: 'Keterangan Tempat', deskripsiUtama: 'Administrasi & Wilayah', deskripsiSekunder: 'Kode: F-ADM-001' },
+  { id: 'form-2', type: 'formulir', nama: 'Keterangan Umum Desa Kelurahan', deskripsiUtama: 'Profil Desa/Kelurahan', deskripsiSekunder: 'Kode: F-PROFIL-002' },
+  { id: 'form-3', type: 'formulir', nama: 'Kependudukan dan Ketenagakerjaan', deskripsiUtama: 'Data Penduduk', deskripsiSekunder: 'Kode: F-DUKCAPIL-003' },
+  { id: 'form-4', type: 'formulir', nama: 'Bencana Alam dan Mitigasi Bencana Alam', deskripsiUtama: 'Penanggulangan Bencana', deskripsiSekunder: 'Kode: F-BENCANA-004' },
+  { id: 'form-5', type: 'formulir', nama: 'Pendidikan dan Kesehatan', deskripsiUtama: 'Layanan Dasar', deskripsiSekunder: 'Kode: F-DIKES-005' },
+  { id: 'form-6', type: 'formulir', nama: 'Sosial Budaya', deskripsiUtama: 'Kemasyarakatan', deskripsiSekunder: 'Kode: F-SOSBUD-006' },
+  { id: 'form-7', type: 'formulir', nama: 'Olahraga', deskripsiUtama: 'Fasilitas & Kegiatan', deskripsiSekunder: 'Kode: F-OLAHRAGA-007' },
+  { id: 'form-8', type: 'formulir', nama: 'Angkutan, Komunikasi, dan Informasi', deskripsiUtama: 'Infrastruktur & Layanan', deskripsiSekunder: 'Kode: F-KOMINFO-008' },
+  { id: 'form-9', type: 'formulir', nama: 'Ekonomi', deskripsiUtama: 'Data Perekonomian', deskripsiSekunder: 'Kode: F-EKONOMI-009' },
+  { id: 'form-10', type: 'formulir', nama: 'Keamanan', deskripsiUtama: 'Ketertiban Umum', deskripsiSekunder: 'Kode: F-KAMलिंग-010' }, // keamanan dan ketertiban lingkungan
+  { id: 'form-11', type: 'formulir', nama: 'Keuangan dan Aset Desa', deskripsiUtama: 'Administrasi Keuangan', deskripsiSekunder: 'Kode: F-KEUAS-011' },
+  { id: 'form-12', type: 'formulir', nama: 'Perlindungan Sosial, Pembangunan, dan Pemberdayaan Masyarakat', deskripsiUtama: 'Program Desa', deskripsiSekunder: 'Kode: F-PSPM-012' },
+  { id: 'form-13', type: 'formulir', nama: 'Aparatur Pemerintahan Desa', deskripsiUtama: 'Data Aparatur', deskripsiSekunder: 'Kode: F-APARAT-013' },
+  { id: 'form-14', type: 'formulir', nama: 'Lembaga Kemasyarakatan di Desa Kelurahan', deskripsiUtama: 'Organisasi Masyarakat', deskripsiSekunder: 'Kode: F-LEMMAS-014' },
+  { id: 'form-15', type: 'formulir', nama: 'Data Lokasi Geospasial', deskripsiUtama: 'Pemetaan & Spasial', deskripsiSekunder: 'Kode: F-GEO-015' },
 ];
 
 const getItemIcon = (type: SearchableItem['type'], color: string, size: number = 22) => {
@@ -308,7 +338,7 @@ const SearchScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.screenHeaderContainer}>
-          <Text style={styles.screenHeaderTitle}>Pencarian Global</Text> 
+          <Text style={styles.screenHeaderTitle}>Pencarian Data</Text> 
         </View>
 
         <View style={styles.searchInputWrapper}>
