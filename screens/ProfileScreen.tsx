@@ -35,7 +35,7 @@ const user = {
   // avatarInitials: 'AK', // Tidak lagi digunakan untuk tampilan avatar
 };
 
-const ProfileScreenRedesigned = ({ navigation }: ProfileScreenProps) => {
+const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
   // Handler Aksi (tetap sama)
@@ -246,4 +246,4 @@ const ProfileScreenRedesigned = ({ navigation }: ProfileScreenProps) => {
   );
 };
 
-export default ProfileScreenRedesigned;
+export default ProfileScreen;
