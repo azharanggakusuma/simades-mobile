@@ -17,7 +17,7 @@ import { FileText, ChevronRight, Archive } from 'lucide-react-native';
 interface FormListItem {
   id: string;
   name: string;
-  category: string; 
+  category: string;
 }
 
 // Daftar 15 Formulir
@@ -40,20 +40,25 @@ const ALL_FORMS_LIST: FormListItem[] = [
 ];
 
 interface FormScreenProps {
-  navigation: any; 
+  navigation: any;
 }
 
 const FormScreen = ({ navigation }: FormScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
-  // Warna untuk ikon dan teks sekunder
-  // Untuk mode light, ikon akan menggunakan warna primer tema (diharapkan biru)
-  // Untuk mode dark, ikon juga akan menggunakan warna primer tema (mungkin aksen kuning atau lainnya)
-  const iconColor = colors.primary; 
-  
-  const secondaryTextColor = isDarkMode ? colors.notification : '#6B7280'; // Abu-abu untuk teks kategori
-  const chevronListItemColor = isDarkMode ? colors.border : '#CBD5E0'; // Warna chevron
+  // Warna untuk ikon
+  // Asumsikan colors.primary dari tema (terang/gelap) bukanlah merah.
+  // Jika colors.primary bisa jadi merah dan itu tidak diinginkan untuk ikon,
+  // logika serupa untuk secondaryTextColor mungkin diperlukan di sini.
+  const iconColor = colors.primary;
 
+  // Warna untuk teks sekunder (kategori) dan pesan empty state.
+  // Hindari penggunaan colors.notification secara langsung untuk teks di mode gelap
+  // jika ada kemungkinan warnanya merah dan Anda ingin menghindarinya.
+  const safeSecondaryDarkColor = '#B0B0B0'; // Abu-abu terang yang netral untuk dark mode
+  const secondaryTextColor = isDarkMode ? safeSecondaryDarkColor : '#6B7280';
+
+  const chevronListItemColor = isDarkMode ? colors.border : '#CBD5E0'; // Warna chevron
 
   const handleFormItemPress = (formItem: FormListItem) => {
     Alert.alert(
@@ -76,19 +81,19 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       paddingHorizontal: 24,
       paddingTop: Platform.OS === 'ios' ? 20 : 28,
       paddingBottom: 20,
-      backgroundColor: colors.background, 
+      backgroundColor: colors.background,
     },
     headerTitle: {
       fontSize: 24,
       fontFamily: 'Poppins-Bold',
-      color: colors.text,
+      color: colors.text, // Teks utama, biasanya putih/abu terang di dark mode
       textAlign: 'left',
     },
     listContentContainer: {
       paddingHorizontal: 16,
       paddingTop: 8,
       paddingBottom: 24,
-      flexGrow: 1, 
+      flexGrow: 1,
     },
     formItemCard: {
       backgroundColor: colors.card,
@@ -96,7 +101,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       padding: 16,
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 12, 
+      marginBottom: 12,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDarkMode ? 0.12 : 0.06,
@@ -106,48 +111,49 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
     itemIconContainer: {
       width: 44,
       height: 44,
-      borderRadius: 22, 
-      backgroundColor: `${iconColor}1A`, // Tint background menggunakan iconColor (yang sudah dinamis)
+      borderRadius: 22,
+      backgroundColor: `${iconColor}1A`, // Tint background menggunakan iconColor
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
     },
     itemTextContainer: {
-      flex: 1, 
+      flex: 1,
     },
     formName: {
       fontSize: 16,
       fontFamily: 'Poppins-SemiBold',
-      color: colors.text,
+      color: colors.text, // Teks utama
       marginBottom: 2,
     },
     formCategory: {
       fontSize: 13,
       fontFamily: 'Poppins-Regular',
-      color: secondaryTextColor,
+      color: secondaryTextColor, // Menggunakan warna sekunder yang sudah disesuaikan
     },
     chevronContainer: {
       marginLeft: 10,
     },
     emptyStateContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
     },
     emptyStateTextTitle: {
-        fontSize: 18,
-        fontFamily: 'Poppins-SemiBold',
-        color: colors.text,
-        marginTop: 16,
-        textAlign: 'center'
+      fontSize: 18,
+      fontFamily: 'Poppins-SemiBold',
+      color: colors.text, // Teks utama
+      marginTop: 16,
+      textAlign: 'center'
     },
     emptyStateTextMessage: {
-        fontSize: 14,
-        fontFamily: 'Poppins-Regular',
-        color: colors.notification,
-        textAlign: 'center',
-        marginTop: 4,
+      fontSize: 14,
+      fontFamily: 'Poppins-Regular',
+      // Menggunakan warna sekunder yang sudah disesuaikan, BUKAN colors.notification
+      color: secondaryTextColor,
+      textAlign: 'center',
+      marginTop: 4,
     }
   });
 
@@ -158,8 +164,7 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
       activeOpacity={0.7}
     >
       <View style={styles.itemIconContainer}>
-        <FileText size={22} color={iconColor} strokeWidth={1.8} /> 
-        {/* iconColor sekarang akan biru di light mode jika colors.primary Anda biru */}
+        <FileText size={22} color={iconColor} strokeWidth={1.8} />
       </View>
       <View style={styles.itemTextContainer}>
         <Text style={styles.formName} numberOfLines={2}>{item.name}</Text>
@@ -186,9 +191,9 @@ const FormScreen = ({ navigation }: FormScreenProps) => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyStateContainer}>
-                <Archive size={64} color={colors.border} /> 
-                <Text style={styles.emptyStateTextTitle}>Belum Ada Formulir</Text>
-                <Text style={styles.emptyStateTextMessage}>Daftar formulir akan muncul di sini.</Text>
+              <Archive size={64} color={colors.border} />
+              <Text style={styles.emptyStateTextTitle}>Belum Ada Formulir</Text>
+              <Text style={styles.emptyStateTextMessage}>Daftar formulir akan muncul di sini.</Text>
             </View>
           }
         />
