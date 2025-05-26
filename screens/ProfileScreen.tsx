@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import type { Theme } from '@react-navigation/native';
 import {
-  UserRound,
+  UserRound, // Ikon ini akan digunakan untuk avatar
   Settings,
   Bell,
   HelpCircle,
@@ -21,7 +21,7 @@ import {
   Edit3,
   ShieldCheck,
   ListChecks,
-  Award, // Contoh ikon untuk peran
+  Award,
 } from 'lucide-react-native';
 
 interface ProfileScreenProps {
@@ -31,10 +31,11 @@ interface ProfileScreenProps {
 // Data pengguna dummy
 const user = {
   name: 'Azharangga Kusuma',
-  role: 'Administrator', // Atau 'Petugas', dll.
+  role: 'Administrator',
+  // avatarInitials: 'AK', // Tidak lagi digunakan untuk tampilan avatar
 };
 
-const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
+const ProfileScreenRedesigned = ({ navigation }: ProfileScreenProps) => {
   const { colors, dark: isDarkMode }: Theme = useTheme();
 
   // Handler Aksi (tetap sama)
@@ -55,7 +56,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
           style: 'destructive',
           onPress: () => {
             console.log('Pengguna telah keluar');
-            // navigation.replace('AuthStack');
+            // Implementasi logika keluar, misal: navigation.replace('AuthStack');
           },
         },
       ],
@@ -63,25 +64,29 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     );
   };
 
-  const iconColorDefault = isDarkMode ? colors.text : '#4A5568';
-  const chevronColor = isDarkMode ? colors.border : '#CBD5E0';
+  const defaultIconColor = isDarkMode ? colors.text : '#4A5568';
+  const chevronColor = isDarkMode ? colors.border : '#A0AEC0';
 
-  const menuItems = [
+  const menuItemsConfig = [
     { id: 'editProfile', label: 'Informasi Akun', icon: Edit3, onPress: handleEditProfile },
     { id: 'myActivity', label: 'Aktivitas Saya', icon: ListChecks, onPress: handleMyActivity },
     { id: 'notifications', label: 'Notifikasi', icon: Bell, onPress: handleNotifications },
-    { id: 'settings', label: 'Pengaturan', icon: Settings, onPress: handleSettings },
+    { id: 'settings', label: 'Pengaturan Aplikasi', icon: Settings, onPress: handleSettings },
     { id: 'privacy', label: 'Kebijakan Privasi', icon: ShieldCheck, onPress: handlePrivacyPolicy },
     { id: 'help', label: 'Bantuan & Dukungan', icon: HelpCircle, onPress: handleHelp },
+    { 
+      id: 'logout', 
+      label: 'Keluar Akun', 
+      icon: LogOut, 
+      onPress: handleLogout, 
+      color: isDarkMode ? '#FCA5A5' : '#E53E3E',
+      isLogout: true 
+    },
   ];
 
-  const logoutItem = {
-    id: 'logout',
-    label: 'Keluar Akun',
-    icon: LogOut,
-    onPress: handleLogout,
-    color: isDarkMode ? '#FFA7A7' : '#E53E3E',
-  };
+  // Warna ikon avatar yang kontras dengan background avatar (colors.primary)
+  const avatarIconColor = isDarkMode ? ( (colors.primary === '#FACC15' || colors.primary === '#fde047') ? '#1F2937' : colors.card ) : colors.card ; // Jika primary kuning/terang, ikon gelap, jika tidak, ikon warna kartu (biasanya putih)
+
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -89,63 +94,73 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       backgroundColor: colors.background,
     },
     scrollViewContent: {
-      paddingBottom: 30,
+      paddingBottom: 40,
     },
     profileHeader: {
       alignItems: 'center',
-      paddingTop: Platform.OS === 'ios' ? 40 : 50,
-      paddingBottom: 20,
+      paddingTop: Platform.OS === 'ios' ? 30 : 40,
+      paddingBottom: 30,
       paddingHorizontal: 24,
+      backgroundColor: colors.background,
     },
     avatarContainer: {
       width: 100,
       height: 100,
       borderRadius: 50,
-      backgroundColor: isDarkMode ? colors.card : `${colors.primary}1A`,
+      backgroundColor: colors.primary,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 24,
-      borderWidth: 1.5,
-      borderColor: isDarkMode ? colors.border : colors.primary,
+      marginBottom: 16,
+      borderWidth: 3,
+      borderColor: colors.card, 
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
     },
+    // avatarText tidak digunakan lagi
     userName: {
-      fontSize: 20,
-      fontFamily: 'Poppins-SemiBold',
+      fontSize: 22,
+      fontFamily: 'Poppins-Bold',
       color: colors.text,
-      marginBottom: 4, // Jarak ke peran lebih dekat
+      marginBottom: 6,
       textAlign: 'center',
     },
-    userRole: { // Style baru untuk peran pengguna
-      fontSize: 14,
-      fontFamily: 'Poppins-Medium', // Sedikit lebih tebal untuk menandakan peran
-      color: colors.primary, // Gunakan warna primer untuk menonjolkan peran
-      marginBottom: 12, // Jarak setelah peran
-      textAlign: 'center',
-      // textTransform: 'capitalize', // Opsional: Administrator, Petugas
-    },
-    userRoleContainer: { // Opsional: jika ingin menambahkan ikon di sebelah peran
+    userRoleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 12,
+      paddingVertical: 4,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: `${colors.primary}20`,
+      marginTop: 4,
     },
     userRoleTextWithIcon: {
-        fontSize: 15,
-        fontFamily: 'Poppins-Medium',
-        color: colors.primary,
-        marginLeft: 6, // Jarak dari ikon peran
-        textAlign: 'center',
+      fontSize: 14,
+      fontFamily: 'Poppins-Medium',
+      color: colors.primary,
+      marginLeft: 6,
+      textAlign: 'center',
     },
-    menuContainer: {
-      paddingHorizontal: 18,
-      marginTop: 20, // Jarak dari header ke menu
+    menuCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      marginHorizontal: 16,
+      marginTop: 10,
+      paddingVertical: 8,
+      elevation: isDarkMode ? 2 : 4,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDarkMode ? 0.1 : 0.08,
+      shadowRadius: 5,
     },
-    menuSection: {},
     menuItem: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 18,
-      paddingHorizontal: 12,
+      paddingHorizontal: 20,
     },
     menuItemContent: {
       flexDirection: 'row',
@@ -154,46 +169,53 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     },
     menuItemText: {
       fontSize: 16,
-      fontFamily: 'Poppins-Regular',
-      marginLeft: 20,
+      fontFamily: 'Poppins-Medium',
+      marginLeft: 18,
       color: colors.text,
     },
-    logoutButtonContainer: {
-      paddingHorizontal: 18,
+    menuItemSeparator: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.border,
+      marginHorizontal: 20,
     },
-    logoutMenuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 18,
-        paddingHorizontal: 12,
+    logoutMenuItemText: {
+        fontFamily: 'Poppins-SemiBold',
     }
   });
 
-  const renderMenuItem = (item: typeof menuItems[0] | typeof logoutItem, isLogout = false) => {
+  const renderMenuItem = (item: typeof menuItemsConfig[0], index: number, totalItems: number) => {
     const IconComponent = item.icon;
     const itemTextColor = item.color || colors.text;
-    const itemIconColor = item.color || iconColorDefault;
+    const itemIconColor = item.color || defaultIconColor;
+    const isLastItem = index === totalItems - 1;
 
     return (
-      <TouchableOpacity
-        key={item.id}
-        onPress={item.onPress}
-        style={isLogout ? styles.logoutMenuItem : styles.menuItem}
-        activeOpacity={0.6}
-      >
-        <View style={styles.menuItemContent}>
-          <IconComponent
-            size={22}
-            color={itemIconColor}
-          />
-          <Text style={[styles.menuItemText, { color: itemTextColor }]}>
-            {item.label}
-          </Text>
-        </View>
-        {!isLogout && (
-          <ChevronRight size={20} color={chevronColor} />
-        )}
-      </TouchableOpacity>
+      <View key={item.id}>
+        <TouchableOpacity
+          onPress={item.onPress}
+          style={styles.menuItem}
+          activeOpacity={0.65}
+        >
+          <View style={styles.menuItemContent}>
+            <IconComponent
+              size={22}
+              color={itemIconColor}
+              strokeWidth={item.isLogout ? 2.5 : 2}
+            />
+            <Text style={[
+                styles.menuItemText, 
+                { color: itemTextColor },
+                item.isLogout && styles.logoutMenuItemText
+            ]}>
+              {item.label}
+            </Text>
+          </View>
+          {!item.isLogout && (
+            <ChevronRight size={20} color={chevronColor} />
+          )}
+        </TouchableOpacity>
+        {!isLastItem && <View style={styles.menuItemSeparator} />}
+      </View>
     );
   };
 
@@ -202,28 +224,26 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <UserRound size={50} color={colors.primary} />
+            {/* Menggunakan ikon UserRound untuk avatar */}
+            <UserRound 
+              size={60} // Ukuran ikon lebih besar di dalam kontainer 100x100
+              color={avatarIconColor} // Warna ikon kontras dengan background avatar
+              strokeWidth={1.5} // Ketebalan garis ikon (opsional)
+            />
           </View>
           <Text style={styles.userName}>{user.name}</Text>
-          {/* Menampilkan peran pengguna */}
           <View style={styles.userRoleContainer}>
-            <Award size={16} color={colors.primary} strokeWidth={2.5} />
+            <Award size={16} color={colors.primary} strokeWidth={2} />
             <Text style={styles.userRoleTextWithIcon}>{user.role}</Text>
           </View>
         </View>
 
-        <View style={styles.menuContainer}>
-          <View style={styles.menuSection}>
-            {menuItems.map((item) => renderMenuItem(item))}
-          </View>
-        </View>
-
-        <View style={styles.logoutButtonContainer}>
-            {renderMenuItem(logoutItem, true)}
+        <View style={styles.menuCard}>
+          {menuItemsConfig.map((item, index) => renderMenuItem(item, index, menuItemsConfig.length))}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default ProfileScreen;
+export default ProfileScreenRedesigned;
