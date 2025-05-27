@@ -17,17 +17,20 @@ import {
   Easing,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Send, X as IconX, Bot, MessageCircle } from 'lucide-react-native'; // Menambahkan MessageCircle
+import { Send, X as IconX, Bot, MessageCircle } from 'lucide-react-native';
 
+// Aktifkan LayoutAnimation untuk Android jika belum diaktifkan secara global
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Interface untuk pilihan dalam pesan
 interface MessageOption {
   text: string;
   payload: string;
 }
 
+// Interface untuk struktur data pesan individual
 interface Message {
   id: string;
   text?: string;
@@ -35,9 +38,10 @@ interface Message {
   timestamp: Date;
   options?: MessageOption[];
   optionsDisabled?: boolean;
-  isTyping?: boolean;
+  isTyping?: boolean; // Untuk indikator bot mengetik
 }
 
+// Props yang diterima oleh komponen FloatingChatbot
 interface FloatingChatbotProps {
   isVisible: boolean;
   onClose: () => void;
@@ -46,31 +50,34 @@ interface FloatingChatbotProps {
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose }) => {
-  const theme = useTheme();
-  const GColors = {
-    background: theme.colors.background,
-    card: theme.colors.card, // Latar utama window chat
-    text: theme.colors.text,
-    primary: theme.colors.primary,
-    border: theme.colors.border,
-    userBubbleBg: theme.colors.primary,
-    userBubbleText: theme.dark ? theme.colors.text : '#FFFFFF',
-    botBubbleBg: theme.dark ? '#374151' : '#E9ECEF', // Bot bubble lebih soft
-    botBubbleText: theme.colors.text,
-    inputBackground: theme.dark ? '#1F2937' : '#F9FAFB', // Latar input, sedikit beda dari card
-    inputBorderFocused: theme.colors.primary, // Border input saat fokus
-    placeholderText: theme.dark ? '#6B7280' : '#9CA3AF', // Placeholder lebih soft
-    headerText: theme.colors.text,
-    iconDefault: theme.dark ? '#9CA3AF' : '#6B7280', // Ikon header lebih soft
-    shadowColor: theme.dark ? '#000000' : '#4A5568',
-    optionButtonBg: theme.dark ? '#4B5563' : '#FFFFFF', // Latar tombol opsi
-    optionButtonText: theme.colors.primary,
-    // optionButtonBorder: theme.dark ? '#4B5563' : theme.colors.border, // Border dihilangkan, diganti shadow
-    sendButtonIconColor: theme.dark ? theme.colors.text : '#FFFFFF',
-    botAvatarBackground: theme.colors.primary,
-    botAvatarIconColor: theme.dark ? theme.colors.text : '#FFFFFF',
-    typingIndicatorColor: theme.dark ? '#9CA3AF' : '#6B7280',
+const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
+  isVisible,
+  onClose,
+}) => {
+  const currentTheme = useTheme(); // Menggunakan tema dari useTheme hook
+
+  const GColors = { // Palet warna berdasarkan tema
+    background: currentTheme.colors.background,
+    card: currentTheme.colors.card,
+    text: currentTheme.colors.text,
+    primary: currentTheme.colors.primary,
+    border: currentTheme.colors.border,
+    userBubbleBg: currentTheme.colors.primary,
+    userBubbleText: currentTheme.dark ? currentTheme.colors.text : '#FFFFFF',
+    botBubbleBg: currentTheme.dark ? '#374151' : '#E9ECEF',
+    botBubbleText: currentTheme.colors.text,
+    inputBackground: currentTheme.dark ? '#1F2937' : '#F9FAFB',
+    inputBorderFocused: currentTheme.colors.primary,
+    placeholderText: currentTheme.dark ? '#6B7280' : '#9CA3AF',
+    headerText: currentTheme.colors.text,
+    iconDefault: currentTheme.dark ? '#9CA3AF' : '#6B7280',
+    shadowColor: currentTheme.dark ? '#000000' : '#4A5568',
+    optionButtonBg: currentTheme.dark ? '#4B5563' : '#FFFFFF',
+    optionButtonText: currentTheme.colors.primary,
+    sendButtonIconColor: currentTheme.dark ? currentTheme.colors.text : '#FFFFFF',
+    botAvatarBackground: currentTheme.colors.primary,
+    botAvatarIconColor: currentTheme.dark ? currentTheme.colors.text : '#FFFFFF',
+    typingIndicatorColor: currentTheme.dark ? '#9CA3AF' : '#6B7280',
   };
 
   const [message, setMessage] = useState('');
@@ -78,7 +85,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
   const scrollViewRef = useRef<ScrollView>(null);
   const windowAnim = useRef(new Animated.Value(0)).current;
   const [shouldRender, setShouldRender] = useState(isVisible);
-  const [isInputFocused, setIsInputFocused] = useState(false); // State untuk fokus input
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -97,7 +104,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
         useNativeDriver: true,
       }).start(() => {
         setShouldRender(false);
-        // setMessages([]); // Reset pesan saat ditutup
+        // setMessages([]); // Opsional: reset pesan saat ditutup
       });
     }
   }, [isVisible, windowAnim]);
@@ -133,31 +140,37 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
   };
 
   useEffect(() => {
-    if (isVisible && messages.length === 1 && messages[0].sender === 'user') {
-        if (messages.some(msg => msg.isTyping)) return;
-        const typingId = addTypingIndicator();
-        setTimeout(() => {
-            const initialBotGreeting: Message = {
-                id: `${Date.now().toString()}_bot_greet_after_user`,
-                text: 'Halo! 👋 Selamat datang. Apa yang bisa kami bantu hari ini?',
-                sender: 'bot',
-                timestamp: new Date(Date.now() + 50),
-                options: [
-                    { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' },
-                    { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' },
-                    { text: 'Info Lainnya', payload: 'OTHER_INFO' },
-                ],
-                optionsDisabled: false,
-            };
-            removeTypingIndicatorAndAddMessage(typingId, initialBotGreeting);
-        }, 700 + Math.random() * 300);
+    // Sapaan bot setelah pesan pertama pengguna
+    if (isVisible && messages.length > 0 && messages[messages.length - 1].sender === 'user') {
+        const userMessagesCount = messages.filter(m => m.sender === 'user').length;
+        const botGreetingExists = messages.some(m => m.id.includes('_bot_greet'));
+
+        if (userMessagesCount === 1 && !botGreetingExists) {
+            if (messages.some(msg => msg.isTyping)) return; // Jangan kirim sapaan jika bot sudah 'mengetik'
+            const typingId = addTypingIndicator();
+            setTimeout(() => {
+                const initialBotGreeting: Message = {
+                    id: `${Date.now().toString()}_bot_greet_after_user`,
+                    text: 'Halo! 👋 Selamat datang. Ada yang bisa kami bantu?',
+                    sender: 'bot',
+                    timestamp: new Date(Date.now() + 50),
+                    options: [
+                        { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' },
+                        { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' },
+                        { text: 'Info Lainnya', payload: 'OTHER_INFO' },
+                    ],
+                    optionsDisabled: false,
+                };
+                removeTypingIndicatorAndAddMessage(typingId, initialBotGreeting);
+            }, 700 + Math.random() * 300);
+        }
     }
   }, [messages, isVisible]);
 
 
   const handleOptionSelect = (option: MessageOption, messageId: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    const userSelectionMessage: Message = { /* ... */ id: Date.now().toString(), text: option.text, sender: 'user', timestamp: new Date() };
+    const userSelectionMessage: Message = { id: Date.now().toString(), text: option.text, sender: 'user', timestamp: new Date() };
     setMessages(prevMessages => {
       const updatedMessages = prevMessages.map(msg =>
         msg.id === messageId ? { ...msg, optionsDisabled: true } : msg
@@ -170,14 +183,15 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
       let botResponseText = '';
       let nextOptions: MessageOption[] | undefined = undefined;
         switch (option.payload) {
-          case 'PRODUCT_INQUIRY': botResponseText = 'Baik, tentang produk. Produk apa?'; nextOptions = [ { text: 'Produk A', payload: 'PRODUCT_A_DETAILS' }, { text: 'Produk B', payload: 'PRODUCT_B_DETAILS' }, { text: 'Kembali', payload: 'MAIN_MENU' }, ]; break;
-          case 'CUSTOMER_SERVICE': botResponseText = 'Layanan pelanggan. Ada keluhan?'; nextOptions = [ { text: 'Komplain', payload: 'COMPLAINT' }, { text: 'Pertanyaan Umum', payload: 'FAQ' }, { text: 'Kembali', payload: 'MAIN_MENU' }, ]; break;
-          case 'OTHER_INFO': botResponseText = 'Info lain, silakan ketik.'; break;
-          case 'PRODUCT_A_DETAILS': botResponseText = 'Produk A hebat! Ada lagi?'; nextOptions = [{ text: 'Kembali ke Info Produk', payload: 'PRODUCT_INQUIRY'}]; break;
-          case 'MAIN_MENU': botResponseText = 'Ada lagi yang bisa dibantu?'; nextOptions = [ { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' }, { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' }, { text: 'Info Lainnya', payload: 'OTHER_INFO' }, ]; break;
-          default: botResponseText = `Memproses: ${option.text}.`;
+          case 'PRODUCT_INQUIRY': botResponseText = 'Tentu, mengenai produk kami. Produk mana yang menarik perhatian Anda?'; nextOptions = [ { text: 'Produk X', payload: 'PRODUCT_X_DETAILS' }, { text: 'Produk Y', payload: 'PRODUCT_Y_DETAILS' }, { text: 'Kembali', payload: 'MAIN_MENU' }, ]; break;
+          case 'CUSTOMER_SERVICE': botResponseText = 'Untuk layanan pelanggan, silakan sampaikan pertanyaan atau keluhan Anda.'; nextOptions = [ { text: 'Lacak Pesanan', payload: 'TRACK_ORDER' }, { text: 'Pengembalian', payload: 'RETURN_POLICY' }, { text: 'Kembali', payload: 'MAIN_MENU' }, ]; break;
+          case 'OTHER_INFO': botResponseText = 'Baik, untuk informasi lainnya, apa yang ingin Anda ketahui?'; break;
+          case 'PRODUCT_X_DETAILS': botResponseText = 'Produk X memiliki fitur A, B, C. Apakah ada detail lain yang Anda perlukan?'; nextOptions = [{ text: 'Kembali ke Info Produk', payload: 'PRODUCT_INQUIRY'}]; break;
+          case 'TRACK_ORDER': botResponseText = 'Untuk melacak pesanan, mohon berikan nomor pesanan Anda.'; nextOptions = [{text: 'Menu Utama', payload: 'MAIN_MENU'}]; break;
+          case 'MAIN_MENU': botResponseText = 'Ada lagi yang bisa saya bantu?'; nextOptions = [ { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' }, { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' }, { text: 'Info Lainnya', payload: 'OTHER_INFO' }, ]; break;
+          default: botResponseText = `Anda memilih: ${option.text}. Saya akan memprosesnya.`;
         }
-      const botResponse: Message = { /* ... */ id: `${Date.now().toString()}_bot_option_response`, text: botResponseText, sender: 'bot', timestamp: new Date(), options: nextOptions, optionsDisabled: false, };
+      const botResponse: Message = { id: `${Date.now().toString()}_bot_option_response`, text: botResponseText, sender: 'bot', timestamp: new Date(), options: nextOptions, optionsDisabled: false, };
       removeTypingIndicatorAndAddMessage(typingId, botResponse);
     }, 900 + Math.random() * 500);
   };
@@ -185,15 +199,15 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
   const handleSendMessage = () => {
     if (message.trim()) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      const newUserMessage: Message = { /* ... */ id: Date.now().toString(), text: message.trim(), sender: 'user', timestamp: new Date() };
+      const newUserMessage: Message = { id: Date.now().toString(), text: message.trim(), sender: 'user', timestamp: new Date() };
       const isFirstUserMessageOverall = messages.filter(m => m.sender === 'user').length === 0;
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       setMessage('');
 
-      if (!isFirstUserMessageOverall) {
+      if (!isFirstUserMessageOverall) { // Jika ini bukan pesan user yang PERTAMA KALI (sapaan akan dihandle oleh useEffect)
           const typingId = addTypingIndicator();
           setTimeout(() => {
-            const botResponse: Message = { /* ... */ id: `${Date.now().toString()}_bot_text_response`, text: `Anda: "${newUserMessage.text}". Saya proses.`, sender: 'bot', timestamp: new Date(), options: [{ text: 'Menu Utama', payload: 'MAIN_MENU' }], optionsDisabled: false };
+            const botResponse: Message = { id: `${Date.now().toString()}_bot_text_response`, text: `Mengenai "${newUserMessage.text}", saya coba carikan informasinya.`, sender: 'bot', timestamp: new Date(), options: [{ text: 'Menu Utama', payload: 'MAIN_MENU' }], optionsDisabled: false };
             removeTypingIndicatorAndAddMessage(typingId, botResponse);
           }, 1100 + Math.random() * 600);
       }
@@ -210,7 +224,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
       {
         translateY: windowAnim.interpolate({
           inputRange: [0, 1],
-          outputRange: [70, 0], // Muncul dari bawah (lebih dekat)
+          outputRange: [70, 0],
         }),
       },
     ],
@@ -230,7 +244,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
           <View style={[styles.header, { borderBottomColor: GColors.border }]}>
             <Text style={[styles.headerTitle, { color: GColors.headerText }]}>Bantuan Cepat</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <IconX size={22} color={GColors.iconDefault} />{/* Icon close sedikit lebih kecil */}
+              <IconX size={22} color={GColors.iconDefault} />
             </TouchableOpacity>
           </View>
 
@@ -256,31 +270,29 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
               const isLastInBlock = !nextMsg || nextMsg.sender !== msg.sender;
 
               const messageBubbleCustomStyle: ViewStyle = {};
-              // Penyesuaian border radius bubble tetap sama
               if (isUser) { messageBubbleCustomStyle.borderTopRightRadius = isFirstInBlock ? 20 : 8; messageBubbleCustomStyle.borderBottomRightRadius = isLastInBlock ? 20 : 8; messageBubbleCustomStyle.borderTopLeftRadius = 20; messageBubbleCustomStyle.borderBottomLeftRadius = 20;}
               else { messageBubbleCustomStyle.borderTopLeftRadius = isFirstInBlock ? 20 : 8; messageBubbleCustomStyle.borderBottomLeftRadius = isLastInBlock ? 20 : 8; messageBubbleCustomStyle.borderTopRightRadius = 20; messageBubbleCustomStyle.borderBottomRightRadius = 20;}
-
 
                if (msg.isTyping) {
                 return (
                   <View key={msg.id} style={[styles.messageRow, styles.botMessageRow]}>
-                    {!isUser && isFirstInBlock && (
+                    {!isUser && isFirstInBlock && ( // Avatar untuk typing indicator
                         <View style={[styles.botAvatarContainer, {backgroundColor: GColors.botAvatarBackground}]}>
                             <Bot size={18} color={GColors.botAvatarIconColor} />
                         </View>
                     )}
                     <View style={[
                         styles.messageBubble,
-                        styles.typingBubble, // Style khusus untuk bubble mengetik
+                        styles.typingBubble,
                         { backgroundColor: GColors.botBubbleBg},
                         messageBubbleCustomStyle,
                         !isUser && { marginLeft: isFirstInBlock ? 0 : (styles.botAvatarContainer.width + styles.botAvatarContainer.marginRight) }
                         ]}>
-                      {/* Animasi titik-titik sederhana (opsional, bisa dikembangkan) */}
                       <View style={styles.typingDotsContainer}>
-                        <Animated.View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor}]} />
-                        <Animated.View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor, marginHorizontal: 3, animationDelay: '150ms'}]} />
-                        <Animated.View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor, animationDelay: '300ms'}]} />
+                        {/* Untuk animasi titik-titik yang lebih baik, Anda perlu Animated API per titik */}
+                        <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor}]} />
+                        <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor, marginHorizontal: 3}]} />
+                        <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor}]} />
                       </View>
                     </View>
                   </View>
@@ -342,7 +354,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
               value={message}
               onChangeText={setMessage}
               onSubmitEditing={handleSendMessage}
-              blurOnSubmit={false}
+              blurOnSubmit={false} // Biarkan keyboard terbuka saat submit multiline
               multiline
               maxHeight={100}
               onFocus={() => setIsInputFocused(true)}
@@ -362,8 +374,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
   );
 };
 
-
-const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 10; // Sedikit lebih rapat ke tepi
+const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 10;
 const CHAT_WINDOW_MARGIN_BOTTOM = 10;
 
 interface ChatbotStyle {
@@ -378,14 +389,14 @@ interface ChatbotStyle {
   messagesContentContainer: ViewStyle;
   emptyChatContainer: ViewStyle;
   emptyChatMessage: TextStyle;
-  emptyChatSubMessage: TextStyle; // Ditambahkan
+  emptyChatSubMessage: TextStyle;
   messageRow: ViewStyle;
   userMessageRow: ViewStyle;
   botMessageRow: ViewStyle;
   messageBubble: ViewStyle;
-  typingBubble: ViewStyle; // Ditambahkan
-  typingDotsContainer: ViewStyle; // Ditambahkan
-  typingDot: ViewStyle; // Ditambahkan
+  typingBubble: ViewStyle;
+  typingDotsContainer: ViewStyle;
+  typingDot: ViewStyle;
   messageText: TextStyle;
   timestamp: TextStyle;
   inputContainer: ViewStyle;
@@ -402,34 +413,36 @@ const styles = StyleSheet.create<ChatbotStyle>({
     right: CHAT_WINDOW_MARGIN_HORIZONTAL,
     bottom: CHAT_WINDOW_MARGIN_BOTTOM,
     left: Platform.OS === 'web' ? undefined : CHAT_WINDOW_MARGIN_HORIZONTAL,
-    width: Platform.OS === 'web' ? 370 : undefined, // Lebar window sedikit disesuaikan
+    width: Platform.OS === 'web' ? 370 : undefined,
     maxWidth: Platform.OS === 'web' ? 370 : screenWidth - (CHAT_WINDOW_MARGIN_HORIZONTAL * 2),
     zIndex: 1000,
   },
-  kavWrapper: {},
+  kavWrapper: {
+    // Style untuk KeyboardAvoidingView wrapper jika diperlukan
+  },
   chatWindow: {
     width: '100%',
-    minHeight: 360, // Sedikit kurangi minHeight
-    maxHeight: screenHeight * (Platform.OS === 'web' ? 0.8 : 0.75), // MaxHeight juga disesuaikan
-    borderRadius: 22, // Border radius lebih besar untuk kesan modern
+    minHeight: 360,
+    maxHeight: screenHeight * (Platform.OS === 'web' ? 0.8 : 0.75),
+    borderRadius: 22,
     borderWidth: Platform.OS === 'ios' ? StyleSheet.hairlineWidth : 1, // Border tipis untuk iOS
-    elevation: 10, // Elevasi lebih soft
-    shadowOffset: { width: 0, height: 4 }, // Bayangan lebih dekat
-    shadowOpacity: 0.1, // Bayangan lebih transparan
-    shadowRadius: 12, // Radius bayangan lebih lebar
-    overflow: 'hidden',
+    elevation: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    overflow: 'hidden', // Penting untuk borderRadius pada children
     display: 'flex',
     flexDirection: 'column',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14, // Padding header
+    paddingVertical: 14,
     paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   botAvatarContainer: {
-    width: 32, // Ukuran avatar
+    width: 32,
     height: 32,
     borderRadius: 16,
     marginRight: 8,
@@ -440,19 +453,19 @@ const styles = StyleSheet.create<ChatbotStyle>({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 16.5, // Font judul
+    fontSize: 16.5,
     fontFamily: 'Poppins-SemiBold',
     textAlign: 'left',
   },
   closeButton: {
-    padding: 6, // Area tap
+    padding: 6,
     marginLeft: 10,
   },
   messagesArea: {
     flex: 1,
   },
   messagesContentContainer: {
-    paddingHorizontal: 12, // Padding horizontal dalam area pesan
+    paddingHorizontal: 12,
     paddingVertical: 18,
     flexGrow: 1,
   },
@@ -460,17 +473,17 @@ const styles = StyleSheet.create<ChatbotStyle>({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30, // Padding lebih agar teks tidak terlalu lebar
-    paddingBottom: 20, // Padding bawah
+    paddingHorizontal: 30,
+    paddingBottom: 20,
   },
   emptyChatMessage: {
-    fontSize: 17, // Font pesan kosong utama
-    fontFamily: 'Poppins-Medium', // Sedikit lebih tebal
+    fontSize: 17,
+    fontFamily: 'Poppins-Medium',
     textAlign: 'center',
     opacity: 0.8,
     marginBottom: 8,
   },
-  emptyChatSubMessage: { // Style untuk sub-pesan di empty state
+  emptyChatSubMessage: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
@@ -479,63 +492,66 @@ const styles = StyleSheet.create<ChatbotStyle>({
   },
   messageRow: {
     flexDirection: 'row',
-    marginVertical: 4, // Jarak antar baris pesan
+    marginVertical: 4,
   },
   userMessageRow: {
     justifyContent: 'flex-end',
-    marginLeft: '18%', // Bubble user tidak terlalu lebar
+    marginLeft: '18%',
   },
   botMessageRow: {
     justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    marginRight: '18%', // Bubble bot tidak terlalu lebar
+    alignItems: 'flex-end', // Untuk avatar bot di bawah bubble
+    marginRight: '18%',
   },
   messageBubble: {
-    paddingVertical: 11, // Padding vertikal bubble
+    paddingVertical: 11,
     paddingHorizontal: 16,
     maxWidth: '100%',
-    // borderRadius diatur dinamis
+    // borderRadius diatur dinamis oleh messageBubbleCustomStyle
   },
   typingBubble: { // Style khusus untuk bubble indikator mengetik
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 14, // Sedikit lebih tinggi untuk titik-titik
   },
   typingDotsContainer: { // Kontainer untuk titik-titik animasi
     flexDirection: 'row',
+    alignItems: 'center', // Pastikan titik-titik sejajar
   },
   typingDot: { // Gaya untuk satu titik
     width: 7,
     height: 7,
     borderRadius: 3.5,
     // backgroundColor diatur dari GColors
-    // Animasi CSS untuk titik-titik (jika ingin di web, atau implementasi Animated API untuk native)
-    // Untuk native, animasi opacity atau transform.Y per titik bisa dibuat dengan Animated.loop
+    // Untuk animasi titik-titik yang sesungguhnya, Anda perlu menggunakan Animated API
+    // dan menganimasikan opacity atau translateY dari masing-masing titik secara berulang (loop).
+    // Implementasi animasi titik-titik yang detail ada di luar cakupan ini,
+    // tapi Anda bisa mencari "react native animated typing indicator" untuk contoh.
   },
   messageText: {
-    fontSize: 15, // Font pesan
+    fontSize: 15,
     fontFamily: 'Poppins-Regular',
-    lineHeight: 23, // Line height lebih nyaman
+    lineHeight: 23,
   },
   timestamp: {
-    fontSize: 10.5, // Timestamp lebih kecil
+    fontSize: 10.5,
     fontFamily: 'Poppins-Regular',
     marginTop: 6,
     textAlign: 'right',
-    opacity: 0.6, // Lebih transparan
+    opacity: 0.6,
   },
   optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
-    marginTop: 10, // Jarak dari bubble bot
-    marginLeft: (32 + 8), // Sesuaikan dengan botAvatarContainer.width + marginRight
+    marginTop: 10,
+    marginLeft: (32 + 8), // Disesuaikan dengan botAvatarContainer.width + marginRight
     marginBottom: 6,
   },
   optionButton: {
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 20, // Tombol lebih bulat
-    // borderWidth: 0, // Hapus border
+    borderRadius: 20,
     marginRight: 10,
     marginBottom: 10,
     // Efek bayangan untuk tombol opsi
@@ -545,35 +561,33 @@ const styles = StyleSheet.create<ChatbotStyle>({
     elevation: 2, // Untuk Android
   },
   optionButtonText: {
-    fontSize: 13, // Font tombol opsi
+    fontSize: 13,
     fontFamily: 'Poppins-Medium',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center', // Agar tombol kirim sejajar dengan input
-    paddingVertical: 8, // Padding vertikal lebih rapat
-    paddingHorizontal: 10, // Padding horizontal
+    alignItems: 'center', // Jaga agar input dan tombol send sejajar
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   textInput: {
     flex: 1,
-    borderWidth: 1.5, // Border input
-    borderRadius: 25, // Input sangat bulat
+    borderWidth: 1.5,
+    borderRadius: 25,
     paddingHorizontal: 18,
     paddingTop: Platform.OS === 'ios' ? 12 : 9,
     paddingBottom: Platform.OS === 'ios' ? 12 : 9,
     marginRight: 8,
     fontSize: 15.5,
     fontFamily: 'Poppins-Regular',
-    // maxHeight sudah di props TextInput
   },
   sendButton: {
-    width: 42, // Tombol kirim sedikit lebih kecil
+    width: 42,
     height: 42,
     borderRadius: 21,
     justifyContent: 'center',
     alignItems: 'center',
-    // marginBottom: Platform.OS === 'ios' ? 0 : 1, // Tidak perlu jika alignItems: 'center' di container
   },
 });
 
