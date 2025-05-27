@@ -15,8 +15,8 @@ const Tab = createBottomTabNavigator();
 
 // --- PALET WARNA DAN TEMA ---
 const COLORS = {
-  primaryLight: '#2563EB',
-  primaryDark: '#F59E0B',
+  primaryLight: '#3b82f6', // #2563EB -- Allternatif warna
+  primaryDark: '#FACC15', // #F59E0B -- Allternatif warna
   white: '#FFFFFF',
   black: '#000000',
   greyUltraLight: '#F3F4F6',
