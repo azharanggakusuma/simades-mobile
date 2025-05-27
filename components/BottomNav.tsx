@@ -4,27 +4,27 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Search, User, Clock, ClipboardList } from 'lucide-react-native';
 
-// Import screen dan navigator (pastikan path sudah benar)
-import SearchScreen from '../screens/SearchScreen'; // Ganti dengan path screen Anda
-import FormScreen from '../screens/FormScreen';     // Ganti dengan path screen Anda
-import HistoryScreen from '../screens/HistoryScreen'; // Ganti dengan path screen Anda
-import ProfileScreen from '../screens/ProfileScreen'; // Ganti dengan path screen Anda
-import HomeStackNavigator from '../navigation/HomeStackNavigator'; // Ganti dengan path navigator Anda
+// Import screen (sesuaikan path jika perlu)
+import SearchScreen from '../screens/SearchScreen';
+import FormScreen from '../screens/FormScreen';
+import HistoryScreen from '../screens/HistoryScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import HomeStackNavigator from '../navigation/HomeStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
 // --- PALET WARNA DAN TEMA ---
 const COLORS = {
-  primaryLight: '#3b82f6', // #2563EB -- Allternatif warna
-  primaryDark: '#FACC15', // #F59E0B -- Allternatif warna
+  primaryLight: '#3b82f6',
+  primaryDark: '#FACC15',
   white: '#FFFFFF',
   black: '#000000',
   greyUltraLight: '#F3F4F6',
-  greyLight: '#D1D5DB', // Bisa untuk border atas jika mau
+  greyLight: '#D1D5DB',
   greyMedium: '#6B7280',
   greyDark: '#1F2937',
-  backgroundLight: '#FFFFFF', // Latar belakang solid putih
-  backgroundDark: '#111827',  // Latar belakang solid gelap (lebih gelap dari abu-abu)
+  backgroundLight: '#FFFFFF',
+  backgroundDark: '#111827',
   fabIconLight: '#FFFFFF',
   fabIconDark: '#1F2937',
   activePillLight: 'rgba(37, 99, 235, 0.12)',
@@ -44,12 +44,11 @@ const AppTheme = (darkMode) => ({
 });
 
 // --- KONSTANTA STYLING ---
-// Tinggi dasar tab bar, SUDAH TERMASUK PADDING ATAS & BAWAH untuk konten (ikon & label)
-// NAMUN BELUM TERMASUK safeAreaInsets.bottom
+// Tinggi dasar tab bar, sudah termasuk padding internal untuk konten, belum termasuk safeAreaInsets.bottom.
 const BASE_TAB_BAR_HEIGHT_WITH_INTERNAL_PADDING = 70;
 const FAB_SIZE = 60;
-// Padding tambahan di bawah konten (ikon & label) SEBELUM safe area.
-// Jadi, total padding bawah = PADDING_BOTTOM_FOR_CONTENT + insets.bottom
+// Padding tambahan di bawah konten (ikon & label) sebelum safe area.
+// Total padding bawah = PADDING_BOTTOM_FOR_CONTENT + insets.bottom.
 const PADDING_BOTTOM_FOR_CONTENT = Platform.OS === 'ios' ? 12 : 14;
 const PADDING_TOP_FOR_CONTENT = 10;
 
@@ -98,24 +97,16 @@ const BottomNav = ({ darkMode }) => {
         tabBarStyle: {
           height: BASE_TAB_BAR_HEIGHT_WITH_INTERNAL_PADDING + insets.bottom,
           backgroundColor: theme.tabBarBackground,
-          // Garis tipis di atas tab bar untuk memisahkan dari konten layar
-          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopWidth: StyleSheet.hairlineWidth, // Garis tipis pemisah di atas tab bar
           borderTopColor: theme.topBorder,
-
-          // Padding untuk konten di dalam tab bar
           paddingTop: PADDING_TOP_FOR_CONTENT,
-          // paddingBottom ini akan mendorong ikon & label ke atas dari tepi bawah tab bar (termasuk safe area)
+          // paddingBottom ini mendorong konten ke atas dari tepi bawah (termasuk safe area)
           paddingBottom: insets.bottom + PADDING_BOTTOM_FOR_CONTENT,
-
-          // Hapus shadow default jika ada (kita bisa tambahkan shadow kustom jika mau nanti)
-          elevation: 0,
-          shadowOpacity: 0,
+          elevation: 0, // Hapus shadow default Android
+          shadowOpacity: 0, // Hapus shadow default iOS
         },
         tabBarItemStyle: {
-          // Biarkan default atau sesuaikan jika perlu flex, alignSelf, dll.
-          // Padding internal item akan diatur oleh paddingTop/Bottom di tabBarStyle
-          // dan margin pada label/icon wrapper.
-          justifyContent: 'flex-start', // Mulai dari atas (karena ada paddingTop di tabBarStyle)
+          justifyContent: 'flex-start', // Konten item mulai dari atas (setelah paddingTop tabBarStyle)
         },
         tabBarIcon: ({ focused }) => {
           const IconComponent = iconMap[route.name];
@@ -181,17 +172,12 @@ const styles = StyleSheet.create({
   fabWrapper: {
     position: 'absolute',
     alignSelf: 'center',
-    // `top` ini akan memposisikan FAB relatif terhadap 'slot' tabBarButton-nya.
-    // Karena tabBarButton biasanya setinggi item tab, nilai negatif akan mengangkatnya.
-    // Kita ingin FAB sedikit "menggigit" ke atas.
-    // Jika tinggi konten (ikon+label) sekitar 45-50px, dan FAB 60px,
-    // top: - (FAB_SIZE / 2) akan membuat bagian tengah FAB sejajar dengan bagian atas ikon/label.
-    // top: - (FAB_SIZE / N) dimana N menentukan seberapa banyak overlap.
-    // Mari coba sekitar 60% dari FAB berada di atas titik nol slotnya.
-    top: -(FAB_SIZE * 0.55), // Coba nilai ini, mungkin perlu disesuaikan
-    // Contoh: Jika FAB_SIZE = 60, top = -33.
-    // Perhatikan `paddingTop` pada `tabBarStyle` juga mempengaruhi posisi visual akhir.
-    // zIndex: 10, // Aktifkan jika FAB tertutup elemen lain
+    // `top` memposisikan FAB relatif terhadap 'slot' tabBarButton-nya.
+    // Nilai negatif akan mengangkat FAB ke atas.
+    // (FAB_SIZE * 0.55) membuat sekitar 55% FAB berada di atas titik nol slotnya.
+    // Sesuaikan nilai ini jika perlu untuk mencapai overlap visual yang diinginkan.
+    top: -(FAB_SIZE * 0.55),
+    // zIndex: 10, // Aktifkan jika FAB tertutup elemen lain, umumnya tidak perlu jika FAB adalah tabBarButton
   },
   fabButton: {
     width: FAB_SIZE,
@@ -212,7 +198,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    // marginTop: 4, // Beri sedikit jarak dari atas item jika perlu
   },
 });
 
