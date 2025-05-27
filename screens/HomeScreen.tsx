@@ -7,47 +7,54 @@ import {
   ViewStyle,
   TextStyle,
   Platform,
-  TouchableOpacity, // Untuk tombol FAB
+  TouchableOpacity,
 } from 'react-native';
-import { useTheme } from '@react-navigation/native'; // Asumsi Anda menggunakan React Navigation Theme
+import { useTheme } from '@react-navigation/native';
+import { MessageCircle as ChatIcon } from 'lucide-react-native'; // Impor ikon untuk FAB
 
 // Impor komponen-komponen Anda
-import StatsChart from '../components/VisitorsChart';     // Pastikan path ini benar
-import StatsCard from '../components/StatsCard';          // Pastikan path ini benar
-import FormProgressChart from '../components/FormProgressChart'; // Pastikan path ini benar
+import StatsChart from '../components/VisitorsChart';    
+import StatsCard from '../components/StatsCard';        
+import FormProgressChart from '../components/FormProgressChart'; 
 import FloatingChatbot from '../components/FloatingChatbot'; // Path ke komponen chatbot
 
-// Fungsi untuk mendapatkan sapaan berdasarkan waktu
+// --- Konstanta untuk Styling ---
+const CONTAINER_PADDING_HORIZONTAL = 20;
+const CONTAINER_PADDING_TOP_IOS = 10;
+const CONTAINER_PADDING_TOP_ANDROID = 20;
+const CONTAINER_PADDING_BOTTOM = 100; // Padding bawah untuk ruang FAB & Chatbot
+const HEADER_MARGIN_BOTTOM = 28;
+const HEADING_FONT_SIZE = 24;
+const SUBHEADING_FONT_SIZE = 14;
+const SECTION_TITLE_FONT_SIZE = 18;
+const SECTION_TITLE_MARGIN_TOP = 32;
+const GRID_ROW_GAP = 16;
+const FAB_SIZE = 60;
+const FAB_BORDER_RADIUS = FAB_SIZE / 2;
+const FAB_POSITION_OFFSET = 25; // Jarak FAB dari tepi layar (lebih kecil dari sebelumnya)
+const FAB_ICON_SIZE = 28;
+
+// Fungsi untuk mendapatkan sapaan berdasarkan waktu (tetap sama)
 const getTimeBasedGreeting = (): string => {
   const currentHour = new Date().getHours();
-  // Rentang waktu bisa disesuaikan
-  if (currentHour >= 4 && currentHour < 10) { // 04:00 - 09:59 -> Pagi
-    return 'Pagi';
-  } else if (currentHour >= 10 && currentHour < 15) { // 10:00 - 14:59 -> Siang
-    return 'Siang';
-  } else if (currentHour >= 15 && currentHour < 18) { // 15:00 - 17:59 -> Sore
-    return 'Sore';
-  } else { // 18:00 - 03:59 (termasuk tengah malam hingga sebelum subuh) -> Malam
-    return 'Malam';
-  }
+  if (currentHour >= 4 && currentHour < 10) return 'Pagi';
+  if (currentHour >= 10 && currentHour < 15) return 'Siang';
+  if (currentHour >= 15 && currentHour < 18) return 'Sore';
+  return 'Malam';
 };
 
 export default function HomeScreen() {
-  const theme = useTheme(); // Mengambil tema dari React Navigation
-  const { colors } = theme; // Mengambil warna dari tema
+  const theme = useTheme();
+  const { colors } = theme;
 
-  // Placeholder untuk peran pengguna, ganti dengan data aktual jika ada
-  const userRole = 'Admin'; // Contoh: 'Admin', 'Petugas Desa', dll.
+  const userRole = 'Admin';
   const greetingTime = getTimeBasedGreeting();
   const dynamicSubheading = `Selamat ${greetingTime}, ${userRole} 👋`;
 
-  // Warna teks sekunder berdasarkan tema (terang/gelap)
-  const secondaryTextColor = theme.dark ? '#A0AEC0' : '#4A5568'; // Contoh warna
+  const secondaryTextColor = theme.dark ? '#A0AEC0' : '#718096'; 
 
-  // State untuk mengontrol visibilitas chatbot
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
 
-  // Fungsi untuk membuka/menutup chatbot
   const toggleChatbot = () => {
     setIsChatbotVisible(!isChatbotVisible);
   };
@@ -57,7 +64,7 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled" // Membantu interaksi dengan input di dalam ScrollView saat keyboard aktif
+        keyboardShouldPersistTaps="handled"
       >
         {/* Konten Header Dashboard */}
         <View style={styles.headerContent}>
@@ -79,39 +86,39 @@ export default function HomeScreen() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Visualisasi Data</Text>
 
         {/* Komponen Chart */}
-        <FormProgressChart theme={theme} />
-        <StatsChart theme={theme} />
-        {/* Anda bisa menambahkan lebih banyak komponen di sini jika perlu */}
-
+        <View style={styles.chartsContainer}>
+            <FormProgressChart theme={theme} />
+            <View style={{ height: 10 }} /> {/* Spacer antar chart */}
+            <StatsChart theme={theme} />
+        </View>
       </ScrollView>
 
-      {/* Tombol Floating Action Button (FAB) untuk membuka chatbot */}
-      {/* Hanya ditampilkan jika chatbot tidak visible */}
+      {/* Tombol FAB untuk membuka chatbot */}
       {!isChatbotVisible && (
         <TouchableOpacity
-          style={[styles.chatbotToggleButton, { backgroundColor: colors.primary }]} // Gunakan warna primer dari tema
+          style={[styles.chatbotToggleButton, { backgroundColor: colors.primary }]}
           onPress={toggleChatbot}
-          activeOpacity={0.8} // Efek opacity saat ditekan
+          activeOpacity={0.8}
         >
-          {/* Ganti dengan icon jika Anda menggunakan library icon (misal: react-native-vector-icons) */}
-          <Text style={styles.chatbotToggleButtonText}>💬</Text>
+          <ChatIcon size={FAB_ICON_SIZE} color="white" />
         </TouchableOpacity>
       )}
 
       {/* Komponen Chatbot Mengambang */}
-      {/* Dirender di sini agar posisinya absolut relatif terhadap 'styles.screen' */}
-      {/* Dan `isVisible` akan mengontrol apakah ia benar-benar muncul atau tidak */}
-      {isChatbotVisible && (
+      {/* Menggunakan 'key' untuk memastikan state direset jika diperlukan saat isVisible berubah,
+          namun karena animasi internal sudah menangani, ini mungkin tidak esensial.
+          Lebih baik state internal FloatingChatbot yang menangani resetnya sendiri saat onClose/isVisible false.
+      */}
+      {isChatbotVisible && ( // Lebih baik render kondisional seperti ini untuk performa
         <FloatingChatbot
-          isVisible={isChatbotVisible} // Prop ini bisa digunakan untuk animasi internal di FloatingChatbot jika ada
-          onClose={toggleChatbot}    // Fungsi untuk menutup chatbot dari dalam komponen chatbot itu sendiri
+          isVisible={isChatbotVisible}
+          onClose={toggleChatbot}
         />
       )}
     </View>
   );
 }
 
-// Definisi interface untuk styles
 interface Style {
   screen: ViewStyle;
   container: ViewStyle;
@@ -119,68 +126,66 @@ interface Style {
   heading: TextStyle;
   subheading: TextStyle;
   sectionTitle: TextStyle;
+  chartsContainer: ViewStyle;
   grid: ViewStyle;
   chatbotToggleButton: ViewStyle;
-  chatbotToggleButtonText: TextStyle;
 }
 
-// StyleSheet untuk komponen HomeScreen
 const styles = StyleSheet.create<Style>({
   screen: {
-    flex: 1, // Memastikan View mengisi seluruh layar
-    // backgroundColor diatur inline menggunakan theme.colors.background
+    flex: 1,
   },
   container: {
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 10 : 20, // Padding atas berbeda untuk iOS dan Android
-    // Padding bawah yang cukup agar konten tidak tertutup oleh FAB atau window chat.
-    // Jika window chat Anda tinggi, Anda mungkin perlu padding lebih besar
-    // atau pastikan window chat tidak tumpang tindih dengan konten yang bisa di-scroll.
-    paddingBottom: 100,
+    paddingHorizontal: CONTAINER_PADDING_HORIZONTAL,
+    paddingTop: Platform.OS === 'ios' ? CONTAINER_PADDING_TOP_IOS : CONTAINER_PADDING_TOP_ANDROID,
+    paddingBottom: CONTAINER_PADDING_BOTTOM,
   },
   headerContent: {
-    marginBottom: 28,
+    marginBottom: HEADER_MARGIN_BOTTOM,
   },
   heading: {
-    fontSize: 24,
-    fontFamily: 'Poppins-Bold', // Pastikan font ini sudah di-link di proyek Anda
-    marginBottom: 4,
+    fontSize: HEADING_FONT_SIZE,
+    fontFamily: 'Poppins-Bold',
+    marginBottom: 6,
   },
   subheading: {
-    fontSize: 14,
-    fontFamily: 'Poppins-Regular', // Pastikan font ini sudah di-link
+    fontSize: SUBHEADING_FONT_SIZE,
+    fontFamily: 'Poppins-Regular',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'Poppins-SemiBold', // Pastikan font ini sudah di-link
-    marginTop: 32,
-    // marginBottom: 16, // Opsional, jika ingin ada jarak bawah sebelum chart berikutnya
+    fontSize: SECTION_TITLE_FONT_SIZE,
+    fontFamily: 'Poppins-SemiBold',
+    marginTop: SECTION_TITLE_MARGIN_TOP,
+    marginBottom: 4,
+  },
+  chartsContainer: {
+    // Container untuk chart agar bisa diberi styling jika perlu di masa depan
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between', // Menyebar card secara merata
-    rowGap: 16, // Jarak antar baris di grid
-    // marginBottom: 24, // Opsional, jika ingin ada jarak bawah sebelum section title berikutnya
+    justifyContent: 'space-between',
+    rowGap: GRID_ROW_GAP, 
+    // columnGap: GRID_COLUMN_GAP,
   },
   chatbotToggleButton: {
-    position: 'absolute', // Posisi absolut relatif terhadap parent (styles.screen)
-    bottom: 30,           // Jarak dari bawah layar
-    right: 30,            // Jarak dari kanan layar
-    width: 60,
-    height: 60,
-    borderRadius: 30,     // Membuat tombol menjadi bulat
+    position: 'absolute',
+    bottom: FAB_POSITION_OFFSET,
+    right: FAB_POSITION_OFFSET,
+    width: FAB_SIZE,
+    height: FAB_SIZE,
+    borderRadius: FAB_BORDER_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,         // Shadow untuk Android
-    shadowColor: '#000',  // Shadow untuk iOS
+    elevation: 8,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    zIndex: 999,          // Pastikan FAB di atas ScrollView, tapi di bawah window chatbot jika terbuka (window chatbot punya zIndex 1000)
+    zIndex: 999,
   },
-  chatbotToggleButtonText: {
-    fontSize: 28,
-    color: 'white',       // Warna icon/teks pada FAB
-  },
+  // chatbotToggleButtonText: { // Tidak lagi digunakan
+  //   fontSize: 28,
+  //   color: 'white',
+  // },
 });
