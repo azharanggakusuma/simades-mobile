@@ -15,7 +15,7 @@ import {
   // UIManager, // Untuk LayoutAnimation di Android
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Send, X as IconX } from 'lucide-react-native'; // Menambahkan ikon Send dan X
+import { Send, X as IconX, Bot } from 'lucide-react-native'; // Menambahkan ikon Bot
 
 // if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
 //   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -46,17 +46,8 @@ interface FloatingChatbotProps {
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-// const DEBUG_LAYOUT = false;
-// const debugColors = {
-//   outer: DEBUG_LAYOUT ? 'rgba(255, 0, 0, 0.05)' : undefined,
-//   kav: DEBUG_LAYOUT ? 'rgba(0, 255, 0, 0.05)' : undefined,
-//   window: DEBUG_LAYOUT ? 'rgba(0, 0, 255, 0.05)' : undefined,
-// };
-
 const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose }) => {
   const theme = useTheme();
-  // Palet warna global berdasarkan tema (GColors)
-  // Anda bisa menyesuaikan warna-warna ini lebih lanjut jika diperlukan
   const GColors = {
     background: theme.colors.background,
     card: theme.colors.card,
@@ -65,18 +56,19 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
     border: theme.colors.border,
     userBubbleBg: theme.colors.primary,
     userBubbleText: theme.dark ? theme.colors.text : '#FFFFFF',
-    // Untuk bot, kita bisa buat sedikit lebih lembut
-    botBubbleBg: theme.dark ? '#262D37' : '#F1F3F5', // Sedikit berbeda dari GColors awal
+    botBubbleBg: theme.dark ? '#262D37' : '#F1F3F5',
     botBubbleText: theme.colors.text,
-    inputBackground: theme.dark ? '#1A1D23' : '#FFFFFF', // Bisa disamakan dengan card jika lebih suka
+    inputBackground: theme.dark ? '#1A1D23' : '#FFFFFF',
     placeholderText: theme.dark ? '#6B7280' : '#6C757D',
     headerText: theme.colors.text,
     iconDefault: theme.dark ? '#CBD5E0' : '#495057',
     shadowColor: theme.dark ? '#000000' : '#4A5568',
-    optionButtonBg: theme.dark ? '#374151' : '#E9ECEF', // Latar tombol opsi
-    optionButtonText: theme.colors.primary, // Teks tombol opsi tetap primary
-    optionButtonBorder: theme.dark ? '#4B5563' : theme.colors.border, // Border tombol opsi
+    optionButtonBg: theme.dark ? '#374151' : '#E9ECEF',
+    optionButtonText: theme.colors.primary,
+    optionButtonBorder: theme.dark ? '#4B5563' : theme.colors.border,
     sendButtonIconColor: theme.dark ? theme.colors.text : '#FFFFFF',
+    botAvatarBackground: theme.colors.primary, // Latar belakang avatar bot
+    botAvatarIconColor: theme.dark ? theme.colors.text : '#FFFFFF', // Warna ikon di avatar bot
   };
 
   const [message, setMessage] = useState('');
@@ -131,7 +123,6 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
     setTimeout(() => {
       let botResponseText = '';
       let nextOptions: MessageOption[] | undefined = undefined;
-      // ... (logika switch case Anda tetap sama) ...
         switch (option.payload) {
           case 'PRODUCT_INQUIRY':
             botResponseText = 'Baik, Anda ingin bertanya tentang produk. Produk spesifik apa yang Anda minati?';
@@ -177,7 +168,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
         optionsDisabled: false,
       };
       setMessages(prevMessages => [...prevMessages, botResponse]);
-    }, 700); // Respon bot sedikit lebih cepat
+    }, 700);
   };
 
   const handleSendMessage = () => {
@@ -258,23 +249,26 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
                 messageBubbleCustomStyle.borderBottomRightRadius = 20;
               }
 
-
               return (
                 <View key={msg.id}>
                   <View style={[ styles.messageRow, isUser ? styles.userMessageRow : styles.botMessageRow ]}>
-                    {!isUser && isFirstInBlock && <View style={[styles.botAvatarSmall, {backgroundColor: GColors.primary}]} />}
+                    {!isUser && isFirstInBlock && (
+                      <View style={[styles.botAvatarContainer, {backgroundColor: GColors.botAvatarBackground}]}>
+                        <Bot size={18} color={GColors.botAvatarIconColor} />
+                      </View>
+                    )}
                     <View
                       style={[
                         styles.messageBubble,
                         isUser
                           ? { backgroundColor: GColors.userBubbleBg }
                           : { backgroundColor: GColors.botBubbleBg },
-                        messageBubbleCustomStyle, // Terapkan border radius kustom
-                        !isUser && { marginLeft: isFirstInBlock ? 0 : (styles.botAvatarSmall.width + styles.botAvatarSmall.marginRight) },
+                        messageBubbleCustomStyle,
+                        !isUser && { marginLeft: isFirstInBlock ? 0 : (styles.botAvatarContainer.width + styles.botAvatarContainer.marginRight) },
                       ]}
                     >
                       {msg.text && <Text style={[styles.messageText, { color: isUser ? GColors.userBubbleText : GColors.botBubbleText }]}>{msg.text}</Text>}
-                      {isLastInBlock && (!msg.options || (msg.options && msg.optionsDisabled)) && ( // Tampilkan timestamp jika ini pesan terakhir blok & opsi sudah dipilih atau tidak ada
+                      {isLastInBlock && (!msg.options || (msg.options && msg.optionsDisabled)) && (
                         <Text style={[styles.timestamp, { color: isUser ? GColors.userBubbleText : GColors.botBubbleText, opacity: 0.7 }]}>
                           {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </Text>
@@ -307,9 +301,9 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
               value={message}
               onChangeText={setMessage}
               onSubmitEditing={handleSendMessage}
-              blurOnSubmit={false} // Agar keyboard tidak hilang saat submit (jika multiline)
+              blurOnSubmit={false}
               multiline
-              maxHeight={100} // Sedikit kurangi maxHeight
+              maxHeight={100}
             />
             <TouchableOpacity
               style={[styles.sendButton, { backgroundColor: GColors.primary, opacity: !message.trim() ? 0.6 : 1 }]}
@@ -325,19 +319,17 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
   );
 };
 
-const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 12; // Kurangi margin horizontal untuk mobile
+const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 12;
 const CHAT_WINDOW_MARGIN_BOTTOM = 12;
-
 
 interface ChatbotStyle {
   outerContainer: ViewStyle;
   kavWrapper: ViewStyle;
   chatWindow: ViewStyle;
   header: ViewStyle;
-  botAvatarSmall: ViewStyle;
+  botAvatarContainer: ViewStyle; // Nama style diubah
   headerTitle: TextStyle;
   closeButton: ViewStyle;
-  // closeIcon tidak lagi diperlukan karena menggunakan komponen Ikon
   messagesArea: ViewStyle;
   messagesContentContainer: ViewStyle;
   emptyChatContainer: ViewStyle;
@@ -349,9 +341,8 @@ interface ChatbotStyle {
   messageText: TextStyle;
   timestamp: TextStyle;
   inputContainer: ViewStyle;
-  textInput: ViewStyle & TextStyle; // textInput bisa punya style teks dan view
+  textInput: ViewStyle & TextStyle;
   sendButton: ViewStyle;
-  // sendButtonIcon tidak lagi diperlukan karena menggunakan komponen Ikon
   optionsContainer: ViewStyle;
   optionButton: ViewStyle;
   optionButtonText: TextStyle;
@@ -362,19 +353,17 @@ const styles = StyleSheet.create<ChatbotStyle>({
     position: 'absolute',
     right: CHAT_WINDOW_MARGIN_HORIZONTAL,
     bottom: CHAT_WINDOW_MARGIN_BOTTOM,
-    left: Platform.OS === 'web' ? undefined : CHAT_WINDOW_MARGIN_HORIZONTAL, // Hanya set left jika bukan web
-    width: Platform.OS === 'web' ? 380 : undefined, // Lebar untuk web
-    maxWidth: Platform.OS === 'web' ? 380 : screenWidth - (CHAT_WINDOW_MARGIN_HORIZONTAL * 2), // Max width untuk mobile
+    left: Platform.OS === 'web' ? undefined : CHAT_WINDOW_MARGIN_HORIZONTAL,
+    width: Platform.OS === 'web' ? 380 : undefined,
+    maxWidth: Platform.OS === 'web' ? 380 : screenWidth - (CHAT_WINDOW_MARGIN_HORIZONTAL * 2),
     zIndex: 1000,
   },
-  kavWrapper: {
-    // KAV wrapper bisa dibiarkan kosong jika tidak ada style khusus
-  },
+  kavWrapper: {},
   chatWindow: {
     width: '100%',
     minHeight: 380,
-    maxHeight: screenHeight * (Platform.OS === 'web' ? 0.85 : 0.8), // Tinggi window lebih adaptif
-    borderRadius: 20, // Border radius konsisten
+    maxHeight: screenHeight * (Platform.OS === 'web' ? 0.85 : 0.8),
+    borderRadius: 20,
     borderWidth: 1,
     elevation: Platform.OS === 'android' ? 8 : 0,
     shadowOffset: { width: 0, height: 6 },
@@ -387,35 +376,38 @@ const styles = StyleSheet.create<ChatbotStyle>({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12, // Sedikit kurangi padding vertikal header
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  botAvatarSmall: {
-    width: 28, // Avatar sedikit lebih kecil
-    height: 28,
-    borderRadius: 14,
+  botAvatarContainer: { // Nama style diubah dan disesuaikan
+    width: 30, // Ukuran disesuaikan dengan ikon
+    height: 30,
+    borderRadius: 15, // Bulat
     marginRight: 8,
-    alignSelf: 'flex-end', // Agar avatar tetap di bawah jika bubble bot tinggi
-    marginBottom: 3, // Sedikit margin bawah untuk avatar
+    alignSelf: 'flex-end',
+    marginBottom: 3,
+    justifyContent: 'center', // Menengahkan ikon
+    alignItems: 'center',   // Menengahkan ikon
+    // backgroundColor diatur inline
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17, // Ukuran font judul
-    fontFamily: 'Poppins-SemiBold', // Konsisten dengan font lain
+    fontSize: 17,
+    fontFamily: 'Poppins-SemiBold',
     textAlign: 'left',
   },
   closeButton: {
-    padding: 8, // Area tap tombol tutup
+    padding: 8,
     marginLeft: 8,
   },
   messagesArea: {
     flex: 1,
   },
   messagesContentContainer: {
-    paddingHorizontal: 10, // Padding horizontal di area pesan
+    paddingHorizontal: 10,
     paddingVertical: 16,
-    flexGrow: 1, // Penting agar ScrollView bisa scroll hingga akhir
+    flexGrow: 1,
   },
   emptyChatContainer: {
     flex: 1,
@@ -424,40 +416,38 @@ const styles = StyleSheet.create<ChatbotStyle>({
     padding: 20,
   },
   emptyChatMessage: {
-    fontSize: 15, // Font pesan kosong
+    fontSize: 15,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
     opacity: 0.6,
   },
   messageRow: {
     flexDirection: 'row',
-    marginVertical: 3, // Jarak antar baris lebih rapat
+    marginVertical: 3,
   },
   userMessageRow: {
     justifyContent: 'flex-end',
-    marginLeft: '15%', // Memberi ruang agar bubble user tidak terlalu lebar
+    marginLeft: '15%',
   },
   botMessageRow: {
     justifyContent: 'flex-start',
-    alignItems: 'flex-end', // Align avatar dan bubble
-    marginRight: '15%', // Memberi ruang agar bubble bot tidak terlalu lebar
+    alignItems: 'flex-end',
+    marginRight: '15%',
   },
   messageBubble: {
-    paddingVertical: 10, // Padding internal bubble
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    // borderRadius diatur dinamis
-    maxWidth: '100%', // Bubble bisa mengambil lebar penuh dari parent row-nya (yang sudah dibatasi)
-    // marginBottom: 2, // Jarak dari timestamp atau opsi
+    maxWidth: '100%',
   },
   messageText: {
-    fontSize: 15.5, // Ukuran font pesan
+    fontSize: 15.5,
     fontFamily: 'Poppins-Regular',
-    lineHeight: 22, // Line height untuk keterbacaan
+    lineHeight: 22,
   },
   timestamp: {
-    fontSize: 11, // Timestamp lebih kecil
+    fontSize: 11,
     fontFamily: 'Poppins-Regular',
-    marginTop: 5, // Jarak dari teks pesan
+    marginTop: 5,
     textAlign: 'right',
   },
   optionsContainer: {
@@ -465,48 +455,46 @@ const styles = StyleSheet.create<ChatbotStyle>({
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     marginTop: 8,
-    // Jika avatar tidak ada, marginLeft tidak perlu
-    marginLeft: Platform.OS === 'web' ? 0 : (28 + 8), // Sesuaikan dengan avatar jika ada
+    marginLeft: (30 + 8), // Disesuaikan dengan ukuran botAvatarContainer.width + marginRight
     marginBottom: 4,
   },
   optionButton: {
-    paddingVertical: 7, // Padding tombol opsi
+    paddingVertical: 7,
     paddingHorizontal: 14,
-    borderRadius: 18, // Tombol lebih bulat (pill-shaped)
+    borderRadius: 18,
     borderWidth: 1,
     marginRight: 8,
     marginBottom: 8,
   },
   optionButtonText: {
-    fontSize: 13.5, // Font tombol opsi
+    fontSize: 13.5,
     fontFamily: 'Poppins-Medium',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end', // Align items ke bawah untuk multiline input
+    alignItems: 'flex-end',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   textInput: {
     flex: 1,
-    borderWidth: 1, // Border input tetap tipis
-    borderRadius: 22, // Input lebih bulat
+    borderWidth: 1,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 12 : 10, // Padding atas input
-    paddingBottom: Platform.OS === 'ios' ? 12 : 10, // Padding bawah input
+    paddingTop: Platform.OS === 'ios' ? 12 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 12 : 10,
     marginRight: 10,
-    fontSize: 16, // Font input
+    fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    // maxHeight sudah diatur di props TextInput
   },
   sendButton: {
-    width: 44, // Tombol kirim
+    width: 44,
     height: 44,
-    borderRadius: 22, // Bulat sempurna
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Platform.OS === 'ios' ? 0 : 1, // Penyesuaian kecil untuk Android
+    marginBottom: Platform.OS === 'ios' ? 0 : 1,
   },
 });
 
