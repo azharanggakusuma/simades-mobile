@@ -18,7 +18,7 @@ import NavbarWithSidebar from './components/NavbarWithSidebar';
 const RootStack = createNativeStackNavigator();
 
 // Definisi warna tema kustom
-const darkModeYellowAccent = '#FACC15';
+const darkModeYellowAccent = '#F59E0B';
 const appDarkBackgroundColor = '#121212';
 const appLightBackgroundColor = '#F3F4F6';
 
@@ -27,7 +27,7 @@ const MyDefaultTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#3b82f6', // Warna aksen utama untuk light mode
+    primary: '#007AFF', // Warna aksen utama untuk light mode
     background: appLightBackgroundColor,
     card: '#FFFFFF',
     text: '#111827',
