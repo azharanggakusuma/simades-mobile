@@ -11,23 +11,24 @@ import {
   Platform,
   ScrollView,
   Dimensions,
-  // LayoutAnimation, // Jika ingin animasi lebih lanjut, bisa diaktifkan
-  // UIManager, // Untuk LayoutAnimation di Android
+  Animated, // Ditambahkan
+  LayoutAnimation, // Ditambahkan
+  UIManager, // Ditambahkan
+  Easing, // Ditambahkan
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Send, X as IconX, Bot } from 'lucide-react-native'; // Menambahkan ikon Bot
+import { Send, X as IconX, Bot } from 'lucide-react-native';
 
-// if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-//   UIManager.setLayoutAnimationEnabledExperimental(true);
-// }
+// Aktifkan LayoutAnimation untuk Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-// Interface untuk pilihan dalam pesan
 interface MessageOption {
   text: string;
   payload: string;
 }
 
-// Interface untuk struktur data pesan individual
 interface Message {
   id: string;
   text?: string;
@@ -35,9 +36,9 @@ interface Message {
   timestamp: Date;
   options?: MessageOption[];
   optionsDisabled?: boolean;
+  isTyping?: boolean; // Ditambahkan untuk indikator mengetik
 }
 
-// Props yang diterima oleh komponen FloatingChatbot
 interface FloatingChatbotProps {
   isVisible: boolean;
   onClose: () => void;
@@ -48,7 +49,7 @@ const screenHeight = Dimensions.get('window').height;
 
 const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose }) => {
   const theme = useTheme();
-  const GColors = {
+  const GColors = { // GColors dari kode Anda
     background: theme.colors.background,
     card: theme.colors.card,
     text: theme.colors.text,
@@ -67,46 +68,106 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
     optionButtonText: theme.colors.primary,
     optionButtonBorder: theme.dark ? '#4B5563' : theme.colors.border,
     sendButtonIconColor: theme.dark ? theme.colors.text : '#FFFFFF',
-    botAvatarBackground: theme.colors.primary, // Latar belakang avatar bot
-    botAvatarIconColor: theme.dark ? theme.colors.text : '#FFFFFF', // Warna ikon di avatar bot
+    botAvatarBackground: theme.colors.primary,
+    botAvatarIconColor: theme.dark ? theme.colors.text : '#FFFFFF',
+    typingIndicatorColor: theme.dark ? '#9CA3AF' : '#6B7280', // Warna untuk indikator
   };
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Untuk animasi jendela chat
+  const windowAnim = useRef(new Animated.Value(0)).current;
+  const [shouldRender, setShouldRender] = useState(isVisible);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+      Animated.timing(windowAnim, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(windowAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        setShouldRender(false);
+        // setMessages([]); // Opsional: reset pesan saat ditutup permanen
+      });
+    }
+  }, [isVisible, windowAnim]);
+
+
   useEffect(() => {
     if (isVisible && messages.length > 0) {
       const timer = setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 150);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [messages, isVisible]);
 
+  // Fungsi pembantu untuk indikator mengetik
+  const addTypingIndicator = () => {
+    const typingId = `${Date.now().toString()}_bot_typing`;
+    const typingMessage: Message = {
+      id: typingId,
+      sender: 'bot',
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setMessages(prevMessages => [...prevMessages.filter(msg => !msg.isTyping), typingMessage]); // Hapus indikator lama jika ada
+    return typingId;
+  };
+
+  const removeTypingIndicatorAndAddMessage = (typingId: string, newMessage: Message) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setMessages(prevMessages => [
+      ...prevMessages.filter(msg => msg.id !== typingId),
+      newMessage,
+    ]);
+  };
+
+
+  // Sapaan bot setelah pesan pertama pengguna
   useEffect(() => {
-    if (messages.length === 1 && messages[0].sender === 'user') {
-      const initialBotGreeting: Message = {
-        id: `${Date.now().toString()}_bot_greet`,
-        text: 'Halo! 👋 Selamat datang. Apa yang bisa kami bantu hari ini?',
-        sender: 'bot',
-        timestamp: new Date(Date.now() + 50),
-        options: [
-          { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' },
-          { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' },
-          { text: 'Info Lainnya', payload: 'OTHER_INFO' },
-        ],
-        optionsDisabled: false,
-      };
-      setMessages(prevMessages => [...prevMessages, initialBotGreeting]);
+    // Cek jika pesan terakhir adalah dari user dan itu satu-satunya pesan user setelah potensial sapaan awal
+    if (isVisible && messages.length > 0 && messages[messages.length - 1].sender === 'user') {
+        const userMessagesCount = messages.filter(m => m.sender === 'user').length;
+        const botGreetingExists = messages.some(m => m.id.includes('_bot_greet'));
+
+        if (userMessagesCount === 1 && !botGreetingExists) { // Hanya jika ini adalah pesan pertama dari user dan belum ada sapaan
+            const typingId = addTypingIndicator();
+            setTimeout(() => {
+                const initialBotGreeting: Message = {
+                    id: `${Date.now().toString()}_bot_greet`,
+                    text: 'Halo! 👋 Selamat datang. Apa yang bisa kami bantu hari ini?',
+                    sender: 'bot',
+                    timestamp: new Date(Date.now() + 50),
+                    options: [
+                    { text: 'Tanya Produk', payload: 'PRODUCT_INQUIRY' },
+                    { text: 'Layanan Pelanggan', payload: 'CUSTOMER_SERVICE' },
+                    { text: 'Info Lainnya', payload: 'OTHER_INFO' },
+                    ],
+                    optionsDisabled: false,
+                };
+                removeTypingIndicatorAndAddMessage(typingId, initialBotGreeting);
+            }, 700 + Math.random() * 500);
+        }
     }
-  }, [messages]);
+  }, [messages, isVisible]);
 
-  if (!isVisible) {
-    return null;
-  }
 
+  // Logika handleOptionSelect dan handleSendMessage dari kode Anda, dengan penambahan animasi & indikator
   const handleOptionSelect = (option: MessageOption, messageId: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animasi untuk pesan pengguna
     const userSelectionMessage: Message = {
       id: Date.now().toString(),
       text: option.text,
@@ -120,9 +181,12 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
       return [...updatedMessages, userSelectionMessage];
     });
 
+    const typingId = addTypingIndicator(); // Tambahkan indikator
+
     setTimeout(() => {
       let botResponseText = '';
       let nextOptions: MessageOption[] | undefined = undefined;
+      // Switch case Anda (tetap sama)
         switch (option.payload) {
           case 'PRODUCT_INQUIRY':
             botResponseText = 'Baik, Anda ingin bertanya tentang produk. Produk spesifik apa yang Anda minati?';
@@ -167,42 +231,65 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
         options: nextOptions,
         optionsDisabled: false,
       };
-      setMessages(prevMessages => [...prevMessages, botResponse]);
-    }, 700);
+      removeTypingIndicatorAndAddMessage(typingId, botResponse); // Hapus indikator, tampilkan pesan
+    }, 700 + Math.random() * 800); // Delay dengan variasi
   };
 
   const handleSendMessage = () => {
     if (message.trim()) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Animasi untuk pesan pengguna
       const newUserMessage: Message = {
         id: Date.now().toString(),
         text: message.trim(),
         sender: 'user',
         timestamp: new Date(),
       };
-      const isFirstUserMessageOverall = messages.length === 0;
-      setMessages(prevMessages => [...prevMessages, newUserMessage]);
 
+      const isFirstUserMessageOverall = messages.filter(m => m.sender === 'user').length === 0; // Cek apakah ini pesan user pertama
+
+      setMessages(prevMessages => [...prevMessages, newUserMessage]);
+      setMessage(''); // Kosongkan input segera
+
+      // Jika bukan pesan user pertama (sapaan sudah ditangani useEffect terpisah)
       if (!isFirstUserMessageOverall) {
-        setTimeout(() => {
-          const botResponse: Message = {
-            id: `${Date.now().toString()}_bot_text_response`,
-            text: `Anda mengetik: "${message.trim()}". Saya sedang memproses permintaan Anda.`,
-            sender: 'bot',
-            timestamp: new Date(),
-            options: [{ text: 'Menu Utama', payload: 'MAIN_MENU' }],
-            optionsDisabled: false,
-          };
-          setMessages(prevMessages => [...prevMessages, botResponse]);
-        }, 1200);
+          const typingId = addTypingIndicator(); // Tambahkan indikator
+          setTimeout(() => {
+            const botResponse: Message = {
+              id: `${Date.now().toString()}_bot_text_response`,
+              text: `Anda mengetik: "${newUserMessage.text}". Saya sedang memproses permintaan Anda.`,
+              sender: 'bot',
+              timestamp: new Date(),
+              options: [{ text: 'Menu Utama', payload: 'MAIN_MENU' }],
+              optionsDisabled: false,
+            };
+            removeTypingIndicatorAndAddMessage(typingId, botResponse); // Hapus indikator, tampilkan pesan
+          }, 1200 + Math.random() * 800); // Delay dengan variasi
       }
-      setMessage('');
+      // Logika sapaan setelah pesan user pertama akan dihandle oleh useEffect di atas
     }
   };
 
   const KAV_OFFSET = Platform.OS === 'ios' ? 20 : 0;
 
+  // Logika return null di awal dihilangkan, diganti dengan Animated.View dan shouldRender
+  if (!shouldRender && !isVisible) {
+    return null;
+  }
+
+  const windowAnimatedStyle = {
+    opacity: windowAnim,
+    transform: [
+      {
+        translateY: windowAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [100, 0], // Muncul dari bawah (100px) ke posisi akhir (0)
+        }),
+      },
+    ],
+  };
+
   return (
-    <View style={[styles.outerContainer]}>
+    <Animated.View style={[styles.outerContainer, windowAnimatedStyle, !shouldRender && { display: 'none' }]}>
       <KeyboardAvoidingView
         style={[styles.kavWrapper]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -249,6 +336,30 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
                 messageBubbleCustomStyle.borderBottomRightRadius = 20;
               }
 
+              // Render Indikator Mengetik
+              if (msg.isTyping) {
+                return (
+                  <View key={msg.id} style={[styles.messageRow, styles.botMessageRow]}>
+                    {!isUser && isFirstInBlock && ( // Avatar tetap ditampilkan untuk konsistensi
+                        <View style={[styles.botAvatarContainer, {backgroundColor: GColors.botAvatarBackground}]}>
+                            <Bot size={18} color={GColors.botAvatarIconColor} />
+                        </View>
+                    )}
+                    <View style={[
+                        styles.messageBubble,
+                        { backgroundColor: GColors.botBubbleBg, paddingVertical: 12 },
+                        messageBubbleCustomStyle, // Terapkan juga custom radius jika perlu
+                        !isUser && { marginLeft: isFirstInBlock ? 0 : (styles.botAvatarContainer.width + styles.botAvatarContainer.marginRight) }
+                        ]}>
+                      <Text style={{color: GColors.typingIndicatorColor, fontFamily: 'Poppins-Regular', fontSize: 14}}>
+                        Bot sedang mengetik...
+                      </Text>
+                    </View>
+                  </View>
+                );
+              }
+
+              // Render Pesan Biasa
               return (
                 <View key={msg.id}>
                   <View style={[ styles.messageRow, isUser ? styles.userMessageRow : styles.botMessageRow ]}>
@@ -315,10 +426,11 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({ isVisible, onClose })
           </View>
         </View>
       </KeyboardAvoidingView>
-    </View>
+    </Animated.View>
   );
 };
 
+// Styles (styles, CHAT_WINDOW_MARGIN_HORIZONTAL, dll tetap sama seperti yang Anda berikan)
 const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 12;
 const CHAT_WINDOW_MARGIN_BOTTOM = 12;
 
@@ -327,7 +439,7 @@ interface ChatbotStyle {
   kavWrapper: ViewStyle;
   chatWindow: ViewStyle;
   header: ViewStyle;
-  botAvatarContainer: ViewStyle; // Nama style diubah
+  botAvatarContainer: ViewStyle;
   headerTitle: TextStyle;
   closeButton: ViewStyle;
   messagesArea: ViewStyle;
@@ -380,16 +492,15 @@ const styles = StyleSheet.create<ChatbotStyle>({
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  botAvatarContainer: { // Nama style diubah dan disesuaikan
-    width: 30, // Ukuran disesuaikan dengan ikon
+  botAvatarContainer: {
+    width: 30,
     height: 30,
-    borderRadius: 15, // Bulat
+    borderRadius: 15,
     marginRight: 8,
     alignSelf: 'flex-end',
     marginBottom: 3,
-    justifyContent: 'center', // Menengahkan ikon
-    alignItems: 'center',   // Menengahkan ikon
-    // backgroundColor diatur inline
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     flex: 1,
@@ -455,7 +566,7 @@ const styles = StyleSheet.create<ChatbotStyle>({
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     marginTop: 8,
-    marginLeft: (30 + 8), // Disesuaikan dengan ukuran botAvatarContainer.width + marginRight
+    marginLeft: (30 + 8), 
     marginBottom: 4,
   },
   optionButton: {
