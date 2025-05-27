@@ -8,7 +8,7 @@ import {
   TextStyle,
   Platform,
   TouchableOpacity,
-  // ActivityIndicator, // Dihapus, diganti skeleton
+  // ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
@@ -45,7 +45,7 @@ const getTimeBasedGreeting = (): string => { /* ... */
   return 'Malam';
 };
 
-// Komponen untuk menampilkan state kosong atau error pada chart (tetap sama)
+// Komponen untuk menampilkan state kosong atau error pada chart
 const DataPlaceholder: React.FC<{ message: string; icon?: React.ReactNode; theme: ReturnType<typeof useTheme> }> = ({ message, icon, theme }) => (
   <View style={[styles.dataPlaceholderContainer, {backgroundColor: theme.colors.card, borderColor: theme.colors.border}]}>
     {icon || <BarChart3 size={40} color={theme.dark ? '#555' : '#ccc'} />}
@@ -84,7 +84,7 @@ export default function HomeScreen() {
   const loadDashboardData = useCallback(async () => {
     setIsLoadingStats(true);
     setIsLoadingFormProgress(true);
-    await new Promise(resolve => setTimeout(resolve, 1800)); // Durasi loading sedikit lebih lama untuk demo skeleton
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     setStatsData([{ value: 50 }, { value: 80 }]);
     setFormProgressData({ completed: 75, pending: 25 });
