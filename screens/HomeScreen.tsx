@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'; // Menambahkan useCallback, useEffect
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Text,
   View,
@@ -8,11 +8,11 @@ import {
   TextStyle,
   Platform,
   TouchableOpacity,
-  ActivityIndicator, // Untuk indikator loading
-  RefreshControl,    // Untuk pull-to-refresh
+  // ActivityIndicator, // Dihapus, diganti skeleton
+  RefreshControl,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { MessageCircle as ChatIcon, AlertCircle, BarChart3 } from 'lucide-react-native'; // Menambahkan ikon lain
+import { MessageCircle as ChatIcon, AlertCircle, BarChart3 } from 'lucide-react-native';
 
 // Impor komponen-komponen Anda
 import StatsChart from '../components/VisitorsChart';
@@ -20,24 +20,24 @@ import StatsCard from '../components/StatsCard';
 import FormProgressChart from '../components/FormProgressChart';
 import FloatingChatbot from '../components/FloatingChatbot';
 
-// --- Konstanta untuk Styling ---
+// --- Konstanta untuk Styling (tetap sama) ---
 const CONTAINER_PADDING_HORIZONTAL = 20;
 const CONTAINER_PADDING_TOP_IOS = 10;
 const CONTAINER_PADDING_TOP_ANDROID = 20;
-const CONTAINER_PADDING_BOTTOM = 120; // Sedikit ditambah untuk lebih banyak ruang di bawah
+const CONTAINER_PADDING_BOTTOM = 120;
 const HEADER_MARGIN_BOTTOM = 28;
-const HEADING_FONT_SIZE = 26; // Sedikit diperbesar
-const SUBHEADING_FONT_SIZE = 15; // Sedikit diperbesar
-const SECTION_TITLE_FONT_SIZE = 19; // Sedikit diperbesar
+const HEADING_FONT_SIZE = 26;
+const SUBHEADING_FONT_SIZE = 15;
+const SECTION_TITLE_FONT_SIZE = 19;
 const SECTION_TITLE_MARGIN_TOP = 32;
-const SECTION_TITLE_MARGIN_BOTTOM = 20; // Konsistensi margin bawah
+const SECTION_TITLE_MARGIN_BOTTOM = 20;
 const GRID_ROW_GAP = 16;
 const FAB_SIZE = 60;
 const FAB_BORDER_RADIUS = FAB_SIZE / 2;
 const FAB_POSITION_OFFSET = 25;
 const FAB_ICON_SIZE = 28;
 
-const getTimeBasedGreeting = (): string => { /* ... (fungsi tetap sama) ... */
+const getTimeBasedGreeting = (): string => { /* ... */
   const currentHour = new Date().getHours();
   if (currentHour >= 4 && currentHour < 10) return 'Pagi';
   if (currentHour >= 10 && currentHour < 15) return 'Siang';
@@ -45,13 +45,22 @@ const getTimeBasedGreeting = (): string => { /* ... (fungsi tetap sama) ... */
   return 'Malam';
 };
 
-// Komponen untuk menampilkan state kosong atau error pada chart
+// Komponen untuk menampilkan state kosong atau error pada chart (tetap sama)
 const DataPlaceholder: React.FC<{ message: string; icon?: React.ReactNode; theme: ReturnType<typeof useTheme> }> = ({ message, icon, theme }) => (
   <View style={[styles.dataPlaceholderContainer, {backgroundColor: theme.colors.card, borderColor: theme.colors.border}]}>
     {icon || <BarChart3 size={40} color={theme.dark ? '#555' : '#ccc'} />}
     <Text style={[styles.dataPlaceholderText, {color: theme.dark ? '#888' : '#777'}]}>{message}</Text>
   </View>
 );
+
+// --- Komponen Skeleton untuk Chart ---
+const ChartSkeleton: React.FC<{ theme: ReturnType<typeof useTheme>; height?: number }> = ({ theme, height = 200 }) => {
+  // Warna skeleton disesuaikan dengan tema
+  const skeletonBackgroundColor = theme.dark ? '#2D3748' : '#E2E8F0'; // Abu-abu gelap untuk dark, abu-abu terang untuk light
+  return (
+    <View style={[styles.skeletonItem, { height, backgroundColor: skeletonBackgroundColor }]} />
+  );
+};
 
 
 export default function HomeScreen() {
@@ -66,23 +75,19 @@ export default function HomeScreen() {
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // State contoh untuk loading dan data (ganti dengan logika data fetching Anda)
   const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [statsData, setStatsData] = useState<any[] | null>(null); // Ganti any dengan tipe data Anda
+  const [statsData, setStatsData] = useState<any[] | null>(null);
 
   const [isLoadingFormProgress, setIsLoadingFormProgress] = useState(true);
   const [formProgressData, setFormProgressData] = useState<any | null>(null);
 
-  // Fungsi placeholder untuk memuat data
   const loadDashboardData = useCallback(async () => {
     setIsLoadingStats(true);
     setIsLoadingFormProgress(true);
-    // Simulasi data fetching
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1800)); // Durasi loading sedikit lebih lama untuk demo skeleton
 
-    // Contoh: Set data atau set menjadi null jika tidak ada data
-    setStatsData([{ value: 50 }, { value: 80 }]); // Atau [] jika ingin empty state terpicu
-    setFormProgressData({ completed: 75, pending: 25 }); // Atau null
+    setStatsData([{ value: 50 }, { value: 80 }]);
+    setFormProgressData({ completed: 75, pending: 25 });
 
     setIsLoadingStats(false);
     setIsLoadingFormProgress(false);
@@ -107,12 +112,12 @@ export default function HomeScreen() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        refreshControl={ // Implementasi Pull-to-Refresh
+        refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary} // Warna indikator refresh untuk iOS
-            colors={[colors.primary]} // Warna indikator refresh untuk Android
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
@@ -124,7 +129,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.grid}>
-          {/* Anda bisa juga menerapkan loading state pada StatsCard jika diperlukan */}
           <StatsCard theme={theme} type="formulir" />
           <StatsCard theme={theme} type="desa" />
           <StatsCard theme={theme} type="kecamatan" />
@@ -135,19 +139,19 @@ export default function HomeScreen() {
 
         <View style={styles.chartsContainer}>
           {isLoadingFormProgress ? (
-            <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
+            <ChartSkeleton theme={theme} height={180} /> // Menggunakan ChartSkeleton
           ) : formProgressData ? (
-            <FormProgressChart theme={theme} data={formProgressData} /> // Asumsi FormProgressChart menerima prop data
+            <FormProgressChart theme={theme} data={formProgressData} />
           ) : (
             <DataPlaceholder message="Data Progres Formulir Belum Tersedia" theme={theme}/>
           )}
 
-          <View style={{ height: 24 }} /> {/* Spacer antar chart */}
+          <View style={{ height: 24 }} />
 
           {isLoadingStats ? (
-            <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
+            <ChartSkeleton theme={theme} height={220} /> // Menggunakan ChartSkeleton
           ) : statsData && statsData.length > 0 ? (
-            <StatsChart theme={theme} data={statsData} /> // Asumsi StatsChart menerima prop data
+            <StatsChart theme={theme} data={statsData} />
           ) : (
             <DataPlaceholder message="Data Statistik Pengunjung Belum Tersedia" theme={theme} />
           )}
@@ -164,8 +168,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      {/* FloatingChatbot akan dirender hanya jika isChatbotVisible true, 
-          dan animasi internalnya akan menangani transisi muncul/hilangnya */}
       {isChatbotVisible && (
         <FloatingChatbot
           isVisible={isChatbotVisible}
@@ -186,9 +188,10 @@ interface Style {
   chartsContainer: ViewStyle;
   grid: ViewStyle;
   chatbotToggleButton: ViewStyle;
-  loadingIndicator: ViewStyle; // Ditambahkan
-  dataPlaceholderContainer: ViewStyle; // Ditambahkan
-  dataPlaceholderText: TextStyle; // Ditambahkan
+  // loadingIndicator: ViewStyle; // Dihapus
+  dataPlaceholderContainer: ViewStyle;
+  dataPlaceholderText: TextStyle;
+  skeletonItem: ViewStyle; // Ditambahkan untuk skeleton
 }
 
 const styles = StyleSheet.create<Style>({
@@ -211,7 +214,7 @@ const styles = StyleSheet.create<Style>({
   subheading: {
     fontSize: SUBHEADING_FONT_SIZE,
     fontFamily: 'Poppins-Regular',
-    lineHeight: SUBHEADING_FONT_SIZE * 1.5, // Line height untuk subheading
+    lineHeight: SUBHEADING_FONT_SIZE * 1.5,
   },
   sectionTitle: {
     fontSize: SECTION_TITLE_FONT_SIZE,
@@ -244,27 +247,27 @@ const styles = StyleSheet.create<Style>({
     shadowRadius: 4,
     zIndex: 999,
   },
-  loadingIndicator: {
-    marginTop: 20,
-    marginBottom: 20,
-    minHeight: 150, // Beri tinggi agar layout tidak terlalu melompat
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  // loadingIndicator: {}, // Dihapus
   dataPlaceholderContainer: {
-    minHeight: 150, // Tinggi placeholder sama dengan loading
-    borderRadius: 12, // Mirip kartu
+    minHeight: 150,
+    borderRadius: 12,
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderStyle: 'dashed', // Border putus-putus
-    marginTop: 10, // Jarak dari judul seksi atau chart sebelumnya
+    borderStyle: 'dashed',
+    marginTop: 10,
   },
   dataPlaceholderText: {
     marginTop: 12,
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
+  },
+  skeletonItem: { // Style untuk item skeleton
+    borderRadius: 12, // Samakan dengan gaya kartu atau chart Anda
+    width: '100%', // Mengambil lebar penuh container
+    marginBottom: 20, // Jarak jika ada beberapa skeleton atau elemen lain
+    // backgroundColor dan height diatur inline
   },
 });
