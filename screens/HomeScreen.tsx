@@ -139,7 +139,7 @@ export default function HomeScreen() {
 
         <View style={styles.chartsContainer}>
           {isLoadingFormProgress ? (
-            <ChartSkeleton theme={theme} height={180} /> // Menggunakan ChartSkeleton
+            <ChartSkeleton theme={theme} height={320} /> // Menggunakan ChartSkeleton
           ) : formProgressData ? (
             <FormProgressChart theme={theme} data={formProgressData} />
           ) : (
@@ -149,7 +149,7 @@ export default function HomeScreen() {
           <View style={{ height: 24 }} />
 
           {isLoadingStats ? (
-            <ChartSkeleton theme={theme} height={220} /> // Menggunakan ChartSkeleton
+            <ChartSkeleton theme={theme} height={280} /> // Menggunakan ChartSkeleton
           ) : statsData && statsData.length > 0 ? (
             <StatsChart theme={theme} data={statsData} />
           ) : (
