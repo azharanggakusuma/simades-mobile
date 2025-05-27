@@ -15,48 +15,34 @@ import {
   LayoutAnimation,
   UIManager,
   Easing,
+  Keyboard,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Send, X as IconX, Bot, MessageCircle } from 'lucide-react-native';
 
-// Aktifkan LayoutAnimation untuk Android jika belum diaktifkan secara global
+// Untuk LayoutAnimation di Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  // Peringatan: setLayoutAnimationEnabledExperimental adalah no-op di New Architecture.
+  // LayoutAnimation mungkin sudah aktif secara default atau memerlukan konfigurasi berbeda.
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Interface untuk pilihan dalam pesan
-interface MessageOption {
-  text: string;
-  payload: string;
-}
-
-// Interface untuk struktur data pesan individual
-interface Message {
-  id: string;
-  text?: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-  options?: MessageOption[];
-  optionsDisabled?: boolean;
-  isTyping?: boolean; // Untuk indikator bot mengetik
-}
-
-// Props yang diterima oleh komponen FloatingChatbot
-interface FloatingChatbotProps {
-  isVisible: boolean;
-  onClose: () => void;
-}
+// Interface (tetap sama)
+interface MessageOption { text: string; payload: string; }
+interface Message { id: string; text?: string; sender: 'user' | 'bot'; timestamp: Date; options?: MessageOption[]; optionsDisabled?: boolean; isTyping?: boolean; }
+interface FloatingChatbotProps { isVisible: boolean; onClose: () => void; }
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
+
+const CHAT_WINDOW_MARGIN_BOTTOM_INITIAL = 10;
 
 const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
   isVisible,
   onClose,
 }) => {
-  const currentTheme = useTheme(); // Menggunakan tema dari useTheme hook
-
-  const GColors = { // Palet warna berdasarkan tema
+  const currentTheme = useTheme();
+  const GColors = {
     background: currentTheme.colors.background,
     card: currentTheme.colors.card,
     text: currentTheme.colors.text,
@@ -83,31 +69,95 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
-  const windowAnim = useRef(new Animated.Value(0)).current;
+
+  // Animasi untuk show/hide jendela utama
+  const windowOpacityAnim = useRef(new Animated.Value(0)).current;
+  const windowInitialTranslateYAnim = useRef(new Animated.Value(70)).current; // Slide awal dari bawah
+
+  // Animasi untuk mengangkat jendela saat keyboard muncul
+  const keyboardLiftAnim = useRef(new Animated.Value(0)).current; // 0 = tidak terangkat
+
   const [shouldRender, setShouldRender] = useState(isVisible);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
       setShouldRender(true);
-      Animated.timing(windowAnim, {
-        toValue: 1,
-        duration: 350,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
+      Animated.parallel([
+        Animated.timing(windowOpacityAnim, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(windowInitialTranslateYAnim, {
+          toValue: 0,
+          duration: 350,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
     } else {
-      Animated.timing(windowAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }).start(() => {
+      Animated.parallel([
+        Animated.timing(windowOpacityAnim, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(windowInitialTranslateYAnim, {
+          toValue: 70,
+          duration: 300,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
         setShouldRender(false);
-        // setMessages([]); // Opsional: reset pesan saat ditutup
+        // Reset keyboardLiftAnim jika chatbot ditutup saat keyboard masih mungkin terbuka
+        if (!isVisible) {
+            Animated.timing(keyboardLiftAnim, { // Gunakan timing untuk konsistensi JS driver
+                toValue: 0, // Kembali ke tidak terangkat
+                duration: 150,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true, // Transform bisa native
+            }).start();
+        }
       });
     }
-  }, [isVisible, windowAnim]);
+  }, [isVisible, windowOpacityAnim, windowInitialTranslateYAnim, keyboardLiftAnim]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => {
+        if (isVisible) {
+          const liftValue = -e.endCoordinates.height + (Platform.OS === 'ios' ? 0 : 40);
+          Animated.timing(keyboardLiftAnim, {
+            toValue: liftValue,
+            duration: 250,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true, // Transform bisa native
+          }).start();
+        }
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        Animated.timing(keyboardLiftAnim, {
+          toValue: 0, // Kembali ke tidak terangkat
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true, // Transform bisa native
+        }).start();
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, [keyboardLiftAnim, isVisible]);
 
   useEffect(() => {
     if (isVisible && messages.length > 0) {
@@ -120,12 +170,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
 
   const addTypingIndicator = () => {
     const typingId = `${Date.now().toString()}_bot_typing`;
-    const typingMessage: Message = {
-      id: typingId,
-      sender: 'bot',
-      timestamp: new Date(),
-      isTyping: true,
-    };
+    const typingMessage: Message = { id: typingId, sender: 'bot', timestamp: new Date(), isTyping: true, };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setMessages(prevMessages => [...prevMessages.filter(msg => !msg.isTyping), typingMessage]);
     return typingId;
@@ -133,20 +178,15 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
 
   const removeTypingIndicatorAndAddMessage = (typingId: string, newMessage: Message) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setMessages(prevMessages => [
-      ...prevMessages.filter(msg => msg.id !== typingId),
-      newMessage,
-    ]);
+    setMessages(prevMessages => [ ...prevMessages.filter(msg => msg.id !== typingId), newMessage, ]);
   };
 
   useEffect(() => {
-    // Sapaan bot setelah pesan pertama pengguna
     if (isVisible && messages.length > 0 && messages[messages.length - 1].sender === 'user') {
         const userMessagesCount = messages.filter(m => m.sender === 'user').length;
         const botGreetingExists = messages.some(m => m.id.includes('_bot_greet'));
-
         if (userMessagesCount === 1 && !botGreetingExists) {
-            if (messages.some(msg => msg.isTyping)) return; // Jangan kirim sapaan jika bot sudah 'mengetik'
+            if (messages.some(msg => msg.isTyping)) return;
             const typingId = addTypingIndicator();
             setTimeout(() => {
                 const initialBotGreeting: Message = {
@@ -166,7 +206,6 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
         }
     }
   }, [messages, isVisible]);
-
 
   const handleOptionSelect = (option: MessageOption, messageId: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -204,7 +243,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       setMessage('');
 
-      if (!isFirstUserMessageOverall) { // Jika ini bukan pesan user yang PERTAMA KALI (sapaan akan dihandle oleh useEffect)
+      if (!isFirstUserMessageOverall) {
           const typingId = addTypingIndicator();
           setTimeout(() => {
             const botResponse: Message = { id: `${Date.now().toString()}_bot_text_response`, text: `Mengenai "${newUserMessage.text}", saya coba carikan informasinya.`, sender: 'bot', timestamp: new Date(), options: [{ text: 'Menu Utama', payload: 'MAIN_MENU' }], optionsDisabled: false };
@@ -218,27 +257,28 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
     return null;
   }
 
-  const windowAnimatedStyle = {
-    opacity: windowAnim,
-    transform: [
-      {
-        translateY: windowAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [70, 0],
-        }),
-      },
-    ],
-  };
-
-  const KAV_OFFSET = Platform.OS === 'ios' ? 20 : 0;
+  // KAV_OFFSET internal untuk input DI DALAM chat window
+  const INTERNAL_KAV_OFFSET = Platform.OS === 'ios' ? 60 : 0;
 
   return (
-    <Animated.View style={[styles.outerContainer, windowAnimatedStyle, !shouldRender && { display: 'none' }]}>
+    <Animated.View
+      style={[
+        styles.outerContainer, // Ini sudah memiliki bottom: CHAT_WINDOW_MARGIN_BOTTOM_INITIAL
+        {
+          opacity: windowOpacityAnim,
+          transform: [
+            // Menggabungkan kedua translateY: satu untuk slide awal, satu untuk lift keyboard
+            { translateY: Animated.add(windowInitialTranslateYAnim, keyboardLiftAnim) },
+          ],
+        },
+        !shouldRender && { display: 'none' }
+      ]}
+    >
       <KeyboardAvoidingView
         style={styles.kavWrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={KAV_OFFSET}
-        enabled
+        keyboardVerticalOffset={INTERNAL_KAV_OFFSET}
+        enabled={isVisible}
       >
         <View style={[styles.chatWindow, { backgroundColor: GColors.card, shadowColor: GColors.shadowColor, borderColor: GColors.border }]}>
           <View style={[styles.header, { borderBottomColor: GColors.border }]}>
@@ -276,7 +316,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
                if (msg.isTyping) {
                 return (
                   <View key={msg.id} style={[styles.messageRow, styles.botMessageRow]}>
-                    {!isUser && isFirstInBlock && ( // Avatar untuk typing indicator
+                    {!isUser && isFirstInBlock && (
                         <View style={[styles.botAvatarContainer, {backgroundColor: GColors.botAvatarBackground}]}>
                             <Bot size={18} color={GColors.botAvatarIconColor} />
                         </View>
@@ -289,7 +329,6 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
                         !isUser && { marginLeft: isFirstInBlock ? 0 : (styles.botAvatarContainer.width + styles.botAvatarContainer.marginRight) }
                         ]}>
                       <View style={styles.typingDotsContainer}>
-                        {/* Untuk animasi titik-titik yang lebih baik, Anda perlu Animated API per titik */}
                         <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor}]} />
                         <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor, marginHorizontal: 3}]} />
                         <View style={[styles.typingDot, {backgroundColor: GColors.typingIndicatorColor}]} />
@@ -354,7 +393,7 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
               value={message}
               onChangeText={setMessage}
               onSubmitEditing={handleSendMessage}
-              blurOnSubmit={false} // Biarkan keyboard terbuka saat submit multiline
+              blurOnSubmit={false}
               multiline
               maxHeight={100}
               onFocus={() => setIsInputFocused(true)}
@@ -374,63 +413,33 @@ const FloatingChatbot: React.FC<FloatingChatbotProps> = ({
   );
 };
 
-const CHAT_WINDOW_MARGIN_HORIZONTAL = Platform.OS === 'web' ? 0 : 10;
-const CHAT_WINDOW_MARGIN_BOTTOM = 10;
+const CHAT_WINDOW_MARGIN_HORIZONTAL_STYLES = Platform.OS === 'web' ? 0 : 10;
 
-interface ChatbotStyle {
-  outerContainer: ViewStyle;
-  kavWrapper: ViewStyle;
-  chatWindow: ViewStyle;
-  header: ViewStyle;
-  botAvatarContainer: ViewStyle;
-  headerTitle: TextStyle;
-  closeButton: ViewStyle;
-  messagesArea: ViewStyle;
-  messagesContentContainer: ViewStyle;
-  emptyChatContainer: ViewStyle;
-  emptyChatMessage: TextStyle;
-  emptyChatSubMessage: TextStyle;
-  messageRow: ViewStyle;
-  userMessageRow: ViewStyle;
-  botMessageRow: ViewStyle;
-  messageBubble: ViewStyle;
-  typingBubble: ViewStyle;
-  typingDotsContainer: ViewStyle;
-  typingDot: ViewStyle;
-  messageText: TextStyle;
-  timestamp: TextStyle;
-  inputContainer: ViewStyle;
-  textInput: ViewStyle & TextStyle;
-  sendButton: ViewStyle;
-  optionsContainer: ViewStyle;
-  optionButton: ViewStyle;
-  optionButtonText: TextStyle;
-}
-
+interface ChatbotStyle { outerContainer: ViewStyle; kavWrapper: ViewStyle; chatWindow: ViewStyle; header: ViewStyle; botAvatarContainer: ViewStyle; headerTitle: TextStyle; closeButton: ViewStyle; messagesArea: ViewStyle; messagesContentContainer: ViewStyle; emptyChatContainer: ViewStyle; emptyChatMessage: TextStyle; emptyChatSubMessage: TextStyle; messageRow: ViewStyle; userMessageRow: ViewStyle; botMessageRow: ViewStyle; messageBubble: ViewStyle; typingBubble: ViewStyle; typingDotsContainer: ViewStyle; typingDot: ViewStyle; messageText: TextStyle; timestamp: TextStyle; inputContainer: ViewStyle; textInput: ViewStyle & TextStyle; sendButton: ViewStyle; optionsContainer: ViewStyle; optionButton: ViewStyle; optionButtonText: TextStyle; }
 const styles = StyleSheet.create<ChatbotStyle>({
   outerContainer: {
     position: 'absolute',
-    right: CHAT_WINDOW_MARGIN_HORIZONTAL,
-    bottom: CHAT_WINDOW_MARGIN_BOTTOM,
-    left: Platform.OS === 'web' ? undefined : CHAT_WINDOW_MARGIN_HORIZONTAL,
+    bottom: CHAT_WINDOW_MARGIN_BOTTOM_INITIAL, // Posisi bottom awal yang statis
+    right: CHAT_WINDOW_MARGIN_HORIZONTAL_STYLES,
+    left: Platform.OS === 'web' ? undefined : CHAT_WINDOW_MARGIN_HORIZONTAL_STYLES,
     width: Platform.OS === 'web' ? 370 : undefined,
-    maxWidth: Platform.OS === 'web' ? 370 : screenWidth - (CHAT_WINDOW_MARGIN_HORIZONTAL * 2),
+    maxWidth: Platform.OS === 'web' ? 370 : screenWidth - (CHAT_WINDOW_MARGIN_HORIZONTAL_STYLES * 2),
     zIndex: 1000,
   },
   kavWrapper: {
-    // Style untuk KeyboardAvoidingView wrapper jika diperlukan
+    // flex: 1, // Pertimbangkan jika ada masalah sizing KAV
   },
   chatWindow: {
     width: '100%',
     minHeight: 360,
     maxHeight: screenHeight * (Platform.OS === 'web' ? 0.8 : 0.75),
     borderRadius: 22,
-    borderWidth: Platform.OS === 'ios' ? StyleSheet.hairlineWidth : 1, // Border tipis untuk iOS
+    borderWidth: Platform.OS === 'ios' ? StyleSheet.hairlineWidth : 1,
     elevation: 10,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    overflow: 'hidden', // Penting untuk borderRadius pada children
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -500,33 +509,27 @@ const styles = StyleSheet.create<ChatbotStyle>({
   },
   botMessageRow: {
     justifyContent: 'flex-start',
-    alignItems: 'flex-end', // Untuk avatar bot di bawah bubble
+    alignItems: 'flex-end',
     marginRight: '18%',
   },
   messageBubble: {
     paddingVertical: 11,
     paddingHorizontal: 16,
     maxWidth: '100%',
-    // borderRadius diatur dinamis oleh messageBubbleCustomStyle
   },
-  typingBubble: { // Style khusus untuk bubble indikator mengetik
+  typingBubble: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14, // Sedikit lebih tinggi untuk titik-titik
+    paddingVertical: 14,
   },
-  typingDotsContainer: { // Kontainer untuk titik-titik animasi
+  typingDotsContainer: {
     flexDirection: 'row',
-    alignItems: 'center', // Pastikan titik-titik sejajar
+    alignItems: 'center',
   },
-  typingDot: { // Gaya untuk satu titik
+  typingDot: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    // backgroundColor diatur dari GColors
-    // Untuk animasi titik-titik yang sesungguhnya, Anda perlu menggunakan Animated API
-    // dan menganimasikan opacity atau translateY dari masing-masing titik secara berulang (loop).
-    // Implementasi animasi titik-titik yang detail ada di luar cakupan ini,
-    // tapi Anda bisa mencari "react native animated typing indicator" untuk contoh.
   },
   messageText: {
     fontSize: 15,
@@ -545,7 +548,7 @@ const styles = StyleSheet.create<ChatbotStyle>({
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     marginTop: 10,
-    marginLeft: (32 + 8), // Disesuaikan dengan botAvatarContainer.width + marginRight
+    marginLeft: (32 + 8),
     marginBottom: 6,
   },
   optionButton: {
@@ -554,11 +557,10 @@ const styles = StyleSheet.create<ChatbotStyle>({
     borderRadius: 20,
     marginRight: 10,
     marginBottom: 10,
-    // Efek bayangan untuk tombol opsi
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 2, // Untuk Android
+    elevation: 2,
   },
   optionButtonText: {
     fontSize: 13,
@@ -566,7 +568,7 @@ const styles = StyleSheet.create<ChatbotStyle>({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center', // Jaga agar input dan tombol send sejajar
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
